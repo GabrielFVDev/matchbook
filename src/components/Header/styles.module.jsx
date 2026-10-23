@@ -1,5 +1,6 @@
 import styled from 'styled-components';
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { cores, celular, raio, sombra } from '../../styles/tokens';
 
 export const HeaderContainer = styled.header`
@@ -34,10 +35,11 @@ export const NavigationContainer = styled.nav`
 `;
 
 const estiloItem = `
+  position: relative;
   display: flex;
   align-items: center;
   min-height: 44px;
-  padding: 0 16px;
+  padding: 0 17px;
   border: 0;
   border-radius: ${raio.pilula};
   background: transparent;
@@ -45,22 +47,41 @@ const estiloItem = `
   font-size: 15px;
   font-weight: 500;
   text-decoration: none;
+  transition: color 0.2s ease;
 `;
 
 export const NavItem = styled(NavLink)`
   ${estiloItem}
 
+  &:hover {
+    color: ${cores.tinta};
+  }
+
   &[aria-current='page'] {
-    padding: 0 18px;
-    background: ${cores.branco};
-    box-shadow: ${sombra.ativo};
     color: ${cores.tinta};
     font-weight: 700;
   }
 `;
 
+// Fundo branco do item ativo. Desliza entre os itens ao trocar de tela.
+export const ActivePill = styled(motion.span)`
+  position: absolute;
+  inset: 0;
+  border-radius: ${raio.pilula};
+  background: ${cores.branco};
+  box-shadow: ${sombra.ativo};
+`;
+
+export const NavLabel = styled.span`
+  position: relative;
+`;
+
 export const LogoutButton = styled.button.attrs({ type: 'button' })`
   ${estiloItem}
+
+  &:hover {
+    color: ${cores.tinta};
+  }
 `;
 
 export const RightSide = styled.div`
@@ -69,12 +90,23 @@ export const RightSide = styled.div`
   gap: 8px;
 `;
 
-export const MobileOnly = styled.div`
+export const MobileAction = styled(motion.div)`
   display: none;
 
   ${celular} {
     display: flex;
   }
+`;
+
+export const MobileIconLink = styled(Link)`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: ${raio.pilula};
+  background: ${cores.branco};
+  color: ${cores.tinta};
 `;
 
 export const Counter = styled.p`
@@ -88,6 +120,7 @@ export const Counter = styled.p`
   font-size: 14px;
 
   strong {
+    display: inline-block;
     font-weight: 800;
   }
 
@@ -102,3 +135,9 @@ export const Counter = styled.p`
     font-size: 13px;
   }
 `;
+
+export const CounterHeart = styled(motion.span)`
+  display: flex;
+`;
+
+export const CounterNumber = styled(motion.strong)``;

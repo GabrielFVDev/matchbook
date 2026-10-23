@@ -1,15 +1,7 @@
+import { useLayoutEffect } from 'react';
 import styled from 'styled-components';
-import Header from '../Header';
-import { MobileNav } from '../MobileNav';
+import { useDefinirShell } from '../../contexts/shell';
 import { cores, celular } from '../../styles/tokens';
-
-const Pagina = styled.div`
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: ${({ $fundo }) => $fundo};
-  transition: background-color 0.4s ease;
-`;
 
 const Principal = styled.main`
   flex: 1;
@@ -27,13 +19,13 @@ const Principal = styled.main`
   }
 `;
 
-// Estrutura das telas de quem já entrou: cabeçalho, conteúdo e a barra do celular.
-export function AppLayout({ fundo = cores.fundoApp, corDestaque, acaoCelular, espaco = '28px', children }) {
-  return (
-    <Pagina $fundo={fundo}>
-      <Header corDestaque={corDestaque} acaoCelular={acaoCelular} />
-      <Principal $espaco={espaco}>{children}</Principal>
-      <MobileNav />
-    </Pagina>
-  );
+// Conteúdo de uma tela dentro do AppShell. Avisa ao shell o fundo e a cor de destaque.
+export function AppLayout({ fundo = cores.fundoApp, corDestaque = cores.marca, espaco = '28px', children }) {
+  const definirShell = useDefinirShell();
+
+  useLayoutEffect(() => {
+    definirShell({ fundo, corDestaque });
+  }, [definirShell, fundo, corDestaque]);
+
+  return <Principal $espaco={espaco}>{children}</Principal>;
 }

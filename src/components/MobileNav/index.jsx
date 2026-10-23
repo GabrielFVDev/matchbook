@@ -1,6 +1,8 @@
 import styled from 'styled-components';
 import { NavLink } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { cores, celular, raio, sombra } from '../../styles/tokens';
+import { mola } from '../../styles/movimento';
 import { IconHeartOutline, IconHome, IconPlus, IconUser } from '../Icons';
 
 const Barra = styled.nav`
@@ -23,6 +25,7 @@ const Barra = styled.nav`
 `;
 
 const Item = styled(NavLink)`
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -34,34 +37,49 @@ const Item = styled(NavLink)`
   font-size: 11px;
   font-weight: 500;
   text-decoration: none;
+  transition: color 0.2s ease;
 
   &[aria-current='page'] {
-    background: ${cores.tinta};
     color: ${cores.branco};
     font-weight: 700;
   }
+
+  > svg,
+  > span:last-child {
+    position: relative;
+  }
 `;
+
+// Fundo escuro da aba ativa. Desliza entre as abas ao trocar de tela.
+const AbaAtiva = styled(motion.span)`
+  position: absolute;
+  inset: 0;
+  border-radius: ${raio.pilula};
+  background: ${cores.tinta};
+`;
+
+const abas = [
+  { to: '/home', label: 'Início', icone: <IconHome /> },
+  { to: '/meus-livros', label: 'Meus livros', icone: <IconHeartOutline /> },
+  { to: '/adicionar-livro', label: 'Adicionar', icone: <IconPlus /> },
+  { to: '/profile', label: 'Perfil', icone: <IconUser /> },
+];
 
 // Barra de navegação do celular. No celular o "Sair" fica dentro do Perfil.
 export function MobileNav() {
   return (
     <Barra aria-label="Principal">
-      <Item to="/home">
-        <IconHome />
-        Início
-      </Item>
-      <Item to="/meus-livros">
-        <IconHeartOutline />
-        Meus livros
-      </Item>
-      <Item to="/adicionar-livro">
-        <IconPlus />
-        Adicionar
-      </Item>
-      <Item to="/profile">
-        <IconUser />
-        Perfil
-      </Item>
+      {abas.map((aba) => (
+        <Item key={aba.to} to={aba.to}>
+          {({ isActive }) => (
+            <>
+              {isActive && <AbaAtiva layoutId="abaAtiva" transition={mola} />}
+              {aba.icone}
+              <span>{aba.label}</span>
+            </>
+          )}
+        </Item>
+      ))}
     </Barra>
   );
 }
