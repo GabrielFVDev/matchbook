@@ -107,8 +107,8 @@ const IconeAlerta = styled.span`
   width: 52px;
   height: 52px;
   border-radius: ${raio.pilula};
-  background: ${cores.erroFundo};
-  color: ${cores.erro};
+  background: ${({ $perigo }) => ($perigo ? cores.erroFundo : cores.fundoMarca)};
+  color: ${({ $perigo }) => ($perigo ? cores.erro : cores.marca)};
 `;
 
 const Texto = styled.p`
@@ -128,17 +128,28 @@ const Botoes = styled.div`
 `;
 
 // Confirmação de ação sem volta, como excluir a conta.
-export function ConfirmDialog({ aberto, titulo, descricao, icone, rotuloConfirmar, carregando, onConfirmar, onCancelar }) {
+export function ConfirmDialog({
+  aberto,
+  titulo,
+  descricao,
+  icone,
+  rotuloConfirmar,
+  rotuloCarregando = 'Excluindo',
+  variante = 'perigoForte',
+  carregando,
+  onConfirmar,
+  onCancelar
+}) {
   return (
     <Dialog aberto={aberto} titulo={titulo} onFechar={onCancelar} largura={400}>
-      {icone && <IconeAlerta>{icone}</IconeAlerta>}
+      {icone && <IconeAlerta $perigo={variante === 'perigoForte'}>{icone}</IconeAlerta>}
       <Texto>{descricao}</Texto>
       <Botoes>
         <Button $variante="secundario" onClick={onCancelar} autoFocus>
           Cancelar
         </Button>
-        <Button $variante="perigoForte" onClick={onConfirmar} disabled={carregando}>
-          {carregando ? 'Excluindo' : rotuloConfirmar}
+        <Button $variante={variante} onClick={onConfirmar} disabled={carregando}>
+          {carregando ? rotuloCarregando : rotuloConfirmar}
         </Button>
       </Botoes>
     </Dialog>
