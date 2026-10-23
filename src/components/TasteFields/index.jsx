@@ -43,7 +43,7 @@ const Linha = styled.div`
   }
 `;
 
-export const niveisLeitura = ['Iniciante', 'Intermediário', 'Avançado'];
+const niveisLeitura = ['Iniciante', 'Intermediário', 'Avançado'];
 
 // Campos do gosto literário, usados na etapa 2 do cadastro e na edição do perfil.
 // "dados" tem os nomes de campo da API; "onChange(campo, valor)" atualiza um deles.
