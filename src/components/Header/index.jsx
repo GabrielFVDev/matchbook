@@ -1,14 +1,29 @@
-
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { HeaderContainer, Logo, IconWrapper, LogoutButton, NavigationContainer } from "./styles.module.jsx";
-import { FaUser, FaHome, FaSignOutAlt, FaHeart, FaPlus } from "react-icons/fa";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+    HeaderContainer,
+    HeaderContent,
+    NavigationContainer,
+    NavItem,
+    LogoutButton,
+    RightSide,
+    MobileOnly,
+    Counter
+} from "./styles.module.jsx";
+import { Logo } from "../Logo";
+import { IconHeart } from "../Icons";
 import { useAuth } from "../../hooks/useAuth";
+import { useCurtidos } from "../../contexts/curtidos";
+import { cores } from "../../styles/tokens";
 
-export default function Header() {
-    const location = useLocation();
+export default function Header({ corDestaque = cores.marca, acaoCelular }) {
     const navigate = useNavigate();
     const { logout } = useAuth();
-    const currentPath = location.pathname;
+    const { total, carregar } = useCurtidos();
+
+    useEffect(() => {
+        carregar();
+    }, [carregar]);
 
     const handleLogout = () => {
         logout();
@@ -17,35 +32,25 @@ export default function Header() {
 
     return (
         <HeaderContainer>
-            <Logo to="/">Matchbook</Logo>
-            <NavigationContainer>
-                <Link to="/home" title="Início">
-                    <IconWrapper isActive={currentPath === "/home"}>
-                        <FaHome />
-                    </IconWrapper>
-                </Link>
-                <Link to="/meus-livros" title="Meus Livros Favoritos">
-                    <IconWrapper isActive={currentPath === "/meus-livros"}>
-                        <FaHeart />
-                    </IconWrapper>
-                </Link>
-                <Link to="/adicionar-livro" title="Adicionar Livro">
-                    <IconWrapper 
-                        isActive={currentPath === "/adicionar-livro"}
-                        isAddButton={true}
-                    >
-                        <FaPlus />
-                    </IconWrapper>
-                </Link>
-                <Link to="/profile" title="Perfil">
-                    <IconWrapper isActive={currentPath === "/profile"}>
-                        <FaUser />
-                    </IconWrapper>
-                </Link>
-                <LogoutButton onClick={handleLogout}>
-                    Sair
-                </LogoutButton>
-            </NavigationContainer>
+            <HeaderContent>
+                <Logo para="/home" />
+                <NavigationContainer aria-label="Principal">
+                    <NavItem to="/home">Início</NavItem>
+                    <NavItem to="/meus-livros">Meus livros</NavItem>
+                    <NavItem to="/adicionar-livro">Adicionar livro</NavItem>
+                    <NavItem to="/profile">Perfil</NavItem>
+                    <LogoutButton onClick={handleLogout}>Sair</LogoutButton>
+                </NavigationContainer>
+                <RightSide>
+                    {acaoCelular && <MobileOnly>{acaoCelular}</MobileOnly>}
+                    {total !== null && (
+                        <Counter $cor={corDestaque}>
+                            <IconHeart tamanho={15} />
+                            <span><strong>{total}</strong> curtidos</span>
+                        </Counter>
+                    )}
+                </RightSide>
+            </HeaderContent>
         </HeaderContainer>
     );
 }
