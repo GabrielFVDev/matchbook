@@ -90,7 +90,13 @@ export function BookCover({ titulo, genero, capaUrl, tamanho = 'grade', tituloVa
       ) : (
         <Gerada $tamanho={tamanho} $soTitulo={tamanho === 'mini' || !nomeGenero} role="img" aria-label={titulo ? `Capa de ${titulo}` : 'Capa do livro'}>
           {tamanho !== 'mini' && nomeGenero && (
-            <Tag $pequena={tamanho === 'grade'} aria-hidden="true">{nomeGenero}</Tag>
+            <Tag
+              $pequena={tamanho === 'grade'}
+              aria-hidden="true"
+              style={children ? { maxWidth: 'calc(100% - 40px)' } : undefined}
+            >
+              {nomeGenero}
+            </Tag>
           )}
           <Titulo $tamanho={tamanho} $vazio={!titulo} aria-hidden="true">{textoTitulo}</Titulo>
         </Gerada>
