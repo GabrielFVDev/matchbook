@@ -30,6 +30,16 @@ export const StackCover = styled.div`
   transform: rotate(${({ $giro }) => $giro}deg);
   box-shadow: 0 18px 40px rgba(26, 23, 38, 0.18);
 
+  span:first-child {
+    align-self: flex-start;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: ${cores.branco};
+    color: ${cores.tinta};
+    font-size: 12px;
+    font-weight: 700;
+  }
+
   span:last-child {
     font-size: ${({ $fonte }) => $fonte[0]}px;
     font-weight: 800;

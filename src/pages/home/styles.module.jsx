@@ -13,6 +13,7 @@ export const MatchArea = styled.div`
     flex-direction: column;
     flex-wrap: nowrap;
     align-items: stretch;
+    justify-content: flex-start;
     gap: 14px;
   }
 `;
@@ -70,7 +71,7 @@ export const Recommendation = styled.section`
   max-width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 28px;
 
   ${celular} {

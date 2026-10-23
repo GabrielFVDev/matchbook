@@ -16,6 +16,7 @@ const Grupo = styled.div`
 
 const Trilho = styled.div`
   display: flex;
+  align-items: center;
   gap: 4px;
   padding: 4px;
   border-radius: ${raio.pilula};

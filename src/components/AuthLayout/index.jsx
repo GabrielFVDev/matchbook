@@ -43,6 +43,7 @@ const Principal = styled.main`
   gap: 96px;
 
   ${celular} {
+    align-content: flex-start;
     padding: 4px 20px 32px;
     gap: 20px;
   }
