@@ -1,17 +1,8 @@
 import { useEffect, useRef } from 'react';
-import styled, { css, keyframes } from 'styled-components';
+import styled, { css } from 'styled-components';
+import { motion } from 'motion/react';
 import { cores, celular, raio, sombra } from '../../styles/tokens';
-
-const entrar = keyframes`
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-`;
+import { animacaoAviso } from '../../styles/movimento';
 
 const Area = styled.div`
   position: fixed;
@@ -28,7 +19,7 @@ const Area = styled.div`
   }
 `;
 
-export const ToastPill = styled.div`
+export const ToastPill = styled(motion.div)`
   pointer-events: auto;
   display: flex;
   align-items: center;
@@ -37,7 +28,6 @@ export const ToastPill = styled.div`
   border-radius: ${raio.pilula};
   font-size: 15px;
   line-height: 1.35;
-  animation: ${entrar} 0.2s ease;
 
   ${({ $tom }) =>
     $tom === 'escuro'
@@ -84,6 +74,7 @@ const Acao = styled.button.attrs({ type: 'button' })`
 `;
 
 // Aviso rápido no rodapé, sem travar a tela. Some sozinho depois de "duracao".
+// Para animar a saída, renderize dentro de <AnimatePresence> com uma key por aviso.
 export function Toast({ children, icone, acao, tom = 'escuro', duracao = 4000, onFechar, chave }) {
   const fecharRef = useRef(onFechar);
 
@@ -100,7 +91,7 @@ export function Toast({ children, icone, acao, tom = 'escuro', duracao = 4000, o
 
   return (
     <Area>
-      <ToastPill role="status" $tom={tom}>
+      <ToastPill role="status" $tom={tom} {...animacaoAviso}>
         {icone}
         <span>{children}</span>
         {acao && <Acao onClick={acao.onClick}>{acao.rotulo}</Acao>}

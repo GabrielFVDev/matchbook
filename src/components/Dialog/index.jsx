@@ -1,10 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useId } from 'react';
 import styled from 'styled-components';
+import { AnimatePresence, motion } from 'motion/react';
 import { cores, celular, raio } from '../../styles/tokens';
+import { curvaSaida } from '../../styles/movimento';
 import { Button } from '../Button';
 import { IconX } from '../Icons';
 
-const Fundo = styled.div`
+const Fundo = styled(motion.div)`
   position: fixed;
   inset: 0;
   z-index: 50;
@@ -21,7 +23,7 @@ const Fundo = styled.div`
   }
 `;
 
-const Caixa = styled.div`
+const Caixa = styled(motion.div)`
   width: 100%;
   max-width: ${({ $largura }) => $largura}px;
   max-height: calc(100vh - 48px);
@@ -67,8 +69,22 @@ const Fechar = styled.button.attrs({ type: 'button' })`
   color: ${cores.tinta};
 `;
 
+const animacaoFundo = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1, transition: { duration: 0.2 } },
+  exit: { opacity: 0, transition: { duration: 0.18, delay: 0.04 } },
+};
+
+const animacaoCaixa = {
+  initial: { opacity: 0, y: 28, scale: 0.98 },
+  animate: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 380, damping: 32 } },
+  exit: { opacity: 0, y: 16, scale: 0.98, transition: { duration: 0.15, ease: curvaSaida } },
+};
+
 // Janela sobre a tela. Fecha com Esc, clique fora ou no botão de fechar.
 export function Dialog({ aberto, titulo, onFechar, largura = 560, children }) {
+  const tituloId = useId();
+
   useEffect(() => {
     if (!aberto) return undefined;
     const aoTeclar = (evento) => {
@@ -83,20 +99,29 @@ export function Dialog({ aberto, titulo, onFechar, largura = 560, children }) {
     };
   }, [aberto, onFechar]);
 
-  if (!aberto) return null;
-
   return (
-    <Fundo onClick={onFechar}>
-      <Caixa role="dialog" aria-modal="true" aria-labelledby="dialogoTitulo" $largura={largura} onClick={(e) => e.stopPropagation()}>
-        <Topo>
-          <Titulo id="dialogoTitulo">{titulo}</Titulo>
-          <Fechar aria-label="Fechar" onClick={onFechar}>
-            <IconX tamanho={18} />
-          </Fechar>
-        </Topo>
-        {children}
-      </Caixa>
-    </Fundo>
+    <AnimatePresence>
+      {aberto && (
+        <Fundo onClick={onFechar} {...animacaoFundo}>
+          <Caixa
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={tituloId}
+            $largura={largura}
+            onClick={(e) => e.stopPropagation()}
+            {...animacaoCaixa}
+          >
+            <Topo>
+              <Titulo id={tituloId}>{titulo}</Titulo>
+              <Fechar aria-label="Fechar" onClick={onFechar}>
+                <IconX tamanho={18} />
+              </Fechar>
+            </Topo>
+            {children}
+          </Caixa>
+        </Fundo>
+      )}
+    </AnimatePresence>
   );
 }
 

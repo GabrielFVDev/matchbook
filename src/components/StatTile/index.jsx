@@ -1,5 +1,7 @@
 import styled from 'styled-components';
+import { motion } from 'motion/react';
 import { cores, celular } from '../../styles/tokens';
+import { surgir } from '../../styles/movimento';
 
 export const StatGrid = styled.dl`
   display: grid;
@@ -12,7 +14,7 @@ export const StatGrid = styled.dl`
   }
 `;
 
-const Tile = styled.div`
+const Tile = styled(motion.div)`
   display: flex;
   flex-direction: column-reverse;
   justify-content: flex-end;
@@ -49,9 +51,10 @@ const Tile = styled.div`
 `;
 
 // Número de destaque com o rótulo embaixo. Vai dentro de um StatGrid (dl).
-export function StatTile({ rotulo, valor, fundo, cor, texto }) {
+// "ordem" faz os números entrarem em sequência.
+export function StatTile({ rotulo, valor, fundo, cor, texto, ordem }) {
   return (
-    <Tile $fundo={fundo} $cor={cor} $texto={texto}>
+    <Tile $fundo={fundo} $cor={cor} $texto={texto} {...(ordem !== undefined ? surgir(ordem) : {})}>
       <dt>{rotulo}</dt>
       <dd>{valor}</dd>
     </Tile>

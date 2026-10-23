@@ -1,5 +1,7 @@
 import styled from 'styled-components';
+import { motion } from 'motion/react';
 import { cores, celular } from '../../styles/tokens';
+import { curvaEntrada } from '../../styles/movimento';
 
 const tons = {
   marca: { fundo: cores.fundoMarca, cor: cores.marca },
@@ -7,7 +9,7 @@ const tons = {
   sucesso: { fundo: cores.sucessoFundo, cor: cores.sucesso },
 };
 
-const Caixa = styled.div`
+const Caixa = styled(motion.div)`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -24,7 +26,7 @@ const Caixa = styled.div`
   }
 `;
 
-const Icone = styled.span`
+const Icone = styled(motion.span)`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -63,8 +65,23 @@ const Acoes = styled.div`
 // Bloco para tela vazia, erro ou sucesso: ícone, título, texto e ações.
 export function EmptyState({ icone, tom = 'marca', titulo, descricao, fundo, children, role }) {
   return (
-    <Caixa $fundo={fundo} role={role}>
-      {icone && <Icone $tom={tom}>{icone}</Icone>}
+    <Caixa
+      $fundo={fundo}
+      role={role}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: curvaEntrada }}
+    >
+      {icone && (
+        <Icone
+          $tom={tom}
+          initial={{ scale: 0.4, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 420, damping: 16, delay: 0.1 }}
+        >
+          {icone}
+        </Icone>
+      )}
       <Titulo>{titulo}</Titulo>
       {descricao && <Descricao>{descricao}</Descricao>}
       {children && <Acoes>{children}</Acoes>}

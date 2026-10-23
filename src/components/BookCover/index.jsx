@@ -86,7 +86,12 @@ export function BookCover({ titulo, genero, capaUrl, tamanho = 'grade', tituloVa
   return (
     <Moldura $capa={capa} $tamanho={tamanho}>
       {mostrarImagem ? (
-        <Imagem src={capaUrl} alt={titulo ? `Capa de ${titulo}` : 'Capa do livro'} onError={() => setUrlComErro(capaUrl)} />
+        <Imagem
+          src={capaUrl}
+          alt={titulo ? `Capa de ${titulo}` : 'Capa do livro'}
+          draggable={false}
+          onError={() => setUrlComErro(capaUrl)}
+        />
       ) : (
         <Gerada $tamanho={tamanho} $soTitulo={tamanho === 'mini' || !nomeGenero} role="img" aria-label={titulo ? `Capa de ${titulo}` : 'Capa do livro'}>
           {tamanho !== 'mini' && nomeGenero && (

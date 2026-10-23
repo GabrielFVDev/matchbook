@@ -1,5 +1,8 @@
+import { useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import styled from 'styled-components';
 import { cores, raio, sombra } from '../../styles/tokens';
+import { mola } from '../../styles/movimento';
 import { IconMinus, IconPlus } from '../Icons';
 
 export const ChoiceLabel = styled.p`
@@ -24,17 +27,30 @@ const Trilho = styled.div`
 `;
 
 const Opcao = styled.button.attrs({ type: 'button' })`
+  position: relative;
   flex: 1 1 0;
   min-width: 0;
   min-height: 44px;
   padding: 0 8px;
   border: 0;
   border-radius: ${raio.pilula};
-  background: ${({ $ativo }) => ($ativo ? cores.branco : 'transparent')};
-  box-shadow: ${({ $ativo }) => ($ativo ? sombra.ativo : 'none')};
+  background: transparent;
   color: ${cores.tinta};
   font-size: 14px;
   font-weight: ${({ $ativo }) => ($ativo ? 700 : 500)};
+
+  span {
+    position: relative;
+  }
+`;
+
+// Fundo branco da opção escolhida. Desliza até a opção nova.
+const Marcador = styled(motion.span)`
+  position: absolute !important;
+  inset: 0;
+  border-radius: ${raio.pilula};
+  background: ${cores.branco};
+  box-shadow: ${sombra.ativo};
 `;
 
 // Escolha única entre poucas opções (nível de leitura).
@@ -45,7 +61,8 @@ export function Segmented({ id, label, opcoes, valor, onChange }) {
       <Trilho>
         {opcoes.map((opcao) => (
           <Opcao key={opcao} $ativo={opcao === valor} aria-pressed={opcao === valor} onClick={() => onChange(opcao)}>
-            {opcao}
+            {opcao === valor && <Marcador layoutId={`${id}Marcador`} transition={mola} />}
+            <span>{opcao}</span>
           </Opcao>
         ))}
       </Trilho>
@@ -63,13 +80,31 @@ const BotaoRedondo = styled.button.attrs({ type: 'button' })`
   border-radius: ${raio.pilula};
   background: ${cores.branco};
   color: ${cores.tinta};
+  transition: transform 0.12s ease, opacity 0.15s ease;
+
+  &:active:not(:disabled) {
+    transform: scale(0.9);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+  }
 `;
 
 const Valor = styled.output`
+  position: relative;
   min-width: 48px;
+  height: 24px;
+  overflow: hidden;
   text-align: center;
   font-size: 17px;
   font-weight: 800;
+  line-height: 24px;
+
+  span {
+    position: absolute;
+    inset: 0;
+  }
 `;
 
 const LinhaContador = styled.div`
@@ -80,16 +115,43 @@ const LinhaContador = styled.div`
 `;
 
 // Contador com botões de menos e mais (livros já lidos).
+// O número novo entra por baixo quando sobe e por cima quando desce.
+const rolarNumero = {
+  entrar: (direcao) => ({ y: direcao * 18, opacity: 0 }),
+  parado: { y: 0, opacity: 1, transition: { duration: 0.18 } },
+  sair: (direcao) => ({ y: direcao * -18, opacity: 0, transition: { duration: 0.18 } }),
+};
+
 export function Stepper({ id, label, valor, onChange, minimo = 0 }) {
+  const [direcao, setDirecao] = useState(1);
+
+  const mudar = (passo) => {
+    setDirecao(passo);
+    onChange(Math.max(minimo, valor + passo));
+  };
+
   return (
     <LinhaContador role="group" aria-labelledby={id}>
       <ChoiceLabel id={id}>{label}</ChoiceLabel>
       <Trilho>
-        <BotaoRedondo aria-label="Diminuir" disabled={valor <= minimo} onClick={() => onChange(Math.max(minimo, valor - 1))}>
+        <BotaoRedondo aria-label="Diminuir" disabled={valor <= minimo} onClick={() => mudar(-1)}>
           <IconMinus tamanho={18} />
         </BotaoRedondo>
-        <Valor aria-live="polite">{valor}</Valor>
-        <BotaoRedondo aria-label="Aumentar" onClick={() => onChange(valor + 1)}>
+        <Valor aria-live="polite">
+          <AnimatePresence initial={false} custom={direcao}>
+            <motion.span
+              key={valor}
+              custom={direcao}
+              variants={rolarNumero}
+              initial="entrar"
+              animate="parado"
+              exit="sair"
+            >
+              {valor}
+            </motion.span>
+          </AnimatePresence>
+        </Valor>
+        <BotaoRedondo aria-label="Aumentar" onClick={() => mudar(1)}>
           <IconPlus tamanho={18} />
         </BotaoRedondo>
       </Trilho>

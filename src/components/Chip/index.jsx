@@ -19,7 +19,11 @@ export const Chip = styled.button.attrs(({ $ativo }) => ({
   font-size: 15px;
   font-weight: 600;
   white-space: nowrap;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
+
+  &:active {
+    transform: scale(0.96);
+  }
 `;
 
 export const ChipCount = styled.span`
