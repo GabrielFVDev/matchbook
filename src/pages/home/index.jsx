@@ -1,347 +1,233 @@
-
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import Header from "../../components/Header";
-import { NotificationModal } from "../../components/NotificationModal";
+import { useCallback, useEffect, useState } from "react";
+import { AppLayout } from "../../components/AppLayout";
+import { BookCover } from "../../components/BookCover";
+import { Tag } from "../../components/Chip";
+import { ButtonLink, Button } from "../../components/Button";
+import { EmptyState } from "../../components/EmptyState";
+import { Spinner } from "../../components/Spinner";
+import { ToastPill, ToastDetail } from "../../components/Toast";
+import { IconAlert, IconArrowRight, IconBook, IconHeart, IconRefresh } from "../../components/Icons";
 import {
-  PageContainer,
-  MainContent,
-  BookDiscoveryCard,
-  DiscoveryTitle,
-  QuestionIcon,
-  ActionButtons,
-  PrimaryButton,
-  SecondaryButton,
-  QuizContainer,
-  QuizTitle,
-  BookRecommendation,
-  BookCover,
-  BookCoverPlaceholder,
+  MatchArea,
+  Intro,
+  Eyebrow,
+  Headline,
+  Helper,
+  Recommendation,
+  Stack,
+  GhostCard,
+  BookCard,
   BookInfo,
-  BookTitle,
   BookAuthor,
-  BookGenre,
-  BookPages,
-  QuizButtons,
-  LikeButton,
-  DislikeButton,
-  LoadingMessage,
-  ErrorMessage,
-  BackButton
+  MetaList,
+  Synopsis,
+  LoadingCard,
+  Actions,
+  ActionButton,
+  ActionCircle,
+  FeedbackArea
 } from './styles.module.jsx';
-import { FaQuestion, FaHeart, FaThumbsDown } from 'react-icons/fa';
 import { useAuth } from "../../hooks/useAuth";
+import { useCurtidos } from "../../contexts/curtidos";
 import { recomendacaoService } from "../../apis/services";
+import { cores, coresDoGenero } from "../../styles/tokens";
 
 export default function HomePage() {
   const { getCurrentUser } = useAuth();
-  const navigate = useNavigate();
-  const [usuario, setUsuario] = useState(null);
-  const [showQuiz, setShowQuiz] = useState(false);
+  const { somar } = useCurtidos();
+  const [usuario] = useState(() => getCurrentUser());
   const [currentBook, setCurrentBook] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [notification, setNotification] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [imageError, setImageError] = useState(false);
-  const [totalLivrosCurtidos, setTotalLivrosCurtidos] = useState(0);
+  const [aviso, setAviso] = useState(null);
 
-  useEffect(() => {
-    const user = getCurrentUser();
-    setUsuario(user);
-    if (user?.id) {
-      carregarContadorLivrosCurtidos(user.id);
-    }
-  }, []);
-
-  // Função para carregar contador de livros curtidos
-  const carregarContadorLivrosCurtidos = async (idUsuario) => {
-    try {
-      const response = await recomendacaoService.contarLivrosCurtidos(idUsuario);
-      if (response.success) {
-        setTotalLivrosCurtidos(response.data.total || 0);
-      }
-    } catch (err) {
-      console.error('Erro ao carregar contador de livros curtidos:', err);
-      setTotalLivrosCurtidos(0);
-    }
-  };
-
-  // Função para iniciar o quiz
-  const iniciarQuiz = async () => {
-    setShowQuiz(true);
-    setError(null);
-    await carregarProximaRecomendacao();
-  };
-
-  // Função para carregar próxima recomendação
-  const carregarProximaRecomendacao = async () => {
+  const carregarProximaRecomendacao = useCallback(async () => {
     if (!usuario?.id) return;
 
     setLoading(true);
-    setError(null);
+    setErro(null);
 
-    try {
-      const response = await recomendacaoService.obterRecomendacaoAdaptativa(usuario.id);
-      
-      if (response.success && response.data && response.data.length > 0) {
-        // Pega o primeiro livro da lista de recomendações
-        const livro = response.data[0];
-        console.log('📚 Livro recebido da API:', livro);
-        console.log('🖼️ URL da capa (capaUrl):', livro.capaUrl);
-        console.log('🖼️ URL da capa (capa):', livro.capa);
-        setCurrentBook(livro);
-        setImageError(false); // Reset do estado da imagem
-      } else {
-        setError('Nenhuma recomendação disponível no momento.');
-      }
-    } catch (err) {
-      console.error('Erro ao carregar recomendação:', err);
-      setError('Erro ao carregar recomendação. Tente novamente.');
-    } finally {
-      setLoading(false);
+    const response = await recomendacaoService.obterRecomendacaoAdaptativa(usuario.id);
+
+    if (response.success && response.data?.length > 0) {
+      // A API devolve uma lista; mostramos o primeiro livro dela.
+      setCurrentBook(response.data[0]);
+    } else {
+      setCurrentBook(null);
+      setErro(response.success ? 'vazio' : 'falha');
     }
-  };
+    setLoading(false);
+  }, [usuario?.id]);
 
-  // Função para aceitar um livro
+  useEffect(() => {
+    carregarProximaRecomendacao();
+  }, [carregarProximaRecomendacao]);
+
   const aceitarLivro = async () => {
     if (!currentBook || !usuario?.id || isProcessing) return;
-
     setIsProcessing(true);
-    
-    try {
-      // 1. Aceitar livro no sistema de recomendação
-      const responseAceitar = await recomendacaoService.aceitarLivro(usuario.id, currentBook.id);
-      
-      if (responseAceitar.success) {
-        // 2. Também salvar como livro curtido
-        try {
-          await recomendacaoService.curtirLivro(usuario.id, currentBook.id);
-          console.log('✅ Livro também salvo como curtido');
-          // Incrementar contador local
-          setTotalLivrosCurtidos(prev => prev + 1);
-        } catch (curtirError) {
-          console.warn('⚠️ Erro ao salvar como curtido, mas livro foi aceito:', curtirError);
-          // Não interrompe o fluxo se o curtir falhar
-        }
-        
-        setNotification({
-          type: 'success',
-          title: 'Ótima escolha! 📚',
-          message: `"${currentBook.titulo}" foi adicionado à sua lista! O algoritmo aprendeu com sua preferência.`
-        });
-        
-        // Carrega próxima recomendação após um delay
-        setTimeout(() => {
-          carregarProximaRecomendacao();
-        }, 1500);
+
+    const responseAceitar = await recomendacaoService.aceitarLivro(usuario.id, currentBook.id);
+
+    if (responseAceitar.success) {
+      // Aceitar ensina o algoritmo; curtir guarda o livro em "Meus livros".
+      const responseCurtir = await recomendacaoService.curtirLivro(usuario.id, currentBook.id);
+      if (responseCurtir.success) {
+        somar(1);
       } else {
-        throw new Error(responseAceitar.error);
+        console.warn('Livro aceito, mas não foi salvo como curtido:', responseCurtir.error);
       }
-    } catch (err) {
-      console.error('Erro ao aceitar livro:', err);
-      setNotification({
-        type: 'error',
-        title: 'Erro',
-        message: 'Erro ao processar sua escolha. Tente novamente.'
+      setAviso({
+        tipo: 'amei',
+        titulo: 'Foi pros seus livros.',
+        texto: `“${currentBook.titulo}” está nos favoritos.`
       });
-    } finally {
-      setIsProcessing(false);
+      await carregarProximaRecomendacao();
+    } else {
+      setAviso({ tipo: 'erro', titulo: 'Não deu para salvar.', texto: 'Tente de novo.' });
     }
+
+    setIsProcessing(false);
   };
 
-  // Função para recusar um livro
   const recusarLivro = async () => {
     if (!currentBook || !usuario?.id || isProcessing) return;
-
     setIsProcessing(true);
-    
-    try {
-      const response = await recomendacaoService.recusarLivro(usuario.id, currentBook.id);
-      
-      if (response.success) {
-        const { totalRecusas, algoritmoAlterado, sugestao } = response.data || {};
-        
-        let message = 'Entendido! Vamos buscar algo mais adequado para você.';
-        
-        if (algoritmoAlterado && sugestao) {
-          message = `${message} ${sugestao}`;
-        }
-        
-        setNotification({
-          type: 'info',
-          title: 'Preferência registrada',
-          message: message
-        });
-        
-        // Carrega próxima recomendação após um delay
-        setTimeout(() => {
-          carregarProximaRecomendacao();
-        }, 1500);
-      } else {
-        throw new Error(response.error);
-      }
-    } catch (err) {
-      console.error('Erro ao recusar livro:', err);
-      setNotification({
-        type: 'error',
-        title: 'Erro',
-        message: 'Erro ao processar sua escolha. Tente novamente.'
+
+    const response = await recomendacaoService.recusarLivro(usuario.id, currentBook.id);
+
+    if (response.success) {
+      const { algoritmoAlterado, sugestao } = response.data || {};
+      setAviso({
+        tipo: 'proximo',
+        titulo: 'Anotado.',
+        texto: algoritmoAlterado && sugestao ? sugestao : 'Bora tentar outro.'
       });
-    } finally {
-      setIsProcessing(false);
+      await carregarProximaRecomendacao();
+    } else {
+      setAviso({ tipo: 'erro', titulo: 'Não deu para registrar.', texto: 'Tente de novo.' });
     }
+
+    setIsProcessing(false);
   };
 
-  // Função para voltar ao menu inicial
-  const voltarAoMenu = () => {
-    setShowQuiz(false);
-    setCurrentBook(null);
-    setError(null);
-  };
+  const coresLivro = currentBook ? coresDoGenero(currentBook.genero) : null;
+  const fundo = coresLivro ? coresLivro.fundo : cores.fundoMarca;
+  const destaque = coresLivro ? coresLivro.capa : cores.marca;
+  const primeiroNome = usuario?.nome?.trim().split(" ")[0];
 
-  // Função para fechar notificação
-  const fecharNotificacao = () => {
-    setNotification(null);
-  };
+  const meta = currentBook
+    ? [
+        currentBook.numeroPaginas && `${currentBook.numeroPaginas} páginas`,
+        currentBook.anoPublicacao,
+        currentBook.editora
+      ].filter(Boolean)
+    : [];
 
-  // Função para navegar para livros favoritos
-  const verMeusLivros = () => {
-    navigate('/meus-livros');
-  };
+  return (
+    <AppLayout fundo={fundo} corDestaque={destaque}>
+      <MatchArea>
+        <Intro>
+          <Eyebrow $cor={destaque}>{primeiroNome ? `Para você, ${primeiroNome}` : 'Para você'}</Eyebrow>
+          <Headline>Achei um pra você.</Headline>
+          <Helper>Amei guarda o livro nos seus favoritos. Próximo ensina ao Matchbook o que não é a sua.</Helper>
+        </Intro>
 
-  // Função para navegar para adicionar livro
-  const adicionarLivro = () => {
-    navigate('/adicionar-livro');
-  };
+        <Recommendation aria-label="Recomendação">
+          {erro === 'vazio' && (
+            <EmptyState
+              icone={<IconBook tamanho={28} />}
+              titulo="Você viu tudo por enquanto"
+              descricao="Adicione um livro ao catálogo ou volte mais tarde."
+            >
+              <ButtonLink to="/adicionar-livro">Adicionar livro</ButtonLink>
+              <ButtonLink to="/meus-livros" $variante="secundario">Ver meus livros</ButtonLink>
+            </EmptyState>
+          )}
 
-  if (!usuario) {
-    return (
-      <PageContainer>
-        <MainContent>
-          <div>Carregando...</div>
-        </MainContent>
-      </PageContainer>
-    );
-  }
-    return (
-        <PageContainer>
-            <Header />
-            
-            <MainContent>
-                {!showQuiz ? (
-                    <BookDiscoveryCard>
-                        <DiscoveryTitle>
-                            Olá, {usuario.nome}! Vamos descobrir seu próximo livro?
-                        </DiscoveryTitle>
-                        <div style={{ 
-                          marginBottom: '20px', 
-                          fontSize: '14px', 
-                          color: '#666',
-                          textAlign: 'center'
-                        }}>
-                          Livros curtidos: {totalLivrosCurtidos} livros ❤️
-                        </div>
-                        <QuestionIcon>
-                            <FaQuestion />
-                        </QuestionIcon>
-                        <ActionButtons>
-                            <PrimaryButton onClick={iniciarQuiz}>
-                                Começar Quiz
-                            </PrimaryButton>
-                            <SecondaryButton onClick={verMeusLivros}>
-                                Meus Livros Favoritos
-                            </SecondaryButton>
-                            <SecondaryButton onClick={adicionarLivro} style={{ 
-                              background: 'linear-gradient(135deg, #27ae60 0%, #219a52 100%)',
-                              color: 'white'
-                            }}>
-                                📚 Adicionar Livro
-                            </SecondaryButton>
-                        </ActionButtons>
-                    </BookDiscoveryCard>
-                ) : (
-                    <QuizContainer>
-                        <QuizTitle>Que tal esse livro?</QuizTitle>
-                        
-                        {error && (
-                            <ErrorMessage>
-                                {error}
-                                <BackButton onClick={voltarAoMenu}>
-                                    Voltar ao Menu
-                                </BackButton>
-                            </ErrorMessage>
+          {erro === 'falha' && (
+            <EmptyState
+              icone={<IconAlert tamanho={28} />}
+              tom="erro"
+              titulo="Não deu para buscar um livro"
+              descricao="Confira sua conexão e tente de novo."
+            >
+              <Button onClick={carregarProximaRecomendacao}>
+                <IconRefresh tamanho={16} />
+                Tentar de novo
+              </Button>
+            </EmptyState>
+          )}
+
+          {!erro && (
+            <>
+              <Stack>
+                <GhostCard aria-hidden="true" $opacidade={0.5} $transform="rotate(-5deg) translate(-18px, 14px)" />
+                <GhostCard aria-hidden="true" $opacidade={0.75} $transform="rotate(3.5deg) translate(16px, 6px)" />
+                <BookCard aria-busy={loading}>
+                  {loading || !currentBook ? (
+                    <LoadingCard role="status">
+                      <Spinner tamanho={40} cor={destaque} />
+                      Buscando um livro pra você
+                    </LoadingCard>
+                  ) : (
+                    <>
+                      <BookCover
+                        tamanho="match"
+                        titulo={currentBook.titulo}
+                        genero={currentBook.genero}
+                        capaUrl={currentBook.capaUrl || currentBook.capa}
+                      />
+                      <BookInfo>
+                        <BookAuthor>{currentBook.autor}</BookAuthor>
+                        {meta.length > 0 && (
+                          <MetaList>
+                            {meta.map((item) => (
+                              <li key={item}>
+                                <Tag $fundo={coresLivro.fundo}>{item}</Tag>
+                              </li>
+                            ))}
+                          </MetaList>
                         )}
-                        
-                        {loading && (
-                            <LoadingMessage>
-                                Buscando recomendação perfeita para você...
-                            </LoadingMessage>
-                        )}
-                        
-                        {currentBook && !loading && !error && (
-                            <>
-                                <BookRecommendation>
-                                    {!imageError && (currentBook.capaUrl || currentBook.capa) ? (
-                                        <BookCover 
-                                            src={currentBook.capaUrl || currentBook.capa} 
-                                            alt={`Capa do livro ${currentBook.titulo}`}
-                                            onError={(e) => {
-                                                console.log('❌ Erro ao carregar imagem:', currentBook.capaUrl || currentBook.capa);
-                                                console.log('❌ Erro:', e.target.error);
-                                                setImageError(true);
-                                            }}
-                                            onLoad={() => {
-                                                console.log('✅ Imagem carregada com sucesso:', currentBook.capaUrl || currentBook.capa);
-                                            }}
-                                        />
-                                    ) : (
-                                        <BookCoverPlaceholder>
-                                            📚<br/>Livro
-                                        </BookCoverPlaceholder>
-                                    )}
-                                    <BookInfo>
-                                        <BookTitle>{currentBook.titulo}</BookTitle>
-                                        <BookAuthor>por {currentBook.autor}</BookAuthor>
-                                        <BookGenre>{currentBook.genero}</BookGenre>
-                                        <BookPages>{currentBook.numeroPaginas} páginas</BookPages>
-                                    </BookInfo>
-                                </BookRecommendation>
-                                
-                                <QuizButtons>
-                                    <LikeButton 
-                                        onClick={aceitarLivro}
-                                        disabled={isProcessing}
-                                    >
-                                        <FaHeart /> Amei
-                                    </LikeButton>
-                                    <DislikeButton 
-                                        onClick={recusarLivro}
-                                        disabled={isProcessing}
-                                    >
-                                        <FaThumbsDown /> Próximo
-                                    </DislikeButton>
-                                </QuizButtons>
-                                
-                                <BackButton onClick={voltarAoMenu}>
-                                    Voltar ao Menu
-                                </BackButton>
-                            </>
-                        )}
-                    </QuizContainer>
-                )}
-            </MainContent>
-            
-            <NotificationModal
-                isOpen={!!notification}
-                type={notification?.type || 'success'}
-                title={notification?.title || ''}
-                message={notification?.message || ''}
-                onClose={fecharNotificacao}
-                autoClose={true}
-                autoCloseDelay={3000}
-            />
-        </PageContainer>
-    );
+                        {currentBook.sinopse && <Synopsis>{currentBook.sinopse}</Synopsis>}
+                      </BookInfo>
+                    </>
+                  )}
+                </BookCard>
+              </Stack>
+
+              <Actions>
+                <ActionButton onClick={recusarLivro} disabled={isProcessing || loading}>
+                  <ActionCircle $cor={cores.branco}>
+                    <IconArrowRight tamanho={24} />
+                  </ActionCircle>
+                  Próximo
+                </ActionButton>
+                <ActionButton $principal onClick={aceitarLivro} disabled={isProcessing || loading}>
+                  <ActionCircle $principal $cor={destaque}>
+                    <IconHeart tamanho={36} />
+                  </ActionCircle>
+                  Amei
+                </ActionButton>
+              </Actions>
+            </>
+          )}
+
+          <FeedbackArea aria-live="polite">
+            {aviso && (
+              <ToastPill $tom="claro">
+                {aviso.tipo === 'amei' && <IconHeart tamanho={18} style={{ color: destaque }} />}
+                {aviso.tipo === 'proximo' && <IconArrowRight tamanho={18} />}
+                {aviso.tipo === 'erro' && <IconAlert tamanho={18} style={{ color: cores.erro }} />}
+                <span>
+                  <strong>{aviso.titulo}</strong> <ToastDetail>{aviso.texto}</ToastDetail>
+                </span>
+              </ToastPill>
+            )}
+          </FeedbackArea>
+        </Recommendation>
+      </MatchArea>
+    </AppLayout>
+  );
 }
-

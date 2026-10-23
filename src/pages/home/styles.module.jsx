@@ -1,364 +1,237 @@
 import styled from 'styled-components';
+import { cores, celular, raio, sombra } from '../../styles/tokens';
 
-export const PageContainer = styled.main`
-  min-height: 100vh;
-  width: 100vw;
-  background: linear-gradient(135deg, #2d1b69 0%, #1a1a2e 50%, #0f0f23 100%);
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  padding-top: 80px; /* Espaço para o header fixo */
-`;
-
-export const MainContent = styled.div`
+export const MatchArea = styled.div`
   flex: 1;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  padding: 40px;
-  min-height: calc(100vh - 80px); /* Ajuste para o header fixo */
-  background: 
-    radial-gradient(ellipse at center, rgba(248, 245, 240, 0.1) 0%, transparent 70%),
-    linear-gradient(45deg, transparent 25%, rgba(248, 245, 240, 0.02) 25%),
-    linear-gradient(-45deg, transparent 25%, rgba(248, 245, 240, 0.02) 25%);
+  gap: 80px;
+
+  ${celular} {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 14px;
+  }
 `;
 
-export const BookDiscoveryCard = styled.div`
-  background: linear-gradient(135deg, #f8f5f0 0%, #f2ede5 100%);
-  border-radius: 20px;
-  padding: 60px 40px;
-  box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+export const Intro = styled.div`
+  flex: 1 1 300px;
+  max-width: 380px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  max-width: 600px;
-  width: 100%;
-  position: relative;
-  
-  &::before {
-    content: "";
+  gap: 14px;
+
+  ${celular} {
+    flex: 0 0 auto;
+    max-width: none;
+  }
+`;
+
+export const Eyebrow = styled.p`
+  font-size: 15px;
+  font-weight: 700;
+  color: ${({ $cor }) => $cor};
+  transition: color 0.4s ease;
+`;
+
+export const Headline = styled.h1`
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+
+  ${celular} {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: 
-      radial-gradient(circle at 20% 80%, rgba(212, 165, 116, 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, rgba(212, 165, 116, 0.1) 0%, transparent 50%);
-    border-radius: inherit;
-    pointer-events: none;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
 `;
 
-export const DiscoveryTitle = styled.h2`
-  font-size: 2.5em;
-  color: #6b4423;
-  font-family: 'Crimson Text', serif;
-  font-weight: 600;
-  margin-bottom: 40px;
-  text-shadow: 0 2px 4px rgba(107, 68, 35, 0.1);
-  line-height: 1.2;
+export const Helper = styled.p`
+  font-size: 17px;
+  line-height: 1.5;
+  color: ${cores.tintaSuave};
+  text-wrap: pretty;
+
+  ${celular} {
+    display: none;
+  }
 `;
 
-export const QuestionIcon = styled.div`
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #d4a574 0%, #a67c52 100%);
+export const Recommendation = styled.section`
+  flex: 0 0 420px;
+  max-width: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: 4em;
-  color: white;
-  box-shadow: 
-    0 10px 30px rgba(212, 165, 116, 0.4),
-    inset 0 2px 10px rgba(255, 255, 255, 0.2);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-bottom: 40px;
-  
-  &:hover {
-    transform: translateY(-5px) scale(1.05);
-    box-shadow: 
-      0 15px 40px rgba(212, 165, 116, 0.6),
-      inset 0 2px 10px rgba(255, 255, 255, 0.3);
+  gap: 28px;
+
+  ${celular} {
+    flex: 0 0 auto;
+    gap: 18px;
   }
 `;
 
-export const ActionButtons = styled.div`
-  display: flex;
-  gap: 20px;
-  margin-top: 20px;
-`;
-
-export const PrimaryButton = styled.button`
-  padding: 15px 30px;
-  background: linear-gradient(135deg, #6b4423 0%, #8b5a2b 100%);
-  color: white;
-  border: none;
-  border-radius: 25px;
-  font-size: 1.1em;
-  cursor: pointer;
-  font-family: 'Crimson Text', serif;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-
-  &:hover {
-    background: linear-gradient(135deg, #8b5a2b 0%, #6b4423 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(107, 68, 35, 0.3);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-`;
-
-export const SecondaryButton = styled.button`
-  padding: 15px 30px;
-  background: transparent;
-  color: #6b4423;
-  border: 2px solid #d4a574;
-  border-radius: 25px;
-  font-size: 1.1em;
-  cursor: pointer;
-  font-family: 'Crimson Text', serif;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-
-  &:hover {
-    background: #d4a574;
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(212, 165, 116, 0.3);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-`;
-
-// Estilos para o Quiz
-export const QuizContainer = styled.div`
-  background: linear-gradient(135deg, #f8f5f0 0%, #f2ede5 100%);
-  border-radius: 20px;
-  padding: 40px;
-  box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  max-width: 500px;
-  width: 100%;
-  text-align: center;
+export const Stack = styled.div`
   position: relative;
-  min-height: 400px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: 
-      radial-gradient(circle at 20% 80%, rgba(212, 165, 116, 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, rgba(212, 165, 116, 0.1) 0%, transparent 50%);
-    border-radius: inherit;
-    pointer-events: none;
+  width: 100%;
+`;
+
+export const GhostCard = styled.div`
+  position: absolute;
+  inset: 0;
+  border-radius: ${raio.carta};
+  background: ${cores.branco};
+  opacity: ${({ $opacidade }) => $opacidade};
+  transform: ${({ $transform }) => $transform};
+
+  ${celular} {
+    border-radius: 26px;
   }
 `;
 
-export const QuizTitle = styled.h2`
-  font-size: 2em;
-  color: #6b4423;
-  font-family: 'Crimson Text', serif;
-  font-weight: 600;
-  margin-bottom: 30px;
-`;
-
-export const BookRecommendation = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  margin-bottom: 30px;
+export const BookCard = styled.article`
   position: relative;
   z-index: 1;
-`;
-
-export const BookCover = styled.img`
-  width: 150px;
-  height: 200px;
-  object-fit: cover;
-  border-radius: 10px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  transition: transform 0.3s ease;
-  
-  &:hover {
-    transform: scale(1.05);
-  }
-`;
-
-export const BookCoverPlaceholder = styled.div`
-  width: 150px;
-  height: 200px;
-  background: linear-gradient(135deg, #d4a574 0%, #b8956a 100%);
-  border-radius: 10px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  transition: transform 0.3s ease;
+  min-height: 300px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-family: 'Crimson Text', serif;
-  font-size: 18px;
-  font-weight: 600;
-  text-align: center;
-  
-  &:hover {
-    transform: scale(1.05);
+  flex-direction: column;
+  gap: 18px;
+  padding: 14px;
+  border-radius: ${raio.carta};
+  background: ${cores.branco};
+  box-shadow: ${sombra.carta};
+
+  ${celular} {
+    gap: 14px;
+    padding: 12px;
+    border-radius: 26px;
   }
 `;
 
 export const BookInfo = styled.div`
-  text-align: center;
-`;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 10px 10px;
 
-export const BookTitle = styled.h3`
-  font-size: 1.4em;
-  color: #6b4423;
-  font-family: 'Crimson Text', serif;
-  font-weight: 600;
-  margin-bottom: 8px;
-  line-height: 1.2;
+  ${celular} {
+    gap: 8px;
+    padding: 0 6px 6px;
+  }
 `;
 
 export const BookAuthor = styled.p`
-  font-size: 1.1em;
-  color: #8b5a2b;
-  font-style: italic;
-  margin-bottom: 8px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+
+  ${celular} {
+    font-size: 19px;
+  }
 `;
 
-export const BookGenre = styled.p`
-  font-size: 0.9em;
-  color: #666;
-  background: rgba(212, 165, 116, 0.2);
-  padding: 4px 12px;
-  border-radius: 15px;
-  display: inline-block;
-  margin-bottom: 8px;
-`;
-
-export const BookPages = styled.p`
-  font-size: 0.9em;
-  color: #999;
-`;
-
-export const QuizButtons = styled.div`
+export const MetaList = styled.ul`
+  list-style: none;
+  padding: 0;
   display: flex;
-  gap: 15px;
+  flex-wrap: wrap;
+  gap: 6px;
+`;
+
+export const Synopsis = styled.p`
+  font-size: 15px;
+  line-height: 1.5;
+  color: ${cores.tintaSuave};
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+
+  ${celular} {
+    font-size: 14px;
+    -webkit-line-clamp: 2;
+  }
+`;
+
+// Altura parecida com a da carta pronta, para a tela não pular ao carregar.
+export const LoadingCard = styled.div`
+  min-height: 520px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  position: relative;
-  z-index: 1;
+  gap: 18px;
+  color: ${cores.tinta};
+  font-size: 17px;
+  font-weight: 700;
+
+  ${celular} {
+    min-height: 400px;
+  }
 `;
 
-export const LikeButton = styled.button`
-  padding: 12px 24px;
-  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
-  color: white;
-  border: none;
-  border-radius: 25px;
-  font-size: 1em;
-  cursor: pointer;
-  font-family: 'Crimson Text', serif;
-  font-weight: 600;
-  transition: all 0.3s ease;
+export const Actions = styled.div`
   display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 40px;
+`;
+
+export const ActionButton = styled.button.attrs({ type: 'button' })`
+  display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 8px;
-
-  &:hover {
-    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(46, 204, 113, 0.3);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
-`;
-
-export const DislikeButton = styled.button`
-  padding: 12px 24px;
-  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-  color: white;
-  border: none;
-  border-radius: 25px;
-  font-size: 1em;
-  cursor: pointer;
-  font-family: 'Crimson Text', serif;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  &:hover {
-    background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(231, 76, 60, 0.3);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
-`;
-
-export const LoadingMessage = styled.div`
-  font-size: 1.1em;
-  color: #6b4423;
-  font-style: italic;
-  padding: 20px;
-`;
-
-export const ErrorMessage = styled.div`
-  font-size: 1.1em;
-  color: #e74c3c;
-  padding: 20px;
-  background: rgba(231, 76, 60, 0.1);
-  border-radius: 10px;
-  margin-bottom: 20px;
-`;
-
-export const BackButton = styled.button`
-  padding: 10px 20px;
+  padding: 0;
+  border: 0;
   background: transparent;
-  color: #6b4423;
-  border: 1px solid #d4a574;
-  border-radius: 20px;
-  font-size: 0.9em;
-  cursor: pointer;
-  font-family: 'Crimson Text', serif;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  margin-top: 20px;
+  color: ${({ $principal }) => ($principal ? cores.tinta : cores.tintaSuave)};
+  font-size: ${({ $principal }) => ($principal ? '16px' : '14px')};
+  font-weight: ${({ $principal }) => ($principal ? 800 : 500)};
 
-  &:hover {
-    background: #d4a574;
-    color: white;
+  &:disabled {
+    opacity: 0.5;
   }
+
+  ${celular} {
+    gap: 6px;
+    font-size: ${({ $principal }) => ($principal ? '15px' : '13px')};
+  }
+`;
+
+export const ActionCircle = styled.span`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: ${({ $principal }) => ($principal ? 92 : 60)}px;
+  height: ${({ $principal }) => ($principal ? 92 : 60)}px;
+  border-radius: ${raio.pilula};
+  background: ${({ $cor }) => $cor};
+  color: ${({ $principal }) => ($principal ? cores.branco : cores.tinta)};
+  box-shadow: ${({ $principal }) => ($principal ? sombra.amei : sombra.botaoBranco)};
+  transition: background-color 0.4s ease, transform 0.15s ease;
+
+  button:active:not(:disabled) & {
+    transform: scale(0.96);
+  }
+
+  ${celular} {
+    width: ${({ $principal }) => ($principal ? 80 : 56)}px;
+    height: ${({ $principal }) => ($principal ? 80 : 56)}px;
+  }
+`;
+
+export const FeedbackArea = styled.div`
+  min-height: 48px;
+  display: flex;
+  justify-content: center;
+  width: 100%;
 `;
