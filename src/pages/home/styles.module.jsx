@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { motion } from 'motion/react';
 import { cores, celular, raio, sombra } from '../../styles/tokens';
 
 export const MatchArea = styled.div`
@@ -31,14 +32,14 @@ export const Intro = styled.div`
   }
 `;
 
-export const Eyebrow = styled.p`
+export const Eyebrow = styled(motion.p)`
   font-size: 15px;
   font-weight: 700;
   color: ${({ $cor }) => $cor};
   transition: color 0.4s ease;
 `;
 
-export const Headline = styled.h1`
+export const Headline = styled(motion.h1)`
   font-size: 36px;
   font-weight: 800;
   line-height: 1.08;
@@ -55,7 +56,7 @@ export const Headline = styled.h1`
   }
 `;
 
-export const Helper = styled.p`
+export const Helper = styled(motion.p)`
   font-size: 17px;
   line-height: 1.5;
   color: ${cores.tintaSuave};
@@ -80,9 +81,15 @@ export const Recommendation = styled.section`
   }
 `;
 
+// Altura mínima para as cartas de trás não encolherem entre uma carta e outra.
 export const Stack = styled.div`
   position: relative;
   width: 100%;
+  min-height: 480px;
+
+  ${celular} {
+    min-height: 380px;
+  }
 `;
 
 export const GhostCard = styled.div`
@@ -98,10 +105,13 @@ export const GhostCard = styled.div`
   }
 `;
 
-export const BookCard = styled.article`
+export const BookCard = styled(motion.article)`
   position: relative;
   z-index: 1;
   min-height: 300px;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -162,8 +172,40 @@ export const Synopsis = styled.p`
   }
 `;
 
+// Selo que aparece no meio da capa enquanto a carta é arrastada.
+export const Stamp = styled(motion.span)`
+  position: absolute;
+  top: 140px;
+  left: 50%;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: ${raio.pilula};
+  background: ${cores.branco};
+  color: ${({ $cor }) => $cor || cores.tinta};
+  font-size: 22px;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: ${sombra.amei};
+  transform: translateX(-50%) rotate(${({ $lado }) => ($lado === 'esquerda' ? '-8deg' : '8deg')});
+  pointer-events: none;
+
+  ${celular} {
+    top: 100px;
+    font-size: 19px;
+    padding: 8px 16px;
+  }
+`;
+
 // Altura parecida com a da carta pronta, para a tela não pular ao carregar.
-export const LoadingCard = styled.div`
+export const LoadingCard = styled(motion.div)`
+  position: relative;
+  z-index: 1;
+  border-radius: ${raio.carta};
+  background: ${cores.branco};
+  box-shadow: ${sombra.carta};
   min-height: 520px;
   display: flex;
   flex-direction: column;
@@ -176,6 +218,7 @@ export const LoadingCard = styled.div`
 
   ${celular} {
     min-height: 400px;
+    border-radius: 26px;
   }
 `;
 
@@ -186,7 +229,7 @@ export const Actions = styled.div`
   gap: 40px;
 `;
 
-export const ActionButton = styled.button.attrs({ type: 'button' })`
+export const ActionButton = styled(motion.button).attrs({ type: 'button' })`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -218,11 +261,7 @@ export const ActionCircle = styled.span`
   background: ${({ $cor }) => $cor};
   color: ${({ $principal }) => ($principal ? cores.branco : cores.tinta)};
   box-shadow: ${({ $principal }) => ($principal ? sombra.amei : sombra.botaoBranco)};
-  transition: background-color 0.4s ease, transform 0.15s ease;
-
-  button:active:not(:disabled) & {
-    transform: scale(0.96);
-  }
+  transition: background-color 0.4s ease;
 
   ${celular} {
     width: ${({ $principal }) => ($principal ? 80 : 56)}px;
@@ -233,6 +272,34 @@ export const ActionCircle = styled.span`
 export const FeedbackArea = styled.div`
   min-height: 48px;
   display: flex;
+  align-items: center;
   justify-content: center;
   width: 100%;
+`;
+
+export const Hint = styled(motion.p)`
+  font-size: 14px;
+  color: ${cores.tintaSuave};
+  text-align: center;
+
+  span:last-child {
+    display: none;
+  }
+
+  ${celular} {
+    font-size: 13px;
+
+    span:first-child {
+      display: none;
+    }
+
+    span:last-child {
+      display: inline;
+    }
+  }
+`;
+
+// Coração do botão Amei: dá uma batida a cada Amei.
+export const HeartBeat = styled(motion.span)`
+  display: flex;
 `;
