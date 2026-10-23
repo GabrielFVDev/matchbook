@@ -1,7 +1,8 @@
 import styled from 'styled-components';
+import { motion } from 'motion/react';
 import { cores, celular } from '../../../styles/tokens';
 
-export const CoverStack = styled.div`
+export const CoverStack = styled(motion.div)`
   position: relative;
   width: 380px;
   max-width: 100%;
@@ -14,7 +15,7 @@ export const CoverStack = styled.div`
   }
 `;
 
-export const StackCover = styled.div`
+export const StackCover = styled(motion.div)`
   position: absolute;
   left: ${({ $x }) => $x[0]}px;
   top: ${({ $y }) => $y[0]}px;
@@ -27,7 +28,6 @@ export const StackCover = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  transform: rotate(${({ $giro }) => $giro}deg);
   box-shadow: 0 18px 40px rgba(26, 23, 38, 0.18);
 
   span:first-child {
@@ -79,7 +79,7 @@ export const BrandRow = styled.div`
   }
 `;
 
-export const QuoteText = styled.p`
+export const QuoteText = styled(motion.p)`
   max-width: 440px;
   font-size: 26px;
   font-weight: 700;

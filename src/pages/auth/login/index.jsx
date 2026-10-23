@@ -18,13 +18,22 @@ import { IconAlert } from "../../../components/Icons";
 import { BrandRow, CoverStack, StackCover, QuoteText } from "./styles.module.jsx";
 import { useAuth } from "../../../hooks/useAuth";
 import { generos } from "../../../styles/tokens";
+import { curvaEntrada, entradaCartao, mola, molaSuave } from "../../../styles/movimento";
 
 // Pilha de capas da lateral: posição, tamanho e giro no desktop e no celular.
+// "abrir" é quanto cada capa se afasta quando o mouse passa por cima da pilha.
 const capasDaPilha = [
-  { titulo: "O Hobbit", genero: "Fantasia", x: [0, 0], y: [50, 24], w: [200, 92], h: [280, 130], giro: -9, fonte: [32, 17], tituloCelular: false },
-  { titulo: "1984", genero: "Distopia", x: [170, 58], y: [10, 6], w: [200, 92], h: [280, 130], giro: 7, fonte: [32, 17], tituloCelular: false },
-  { titulo: "Fundação", genero: "Ficção Científica", x: [86, 28], y: [72, 34], w: [210, 98], h: [288, 134], giro: -1.5, fonte: [36, 17], tituloCelular: true },
+  { titulo: "O Hobbit", genero: "Fantasia", x: [0, 0], y: [50, 24], w: [200, 92], h: [280, 130], giro: -9, abrir: -22, fonte: [32, 17], tituloCelular: false },
+  { titulo: "1984", genero: "Distopia", x: [170, 58], y: [10, 6], w: [200, 92], h: [280, 130], giro: 7, abrir: 22, fonte: [32, 17], tituloCelular: false },
+  { titulo: "Fundação", genero: "Ficção Científica", x: [86, 28], y: [72, 34], w: [210, 98], h: [288, 134], giro: -1.5, abrir: 0, fonte: [36, 17], tituloCelular: true },
 ];
+
+// As capas caem uma de cada vez e se abrem em leque no hover.
+const variantesCapa = {
+  escondida: { opacity: 0, y: -48, rotate: 0 },
+  visivel: (capa) => ({ opacity: 1, y: 0, x: 0, rotate: capa.giro, transition: molaSuave }),
+  aberta: (capa) => ({ rotate: capa.giro * 1.8, x: capa.abrir, y: capa.abrir ? 0 : -10, transition: mola }),
+};
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -33,6 +42,7 @@ export default function LoginPage() {
   const [formData, setFormData] = useState({ email: "", senha: "" });
   const [erros, setErros] = useState({});
   const [erroLogin, setErroLogin] = useState(null);
+  const [pilhaPronta, setPilhaPronta] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -63,10 +73,21 @@ export default function LoginPage() {
     <AuthLayout>
       <AuthSide>
         <BrandRow>
-          <CoverStack aria-hidden="true">
+          <CoverStack
+            aria-hidden="true"
+            initial="escondida"
+            animate="visivel"
+            whileHover="aberta"
+            variants={{
+              visivel: { transition: pilhaPronta ? {} : { delayChildren: 0.15, staggerChildren: 0.12 } }
+            }}
+            onAnimationComplete={() => setPilhaPronta(true)}
+          >
             {capasDaPilha.map((capa) => (
               <StackCover
                 key={capa.titulo}
+                custom={capa}
+                variants={variantesCapa}
                 $cor={generos[capa.genero].capa}
                 $x={capa.x}
                 $y={capa.y}
@@ -81,11 +102,16 @@ export default function LoginPage() {
               </StackCover>
             ))}
           </CoverStack>
-          <QuoteText>Um livro é um sonho que você segura em suas mãos.</QuoteText>
+          <QuoteText
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0, transition: { duration: 0.5, ease: curvaEntrada, delay: 0.5 } }}
+          >
+            Um livro é um sonho que você segura em suas mãos.
+          </QuoteText>
         </BrandRow>
       </AuthSide>
 
-      <AuthCard aria-labelledby="tituloEntrar">
+      <AuthCard aria-labelledby="tituloEntrar" {...entradaCartao}>
         <AuthHeading>
           <AuthTitle id="tituloEntrar">Entrar</AuthTitle>
           <AuthText>Boas-vindas de volta ao Matchbook.</AuthText>

@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { motion } from 'motion/react';
 import { cores, celular, raio, sombra } from '../../styles/tokens';
 
 export const PageHeading = styled.div`
@@ -26,7 +27,7 @@ export const PageSubtitle = styled.p`
   }
 `;
 
-export const Columns = styled.div`
+export const Columns = styled(motion.div)`
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
@@ -49,7 +50,7 @@ export const FormContainer = styled.form`
   }
 `;
 
-export const FormSection = styled.section`
+export const FormSection = styled(motion.section)`
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -119,7 +120,7 @@ export const SubmitRow = styled.div`
   }
 `;
 
-export const PreviewAside = styled.aside`
+export const PreviewAside = styled(motion.aside)`
   flex: 1 1 300px;
   max-width: 360px;
   position: sticky;
@@ -202,3 +203,5 @@ export const MobilePreviewText = styled.div`
     opacity: ${({ $vazio }) => ($vazio ? 0.6 : 1)};
   }
 `;
+
+export const SuccessWrapper = styled(motion.div)``;

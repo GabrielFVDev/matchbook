@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { motion } from 'motion/react';
 import { cores, celular, sombra } from '../../styles/tokens';
 import { Logo } from '../Logo';
 
@@ -62,7 +63,7 @@ export function AuthLayout({ linkTopo, alinhar = 'center', children }) {
   );
 }
 
-export const AuthSide = styled.div`
+export const AuthSide = styled(motion.div)`
   flex: 1 1 380px;
   max-width: 500px;
   display: flex;
@@ -75,7 +76,7 @@ export const AuthSide = styled.div`
   }
 `;
 
-export const AuthCard = styled.section`
+export const AuthCard = styled(motion.section)`
   flex: 0 1 ${({ $largura = 440 }) => $largura}px;
   min-width: 0;
   padding: 40px;

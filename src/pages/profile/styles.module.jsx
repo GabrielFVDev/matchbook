@@ -1,8 +1,8 @@
 import styled from 'styled-components';
+import { motion } from 'motion/react';
 import { cores, celular, raio } from '../../styles/tokens';
-import { Button } from '../../components/Button';
 
-export const Card = styled.section`
+export const Card = styled(motion.section)`
   display: flex;
   flex-direction: column;
   gap: 22px;
@@ -169,12 +169,6 @@ export const AlgorithmStats = styled.dl`
       padding: 12px;
     }
   }
-`;
-
-export const IconOnlyButton = styled(Button)`
-  width: 44px;
-  min-height: 44px;
-  padding: 0;
 `;
 
 export const InfoList = styled.dl`

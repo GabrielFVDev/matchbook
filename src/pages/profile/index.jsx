@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { AnimatePresence } from "motion/react";
 import { AppLayout } from "../../components/AppLayout";
 import { Button } from "../../components/Button";
 import { Tag } from "../../components/Chip";
@@ -23,7 +24,6 @@ import {
     CardIntro,
     StrategyBlock,
     AlgorithmStats,
-    IconOnlyButton,
     InfoList,
     InfoItem,
     Biography,
@@ -44,6 +44,7 @@ import { useCurtidos } from "../../contexts/curtidos";
 import { recomendacaoService, userService } from "../../apis/services";
 import { validarEmail } from "../../utils/formatters";
 import { cores, coresDoGenero, nomeDoGenero } from "../../styles/tokens";
+import { surgir } from "../../styles/movimento";
 
 // Estratégias do algoritmo adaptativo, na ordem em que aparecem.
 const estrategias = [
@@ -84,6 +85,7 @@ const iniciais = (nome) =>
 
 export default function ProfilePage() {
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const { getCurrentUser, logout } = useAuth();
     const { total } = useCurtidos();
     const [user, setUser] = useState(() => getCurrentUser());
@@ -110,12 +112,19 @@ export default function ProfilePage() {
 
     const fecharAviso = useCallback(() => setAviso(null), []);
 
-    const abrirEdicao = () => {
+    const abrirEdicao = useCallback(() => {
         setEditForm(formularioDoUsuario(user));
         setErrosEdicao({});
         setErroSalvar(null);
         setIsEditing(true);
-    };
+    }, [user]);
+
+    // O lápis do cabeçalho no celular abre a edição com ?editar=1.
+    useEffect(() => {
+        if (searchParams.get("editar") !== "1") return;
+        abrirEdicao();
+        setSearchParams({}, { replace: true });
+    }, [searchParams, setSearchParams, abrirEdicao]);
 
     const fecharEdicao = useCallback(() => setIsEditing(false), []);
 
@@ -182,15 +191,8 @@ export default function ProfilePage() {
     const membroDesde = formatarMembroDesde(user.dataCadastro);
 
     return (
-        <AppLayout
-            espaco="20px"
-            acaoCelular={
-                <IconOnlyButton $variante="branco" aria-label="Editar perfil" onClick={abrirEdicao}>
-                    <IconPencil tamanho={18} />
-                </IconOnlyButton>
-            }
-        >
-            <ProfileHeader aria-label="Seus dados">
+        <AppLayout espaco="20px">
+            <ProfileHeader aria-label="Seus dados" {...surgir(0)}>
                 <Avatar aria-hidden="true">
                     {user.fotoUrl ? <img src={user.fotoUrl} alt="" /> : iniciais(user.nome)}
                 </Avatar>
@@ -205,7 +207,7 @@ export default function ProfilePage() {
             </ProfileHeader>
 
             <TwoColumns>
-                <Card aria-labelledby="secaoGosto">
+                <Card aria-labelledby="secaoGosto" {...surgir(1)}>
                     <CardHeading>
                         <CardTitle id="secaoGosto">Seu gosto</CardTitle>
                         <Button $variante="secundario" onClick={abrirEdicao}>
@@ -250,7 +252,7 @@ export default function ProfilePage() {
                     </InfoList>
                 </Card>
 
-                <Card $fundo={cores.fundoMarca} aria-labelledby="secaoAlgoritmo">
+                <Card $fundo={cores.fundoMarca} aria-labelledby="secaoAlgoritmo" {...surgir(2)}>
                     <CardIntro>
                         <CardTitle id="secaoAlgoritmo">Como o Matchbook lê seu gosto</CardTitle>
                         <CardText>
@@ -290,7 +292,7 @@ export default function ProfilePage() {
                 </Card>
             </TwoColumns>
 
-            <DangerCard aria-labelledby="secaoConta">
+            <DangerCard aria-labelledby="secaoConta" {...surgir(3)}>
                 <DangerText>
                     <h2 id="secaoConta">Excluir conta</h2>
                     <p>Remove seus dados, seus livros curtidos e suas preferências. Não dá para desfazer.</p>
@@ -362,11 +364,13 @@ export default function ProfilePage() {
                 onCancelar={() => setShowDeleteModal(false)}
             />
 
-            {aviso && (
-                <Toast chave={aviso.chave} onFechar={fecharAviso}>
-                    {aviso.texto}
-                </Toast>
-            )}
+            <AnimatePresence>
+                {aviso && (
+                    <Toast key={aviso.chave} chave={aviso.chave} onFechar={fecharAviso}>
+                        {aviso.texto}
+                    </Toast>
+                )}
+            </AnimatePresence>
         </AppLayout>
     );
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { AnimatePresence } from "motion/react";
 import {
   AuthLayout,
   AuthCard,
@@ -27,10 +28,19 @@ import {
   StepPills,
   StepPill,
   PillNumber,
-  ButtonRow
+  ButtonRow,
+  EtapaConteudo
 } from "./styles.module.jsx";
 import { useRegister } from "../../../hooks/useAuth";
 import { validarEmail, normalizarDadosUsuario } from "../../../utils/formatters";
+import { curvaEntrada, curvaSaida, entradaCartao } from "../../../styles/movimento";
+
+// A etapa nova entra pelo lado do avanço: da direita ao continuar, da esquerda ao voltar.
+const variantesEtapa = {
+  entrar: (sentido) => ({ opacity: 0, x: sentido * 40 }),
+  parado: { opacity: 1, x: 0, transition: { duration: 0.3, ease: curvaEntrada } },
+  sair: (sentido) => ({ opacity: 0, x: sentido * -40, transition: { duration: 0.15, ease: curvaSaida } }),
+};
 
 const etapas = [
   { numero: 1, nome: "Sua conta", detalhe: "Nome, email e senha" },
@@ -42,6 +52,7 @@ export default function CadastroPage() {
   const { register, loading } = useRegister();
 
   const [etapa, setEtapa] = useState(1);
+  const [sentido, setSentido] = useState(1);
   const [erros, setErros] = useState({});
   const [erroCadastro, setErroCadastro] = useState(null);
   const [contaCriada, setContaCriada] = useState(false);
@@ -93,7 +104,10 @@ export default function CadastroPage() {
 
   const continuar = (e) => {
     e.preventDefault();
-    if (validarEtapa1()) setEtapa(2);
+    if (validarEtapa1()) {
+      setSentido(1);
+      setEtapa(2);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -163,74 +177,85 @@ export default function CadastroPage() {
         </StepPills>
       </CadastroSide>
 
-      <AuthCard $largura={etapa === 1 ? 520 : 560} aria-labelledby="tituloCadastro">
-        {contaCriada ? (
-          <EmptyState
-            icone={<IconCheck tamanho={30} />}
-            tom="sucesso"
-            titulo="Conta criada"
-            descricao={`Boas-vindas, ${formData.nome.trim().split(" ")[0]}! Em instantes você vai para o login.`}
-            role="status"
-          >
-            <ButtonLink to="/" $variante="primario">Entrar agora</ButtonLink>
-          </EmptyState>
-        ) : (
-          <>
-            <AuthHeading>
-              <AuthEyebrow>Etapa {etapa} de 2</AuthEyebrow>
-              <AuthTitle id="tituloCadastro">{etapa === 1 ? "Sua conta" : "Seu gosto"}</AuthTitle>
-              {etapa === 2 && (
-                <AuthText>Ajuda o Matchbook a acertar desde o primeiro livro. Tudo aqui é opcional.</AuthText>
-              )}
-            </AuthHeading>
-
-            {etapa === 1 ? (
-              <AuthForm onSubmit={continuar} noValidate>
-                <Field id="nome" label="Nome completo" error={erros.nome}>
-                  <Input name="nome" type="text" autoComplete="name" placeholder="Seu nome" value={formData.nome} onChange={handleInputChange} />
-                </Field>
-                <Field id="email" label="Email" error={erros.email}>
-                  <Input name="email" type="email" autoComplete="email" placeholder="seu@email.com" value={formData.email} onChange={handleInputChange} />
-                </Field>
-                <Field id="senha" label="Senha" {...mensagemSenha}>
-                  <PasswordInput name="senha" autoComplete="new-password" placeholder="Crie uma senha" value={formData.senha} onChange={handleInputChange} />
-                </Field>
-                <Field id="confirmarSenha" label="Confirmar senha" {...mensagemConfirmacao}>
-                  <PasswordInput name="confirmarSenha" autoComplete="new-password" placeholder="Repita a senha" value={formData.confirmarSenha} onChange={handleInputChange} />
-                </Field>
-                <Field id="dataNascimento" label="Data de nascimento" tag="opcional">
-                  <Input name="dataNascimento" type="date" value={formData.dataNascimento} onChange={handleInputChange} />
-                </Field>
-                <Button type="submit" $tamanho="grande" $total>
-                  Continuar
-                  <IconArrowRight tamanho={18} />
-                </Button>
-              </AuthForm>
-            ) : (
-              <AuthForm onSubmit={handleSubmit} noValidate>
-                <TasteFields dados={formData} onChange={atualizar} prefixo="cadastro" />
-
-                {erroCadastro && (
-                  <FormAlert role="alert">
-                    <IconAlert tamanho={18} />
-                    {erroCadastro}
-                  </FormAlert>
+      <AuthCard $largura={560} aria-labelledby="tituloCadastro" {...entradaCartao}>
+        <AnimatePresence mode="wait" initial={false} custom={sentido}>
+          {contaCriada ? (
+            <EtapaConteudo key="contaCriada" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <EmptyState
+                icone={<IconCheck tamanho={30} />}
+                tom="sucesso"
+                titulo="Conta criada"
+                descricao={`Boas-vindas, ${formData.nome.trim().split(" ")[0]}! Em instantes você vai para o login.`}
+                role="status"
+              >
+                <ButtonLink to="/" $variante="primario">Entrar agora</ButtonLink>
+              </EmptyState>
+            </EtapaConteudo>
+          ) : (
+            <EtapaConteudo
+              key={etapa}
+              custom={sentido}
+              variants={variantesEtapa}
+              initial="entrar"
+              animate="parado"
+              exit="sair"
+            >
+              <AuthHeading>
+                <AuthEyebrow>Etapa {etapa} de 2</AuthEyebrow>
+                <AuthTitle id="tituloCadastro">{etapa === 1 ? "Sua conta" : "Seu gosto"}</AuthTitle>
+                {etapa === 2 && (
+                  <AuthText>Ajuda o Matchbook a acertar desde o primeiro livro. Tudo aqui é opcional.</AuthText>
                 )}
+              </AuthHeading>
 
-                <ButtonRow>
-                  <Button $variante="secundario" $tamanho="grande" onClick={() => setEtapa(1)}>
-                    <IconArrowLeft tamanho={18} />
-                    Voltar
+              {etapa === 1 ? (
+                <AuthForm onSubmit={continuar} noValidate>
+                  <Field id="nome" label="Nome completo" error={erros.nome}>
+                    <Input name="nome" type="text" autoComplete="name" placeholder="Seu nome" value={formData.nome} onChange={handleInputChange} />
+                  </Field>
+                  <Field id="email" label="Email" error={erros.email}>
+                    <Input name="email" type="email" autoComplete="email" placeholder="seu@email.com" value={formData.email} onChange={handleInputChange} />
+                  </Field>
+                  <Field id="senha" label="Senha" {...mensagemSenha}>
+                    <PasswordInput name="senha" autoComplete="new-password" placeholder="Crie uma senha" value={formData.senha} onChange={handleInputChange} />
+                  </Field>
+                  <Field id="confirmarSenha" label="Confirmar senha" {...mensagemConfirmacao}>
+                    <PasswordInput name="confirmarSenha" autoComplete="new-password" placeholder="Repita a senha" value={formData.confirmarSenha} onChange={handleInputChange} />
+                  </Field>
+                  <Field id="dataNascimento" label="Data de nascimento" tag="opcional">
+                    <Input name="dataNascimento" type="date" value={formData.dataNascimento} onChange={handleInputChange} />
+                  </Field>
+                  <Button type="submit" $tamanho="grande" $total>
+                    Continuar
+                    <IconArrowRight tamanho={18} />
                   </Button>
-                  <Button type="submit" $tamanho="grande" disabled={loading}>
-                    {loading && <Spinner />}
-                    {loading ? "Criando conta" : "Criar conta"}
-                  </Button>
-                </ButtonRow>
-              </AuthForm>
-            )}
-          </>
-        )}
+                </AuthForm>
+              ) : (
+                <AuthForm onSubmit={handleSubmit} noValidate>
+                  <TasteFields dados={formData} onChange={atualizar} prefixo="cadastro" />
+
+                  {erroCadastro && (
+                    <FormAlert role="alert">
+                      <IconAlert tamanho={18} />
+                      {erroCadastro}
+                    </FormAlert>
+                  )}
+
+                  <ButtonRow>
+                    <Button $variante="secundario" $tamanho="grande" onClick={() => { setSentido(-1); setEtapa(1); }}>
+                      <IconArrowLeft tamanho={18} />
+                      Voltar
+                    </Button>
+                    <Button type="submit" $tamanho="grande" disabled={loading}>
+                      {loading && <Spinner />}
+                      {loading ? "Criando conta" : "Criar conta"}
+                    </Button>
+                  </ButtonRow>
+                </AuthForm>
+              )}
+            </EtapaConteudo>
+          )}
+        </AnimatePresence>
       </AuthCard>
     </AuthLayout>
   );
