@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { cores, celular, raio, sombra } from '../../styles/tokens';
 
 export const PageHeading = styled.div`
@@ -45,19 +45,40 @@ export const HeadingActions = styled.div`
   }
 `;
 
-export const MobileAddLink = styled(Link)`
-  display: none;
+export const FilterChip = styled.button.attrs({ type: 'button' })`
+  position: relative;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: ${raio.pilula};
+  background: ${cores.branco};
+  color: ${({ $ativo }) => ($ativo ? cores.branco : cores.tinta)};
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: color 0.2s ease, transform 0.12s ease;
 
-  ${celular} {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    border-radius: ${raio.pilula};
-    background: ${cores.branco};
-    color: ${cores.tinta};
+  &:active {
+    transform: scale(0.96);
   }
+`;
+
+// Fundo escuro do filtro ativo. Desliza até o gênero escolhido.
+export const FilterPill = styled(motion.span)`
+  position: absolute;
+  inset: 0;
+  border-radius: ${raio.pilula};
+  background: ${cores.tinta};
+`;
+
+export const FilterLabel = styled.span`
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 `;
 
 export const FilterContainer = styled.div`
@@ -74,6 +95,7 @@ export const FilterContainer = styled.div`
 `;
 
 export const BooksGrid = styled.ul`
+  position: relative;
   list-style: none;
   padding: 0;
   display: grid;
@@ -86,7 +108,15 @@ export const BooksGrid = styled.ul`
   }
 `;
 
-export const BookCard = styled.li`
+export const BookCard = styled(motion.li)`
+  display: flex;
+  flex-direction: column;
+`;
+
+// Visual do cartão. Fica separado do item da lista para o "levantar" no hover
+// não brigar com a animação de reorganizar a grade.
+export const BookCardInner = styled.div`
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -94,6 +124,14 @@ export const BookCard = styled.li`
   border-radius: ${raio.cartao};
   background: ${cores.branco};
   box-shadow: ${sombra.leve};
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  @media (hover: hover) {
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 18px 40px rgba(26, 23, 38, 0.12);
+    }
+  }
 
   ${celular} {
     gap: 10px;
@@ -124,6 +162,15 @@ export const RemoveButton = styled.button.attrs({ type: 'button' })`
     height: 36px;
     border-radius: ${raio.pilula};
     background: ${cores.branco};
+    transition: transform 0.12s ease, color 0.15s ease;
+  }
+
+  &:hover span {
+    color: ${cores.erro};
+  }
+
+  &:active:not(:disabled) span {
+    transform: scale(0.88);
   }
 
   &:disabled {
