@@ -7,10 +7,9 @@ import {
   AuthEyebrow,
   AuthTitle,
   AuthText,
-  AuthForm,
-  FormAlert
+  AuthForm
 } from "../../../components/AuthLayout";
-import { Field, Input } from "../../../components/Field";
+import { Field, FormAlert, Input } from "../../../components/Field";
 import { PasswordInput } from "../../../components/PasswordInput";
 import { TasteFields } from "../../../components/TasteFields";
 import { Button, ButtonLink } from "../../../components/Button";

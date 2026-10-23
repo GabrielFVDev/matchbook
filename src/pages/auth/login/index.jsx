@@ -8,10 +8,9 @@ import {
   AuthTitle,
   AuthText,
   AuthForm,
-  AuthFooter,
-  FormAlert
+  AuthFooter
 } from "../../../components/AuthLayout";
-import { Field, Input } from "../../../components/Field";
+import { Field, FormAlert, Input } from "../../../components/Field";
 import { PasswordInput } from "../../../components/PasswordInput";
 import { Button } from "../../../components/Button";
 import { Spinner } from "../../../components/Spinner";

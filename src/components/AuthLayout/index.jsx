@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { cores, celular, raio, sombra } from '../../styles/tokens';
+import { cores, celular, sombra } from '../../styles/tokens';
 import { Logo } from '../Logo';
 
 const Pagina = styled.div`
@@ -135,22 +135,4 @@ export const AuthFooter = styled.p`
   font-size: 15px;
   color: ${cores.tintaSuave};
   text-align: center;
-`;
-
-export const FormAlert = styled.p`
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 12px 16px;
-  border-radius: ${raio.campo};
-  background: ${cores.erroFundo};
-  color: ${cores.erro};
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1.4;
-
-  svg {
-    flex: 0 0 auto;
-    margin-top: 1px;
-  }
 `;

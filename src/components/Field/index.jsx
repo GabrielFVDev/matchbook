@@ -106,7 +106,7 @@ const Grupo = styled.div`
 
 // Campo com rótulo, marcação de opcional ou obrigatório e uma mensagem embaixo.
 // Liga sozinho aria-describedby e aria-invalid no controle filho.
-export function Field({ id, label, tag, help, error, success, span, children }) {
+export function Field({ id, label, tag, help, error, success, span, children, ...resto }) {
   const mensagemId = `${id}Mensagem`;
   const temMensagem = Boolean(error || success || help);
 
@@ -122,7 +122,7 @@ export function Field({ id, label, tag, help, error, success, span, children }) 
   );
 
   return (
-    <Grupo $span={span}>
+    <Grupo $span={span} {...resto}>
       <Label htmlFor={id}>
         {label}
         {tag && <LabelTag>{tag}</LabelTag>}
@@ -146,3 +146,22 @@ export function Field({ id, label, tag, help, error, success, span, children }) 
     </Grupo>
   );
 }
+
+// Erro do formulário inteiro, mostrado perto do botão de enviar.
+export const FormAlert = styled.p`
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: ${raio.campo};
+  background: ${cores.erroFundo};
+  color: ${cores.erro};
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+
+  svg {
+    flex: 0 0 auto;
+    margin-top: 1px;
+  }
+`;
