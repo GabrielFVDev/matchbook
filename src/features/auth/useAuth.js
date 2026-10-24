@@ -70,12 +70,8 @@ export const useRegister = () => {
     setError(null);
     setSuccess(false);
 
-    console.log('Hook: Iniciando cadastro com dados:', userData);
-
     try {
       const resultado = await authService.cadastrar(userData);
-
-      console.log('Hook: Resultado do serviço:', resultado);
 
       if (resultado.success) {
         setSuccess(true);

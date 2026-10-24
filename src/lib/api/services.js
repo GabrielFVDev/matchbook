@@ -4,10 +4,8 @@ import api from './client';
 export const authService = {
   // Criar novo usuário
   async cadastrar(userData) {
-    console.log('Service: Enviando dados para API:', userData);
     try {
       const response = await api.post('/usuario/create', userData);
-      console.log('Service: Resposta da API:', response.data);
       return {
         success: true,
         data: response.data,
@@ -79,24 +77,6 @@ export const authService = {
 
 // Serviços de usuário
 export const userService = {
-  // Buscar usuário por ID
-  async buscarPorId(id) {
-    try {
-      const response = await api.get(`/usuario/get?id=${id}`);
-      return {
-        success: true,
-        data: response.data,
-        message: null,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message || 'Erro ao buscar usuário',
-        data: null,
-      };
-    }
-  },
-
   // Atualizar usuário
   async atualizar(userData) {
     try {
@@ -114,28 +94,6 @@ export const userService = {
       };
     }
   },
-
-  // Atualizar foto do usuário
-  async atualizarFoto(id, fotoUrl) {
-    try {
-      const response = await api.put(`/usuario/${id}/foto`, fotoUrl, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      return {
-        success: true,
-        data: response.data,
-        message: 'Foto atualizada com sucesso!',
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message || 'Erro ao atualizar foto',
-        data: null,
-      };
-    }
-  },
 };
 
 // Serviços de recomendação
@@ -144,24 +102,6 @@ export const recomendacaoService = {
   async obterRecomendacaoAdaptativa(idUsuario) {
     try {
       const response = await api.get(`/recomendacao/getRecomendacaoAdaptativa/${idUsuario}`);
-      return {
-        success: true,
-        data: response.data,
-        message: 'Recomendações obtidas com sucesso!',
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message || 'Erro ao obter recomendações',
-        data: null,
-      };
-    }
-  },
-
-  // Obter recomendação original
-  async obterRecomendacao(idUsuario) {
-    try {
-      const response = await api.get(`/recomendacao/getRecomendacao/${idUsuario}`);
       return {
         success: true,
         data: response.data,
@@ -329,24 +269,6 @@ export const recomendacaoService = {
     }
   },
 
-  // Verificar se um livro está curtido
-  async verificarLivroCurtido(idUsuario, idLivro) {
-    try {
-      const response = await api.get(`/livros-curtidos/usuario/${idUsuario}/livro/${idLivro}`);
-      return {
-        success: true,
-        data: response.data,
-        message: 'Status verificado com sucesso!',
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message || 'Erro ao verificar status do livro',
-        data: { curtido: false },
-      };
-    }
-  },
-
   // Contar livros curtidos
   async contarLivrosCurtidos(idUsuario) {
     try {
@@ -381,60 +303,6 @@ export const livroService = {
       return {
         success: false,
         error: error.message || 'Erro ao adicionar livro',
-        data: null,
-      };
-    }
-  },
-
-  // Buscar todos os livros
-  async buscarTodos() {
-    try {
-      const response = await api.get('/livro/all');
-      return {
-        success: true,
-        data: response.data,
-        message: 'Livros carregados!',
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message || 'Erro ao carregar livros',
-        data: [],
-      };
-    }
-  },
-
-  // Buscar livro por ID
-  async buscarPorId(id) {
-    try {
-      const response = await api.get(`/livro/get?id=${id}`);
-      return {
-        success: true,
-        data: response.data,
-        message: 'Livro encontrado!',
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message || 'Erro ao buscar livro',
-        data: null,
-      };
-    }
-  },
-
-  // Atualizar livro
-  async atualizar(livroData) {
-    try {
-      const response = await api.put('/livro/update', livroData);
-      return {
-        success: true,
-        data: response.data,
-        message: 'Livro atualizado com sucesso!',
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message || 'Erro ao atualizar livro',
         data: null,
       };
     }
