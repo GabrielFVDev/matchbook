@@ -46,10 +46,10 @@ import {
   EditForm,
   EditButtons,
 } from './styles';
-import { useAuth } from '@/features/auth/useAuth';
-import { useCurtidos } from '@/features/my-books/likedCount';
+import { useCurtidos } from '@/lib/likedCount';
 import { recomendacaoService, userService } from '@/lib/api/services';
 import { validarEmail } from '@/lib/formatters';
+import { clearSessionUser, getSessionUser } from '@/lib/session';
 import { cores, coresDoGenero, nomeDoGenero } from '@/styles/tokens';
 import { surgir } from '@/styles/motion';
 
@@ -117,9 +117,8 @@ const iniciais = (nome) =>
 export default function ProfilePage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { getCurrentUser, logout } = useAuth();
   const { total } = useCurtidos();
-  const [user, setUser] = useState(() => getCurrentUser());
+  const [user, setUser] = useState(() => getSessionUser());
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState(() => (user ? formularioDoUsuario(user) : {}));
   const [errosEdicao, setErrosEdicao] = useState({});
@@ -206,7 +205,7 @@ export default function ProfilePage() {
   };
 
   const handleLogout = () => {
-    logout();
+    clearSessionUser();
     navigate('/');
   };
 

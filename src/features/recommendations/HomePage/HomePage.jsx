@@ -24,18 +24,17 @@ import {
   FeedbackArea,
   Hint,
 } from './styles';
-import { useAuth } from '@/features/auth/useAuth';
-import { useCurtidos } from '@/features/my-books/likedCount';
+import { useCurtidos } from '@/lib/likedCount';
 import { recomendacaoService } from '@/lib/api/services';
+import { getSessionUser } from '@/lib/session';
 import { cores, coresDoGenero } from '@/styles/tokens';
 import { animacaoAviso, surgir } from '@/styles/motion';
 
 const TEMPO_AVISO = 3500;
 
 export default function HomePage() {
-  const { getCurrentUser } = useAuth();
   const { somar } = useCurtidos();
-  const [usuario] = useState(() => getCurrentUser());
+  const [usuario] = useState(() => getSessionUser());
   const [currentBook, setCurrentBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(null);

@@ -28,9 +28,9 @@ import {
   BookDetail,
   LoadingContainer,
 } from './styles';
-import { useAuth } from '@/features/auth/useAuth';
-import { useCurtidos } from '@/features/my-books/likedCount';
+import { useCurtidos } from '@/lib/likedCount';
 import { recomendacaoService } from '@/lib/api/services';
+import { getSessionUser } from '@/lib/session';
 import { cores, coresDoGenero, nomeDoGenero } from '@/styles/tokens';
 import { curvaSaida, mola, molaSuave } from '@/styles/motion';
 
@@ -63,9 +63,8 @@ const normalizarLivro = (item) => {
 const formatarData = (data) => (data ? new Date(data).toLocaleDateString('pt-BR') : '');
 
 export default function MyBooksPage() {
-  const { getCurrentUser } = useAuth();
   const { somar } = useCurtidos();
-  const [usuario] = useState(() => getCurrentUser());
+  const [usuario] = useState(() => getSessionUser());
   const [livros, setLivros] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
