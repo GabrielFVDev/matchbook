@@ -1,9 +1,9 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  // Endereço da API; sem ele, vale o padrão de src/lib/env.ts.
+  // API address; without it, the default in src/lib/env.ts applies.
   readonly VITE_API_URL?: string;
-  // Definido pelo .env.mock ("npm run dev:mock"); quem liga a API falsa é o MODE "mock".
+  // Set by .env.mock ("npm run dev:mock"); what turns the fake API on is the "mock" MODE.
   readonly VITE_API_MOCK?: string;
 }
 

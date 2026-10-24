@@ -6,7 +6,7 @@ interface ChipProps {
   $background?: string;
 }
 
-// Etiqueta clicável (filtros e escolha de gênero). O estado vai em aria-pressed.
+// Clickable tag (filters and genre choice). The state goes in aria-pressed.
 export const Chip = styled.button.attrs<ChipProps>(({ $active }) => ({
   type: 'button',
   'aria-pressed': Boolean($active),
@@ -40,7 +40,7 @@ export const ChipCount = styled.span<{ $active?: boolean }>`
   color: ${({ $active }) => ($active ? colors.inkOnDark : colors.inkSoft)};
 `;
 
-// Etiqueta só de leitura (gênero, páginas, ano).
+// Read-only tag (genre, pages, year).
 export const Tag = styled.span<{ $small?: boolean; $background?: string; $color?: string }>`
   display: inline-flex;
   align-items: center;

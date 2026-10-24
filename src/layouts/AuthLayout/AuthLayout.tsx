@@ -52,7 +52,7 @@ const Main = styled.main<{ $align: string }>`
   }
 `;
 
-// Estrutura de login e cadastro: fundo da marca, logo no topo e duas colunas.
+// Login and sign-up frame: brand background, logo at the top and two columns.
 interface AuthLayoutProps {
   topLink?: ReactNode;
   align?: string;

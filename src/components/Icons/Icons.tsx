@@ -1,7 +1,7 @@
 import type { SVGProps } from 'react';
 
-// Ícones de traço desenhados para o novo design. Sempre decorativos:
-// quem usa coloca o texto ou o aria-label no botão.
+// Stroke icons drawn for the new design. Always decorative:
+// whoever uses them puts the text or the aria-label on the button.
 
 type SvgProps = SVGProps<SVGSVGElement>;
 

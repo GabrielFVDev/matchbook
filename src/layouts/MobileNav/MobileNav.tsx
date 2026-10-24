@@ -51,7 +51,7 @@ const Item = styled(NavLink)`
   }
 `;
 
-// Fundo escuro da aba ativa. Desliza entre as abas ao trocar de tela.
+// Dark background of the active tab. Slides between tabs when the screen changes.
 const ActiveTab = styled(motion.span)`
   position: absolute;
   inset: 0;
@@ -66,7 +66,7 @@ const tabs = [
   { to: paths.profile, label: 'Perfil', icon: <IconUser /> },
 ];
 
-// Barra de navegação do celular. No celular o "Sair" fica dentro do Perfil.
+// Mobile navigation bar. On mobile, "Sair" lives inside the Profile.
 export function MobileNav() {
   return (
     <Bar aria-label="Principal">

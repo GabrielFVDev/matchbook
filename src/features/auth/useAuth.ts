@@ -3,12 +3,12 @@ import { authApi } from '@/lib/api/auth';
 import type { SignUpRequest } from '@/lib/api/types';
 import { hasSession, saveSessionUser } from '@/lib/session';
 
-// Hook do login e das rotas protegidas. Quem só precisa ler ou apagar a sessão usa @/lib/session.
+// Hook for login and protected routes. To only read or clear the session, use @/lib/session.
 export const useAuth = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Função para fazer login
+  // Logs in
   const login = async (email: string, password: string) => {
     setLoading(true);
     setError(null);
@@ -17,7 +17,7 @@ export const useAuth = () => {
       const result = await authApi.login(email, password);
 
       if (result.success) {
-        // Salva os dados do usuário no localStorage
+        // Stores the user data in localStorage
         saveSessionUser(result.data);
         setLoading(false);
         return { success: true as const, user: result.data };
@@ -33,7 +33,7 @@ export const useAuth = () => {
     }
   };
 
-  // Função para verificar se está logado
+  // Checks whether someone is logged in
   const isLoggedIn = () => {
     return hasSession();
   };
@@ -47,13 +47,13 @@ export const useAuth = () => {
   };
 };
 
-// Hook para cadastro de usuários
+// Hook for signing up users
 export const useSignUp = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Função para cadastrar usuário
+  // Signs up a user
   const signUp = async (userData: SignUpRequest) => {
     setLoading(true);
     setError(null);
@@ -79,7 +79,7 @@ export const useSignUp = () => {
     }
   };
 
-  // Função para resetar estados
+  // Resets the states
   const reset = () => {
     setError(null);
     setSuccess(false);

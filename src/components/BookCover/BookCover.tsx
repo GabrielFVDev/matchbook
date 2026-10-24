@@ -4,8 +4,8 @@ import styled, { css } from 'styled-components';
 import { colors, mobile, genreColors, genreName, radius } from '@/styles/tokens';
 import { Tag } from '@/components/Chip';
 
-// Medidas de cada uso da capa: altura, respiro interno e corpo do título,
-// primeiro no desktop e depois no celular.
+// Measures of each use of the cover: height, inner padding and title size,
+// first on desktop and then on mobile.
 const sizes = {
   match: { height: [340, 260], padding: [24, 20], titleSize: [64, 48] },
   grid: { height: [250, 200], padding: [16, 12], titleSize: [27, 19] },
@@ -81,8 +81,8 @@ const CoverImage = styled.img`
   object-fit: cover;
 `;
 
-// Capa do livro: usa a imagem do link quando ela carrega; sem link ou com erro,
-// monta uma capa com a cor do gênero e o título.
+// Book cover: uses the linked image when it loads; with no link or on error,
+// builds a cover with the genre color and the title.
 interface BookCoverProps {
   title?: string | null;
   genre?: string | null;

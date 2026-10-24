@@ -10,8 +10,8 @@ const renderApp = () => {
   );
 };
 
-// No modo mock ("npm run dev:mock") a API falsa liga antes do app. Fora dele, o build
-// troca MODE por "production" e o import da API falsa some do pacote final.
+// In mock mode ("npm run dev:mock") the fake API starts before the app. Outside it, the build
+// replaces MODE with "production" and the fake API import drops out of the final bundle.
 if (import.meta.env.MODE === 'mock') {
   import('@/mocks/browser')
     .then(({ worker }) => worker.start({ onUnhandledRequest: 'bypass' }))

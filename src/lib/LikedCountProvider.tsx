@@ -8,7 +8,7 @@ export function LikedCountProvider({ children }: { children: ReactNode }) {
   const [total, setTotal] = useState<number | null>(null);
   const loadedUserId = useRef<number | null>(null);
 
-  // Busca o contador uma vez por usuário; trocar de conta busca de novo.
+  // Fetches the counter once per user; switching accounts fetches again.
   const load = useCallback(async () => {
     const user = getSessionUser();
     if (!user?.id || loadedUserId.current === user.id) return;

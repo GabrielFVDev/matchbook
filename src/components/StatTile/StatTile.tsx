@@ -51,8 +51,8 @@ const Tile = styled(motion.div)<{ $background?: string; $color?: string; $isText
   }
 `;
 
-// Número de destaque com o rótulo embaixo. Vai dentro de um StatGrid (dl).
-// "order" faz os números entrarem em sequência.
+// Highlighted number with the label below. Goes inside a StatGrid (dl).
+// "order" makes the numbers enter in sequence.
 interface StatTileProps {
   label: ReactNode;
   value: ReactNode;

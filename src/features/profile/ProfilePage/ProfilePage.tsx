@@ -58,7 +58,7 @@ import { paths } from '@/app/paths';
 import { colors, genreColors, genreName } from '@/styles/tokens';
 import { appear } from '@/styles/motion';
 
-// Estratégias do algoritmo adaptativo, na ordem em que aparecem.
+// Strategies of the adaptive algorithm, in the order they show up.
 const strategies = [
   {
     key: 'PADRAO',
@@ -87,7 +87,7 @@ const strategies = [
 const strategyKey = (value?: string | null) =>
   (value || 'PADRAO').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase();
 
-// O formulário de edição, com os nomes de campo da API (vai inteiro no PUT /usuario/update).
+// The edit form, with the API field names (it goes whole in PUT /usuario/update).
 interface ProfileForm {
   id: number;
   nome: string;
@@ -114,7 +114,7 @@ const profileFormFromUser = (user: SessionUser): ProfileForm => ({
   biografia: user.biografia || '',
 });
 
-// "1995-05-15" vira "15/05/1995" sem passar por Date, para não mudar de dia com o fuso.
+// "1995-05-15" becomes "15/05/1995" without Date, so the timezone cannot shift the day.
 const formatBirthDate = (date?: string | null) => {
   if (!date) return null;
   const parts = String(date).slice(0, 10).split('-');
@@ -139,7 +139,7 @@ export default function ProfilePage() {
   const { total } = useLikedCount();
   const [user, setUser] = useState(() => getSessionUser());
   const [isEditing, setIsEditing] = useState(false);
-  // Sem sessão a tela não aparece ("if (!user) return null"), então o formulário vazio nunca é lido.
+  // No session, no screen ("if (!user) return null"), so the empty form is never read.
   const [editForm, setEditForm] = useState<ProfileForm>(() =>
     user ? profileFormFromUser(user) : ({} as ProfileForm),
   );
@@ -165,14 +165,14 @@ export default function ProfilePage() {
   const closeNotice = useCallback(() => setNotice(null), []);
 
   const openEdit = useCallback(() => {
-    // Só é chamada com a tela aberta, e a tela só abre com sessão.
+    // Only called with the screen open, and the screen only opens with a session.
     setEditForm(profileFormFromUser(user!));
     setEditErrors({});
     setSaveError(null);
     setIsEditing(true);
   }, [user]);
 
-  // O lápis do cabeçalho no celular abre a edição com ?editar=1.
+  // The header pencil on mobile opens the edit dialog with ?editar=1.
   useEffect(() => {
     if (searchParams.get('editar') !== '1') return;
     openEdit();
@@ -212,7 +212,7 @@ export default function ProfilePage() {
 
   const confirmReset = async () => {
     setResetting(true);
-    // A tela só abre com sessão (ProtectedRoute).
+    // The screen only opens with a session (ProtectedRoute).
     const response = await recommendationsApi.resetAlgorithm(user!.id);
     setResetting(false);
     setShowResetModal(false);
@@ -234,7 +234,7 @@ export default function ProfilePage() {
   };
 
   const confirmDeleteAccount = () => {
-    // A exclusão ainda não chama a API: limpa a sessão e volta para o login.
+    // Deleting does not call the API yet: it clears the session and goes back to the login.
     clearSessionUser();
     localStorage.removeItem('token');
     window.location.href = paths.login;

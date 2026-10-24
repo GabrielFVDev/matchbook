@@ -15,7 +15,7 @@ export const CoverStack = styled(motion.div)`
   }
 `;
 
-// Cada medida vem em par: [desktop, celular].
+// Each measure comes in a pair: [desktop, mobile].
 type Pair = readonly [number, number];
 
 export const StackCover = styled(motion.div)<{

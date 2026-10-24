@@ -76,8 +76,8 @@ const ActionButton = styled.button.attrs({ type: 'button' })`
   font-weight: 700;
 `;
 
-// Aviso rápido no rodapé, sem travar a tela. Some sozinho depois de "duration".
-// Para animar a saída, renderize dentro de <AnimatePresence> com uma key por aviso.
+// Quick notice at the bottom, without blocking the screen. Goes away by itself after "duration".
+// To animate the exit, render it inside <AnimatePresence> with one key per notice.
 interface ToastProps {
   children: ReactNode;
   icon?: ReactNode;
@@ -103,7 +103,7 @@ export function Toast({
     closeRef.current = onClose;
   }, [onClose]);
 
-  // "resetKey" reinicia a contagem quando chega um aviso novo.
+  // "resetKey" restarts the countdown when a new notice arrives.
   useEffect(() => {
     if (!duration) return undefined;
     const timer = setTimeout(() => closeRef.current?.(), duration);

@@ -2,8 +2,8 @@ import { screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { changes, renderApp, trackApiCalls } from '@/test/renderApp';
 
-describe('Início: a carta da recomendação', () => {
-  it('"Amei" aceita, curte, avisa e soma 1 no contador do cabeçalho', async () => {
+describe('Home: the recommendation card', () => {
+  it('"Amei" accepts, likes, shows a notice and adds 1 to the header counter', async () => {
     const calls = trackApiCalls();
     const { user } = renderApp('/home', { loggedIn: true });
     const header = await screen.findByRole('banner');
@@ -15,14 +15,14 @@ describe('Início: a carta da recomendação', () => {
 
     expect(await screen.findByText('Foi pros seus livros.')).toBeInTheDocument();
     expect(await within(header).findByText('9')).toBeInTheDocument();
-    // Aceitar ensina o algoritmo e vem antes; curtir guarda em "Meus livros".
+    // Accepting teaches the algorithm and comes first; liking stores the book in "Meus livros".
     expect(changes(calls)).toEqual([
       'POST /recomendacao/aceitar?idUsuario=1&idLivro=1',
       'POST /livros-curtidos/curtir?usuarioId=1&livroId=1',
     ]);
   });
 
-  it('"Próximo" recusa e mostra a sugestão do algoritmo', async () => {
+  it('"Próximo" rejects and shows the algorithm suggestion', async () => {
     const calls = trackApiCalls();
     const { user } = renderApp('/home', { loggedIn: true });
 
@@ -34,7 +34,7 @@ describe('Início: a carta da recomendação', () => {
     expect(changes(calls)).toEqual(['POST /recomendacao/recusar?idUsuario=1&idLivro=1']);
   });
 
-  it('a seta → do teclado faz o mesmo que "Amei"', async () => {
+  it('the → arrow key does the same as "Amei"', async () => {
     const calls = trackApiCalls();
     const { user } = renderApp('/home', { loggedIn: true });
 

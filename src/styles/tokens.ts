@@ -1,5 +1,5 @@
-// Tokens do design system "Pilha com hierarquia".
-// Os valores vêm do board "Design system" do canvas de redesign.
+// Tokens of the "Pilha com hierarquia" design system.
+// The values come from the "Design system" board of the redesign canvas.
 
 export const colors = {
   ink: '#1A1726',
@@ -22,8 +22,8 @@ export interface GenreColors {
   background: string;
 }
 
-// Cada gênero tem a cor da capa gerada e a cor de fundo da tela.
-// Texto branco sobre "cover" e "cover" sobre "background" passam no contraste AA.
+// Each genre has the color of the generated cover and the screen background color.
+// White text on "cover" and "cover" on "background" pass AA contrast.
 export const genres = {
   Romance: { cover: '#A13958', background: '#FFE4EA' },
   'Ficção Científica': { cover: '#4B3FD6', background: '#E6E3FF' },
@@ -47,7 +47,7 @@ export const genres = {
   Outros: { cover: '#4A4658', background: '#ECEAF1' },
 } satisfies Record<string, GenreColors>;
 
-// O nome oficial de um gênero: uma das chaves do mapa acima.
+// The official name of a genre: one of the keys of the map above.
 export type GenreName = keyof typeof genres;
 
 export const genreList = Object.keys(genres) as GenreName[];
@@ -59,8 +59,8 @@ const genresByKey: Record<string, GenreName> = Object.fromEntries(
   genreList.map((name) => [stripAccents(name), name]),
 );
 
-// Aceita o gênero como vier da API ("ficção científica", "FICCAO CIENTIFICA"...)
-// e devolve o nome oficial da lista, ou null se não for nenhum deles.
+// Takes the genre as it comes from the API ("ficção científica", "FICCAO CIENTIFICA"...)
+// and returns the official name from the list, or null if it is none of them.
 export const genreName = (genre?: string | null): GenreName | null => {
   if (!genre) return null;
   return genresByKey[stripAccents(genre)] || null;

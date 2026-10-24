@@ -23,8 +23,8 @@ const Content = styled(motion.div)`
   flex-direction: column;
 `;
 
-// Estrutura fixa das telas de quem já entrou. Cabeçalho e barra do celular
-// ficam montados; só o conteúdo da rota troca, com animação de entrada e saída.
+// Fixed frame of the logged-in screens. Header and mobile bar stay
+// mounted; only the route content changes, with an enter and exit animation.
 export function AppShell() {
   const location = useLocation();
   const outlet = useOutlet();

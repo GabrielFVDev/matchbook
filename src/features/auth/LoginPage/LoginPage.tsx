@@ -24,7 +24,7 @@ import { enterEase, cardEntrance, spring, softSpring } from '@/styles/motion';
 import type { Variants } from 'motion/react';
 import { paths } from '@/app/paths';
 
-// Cada medida vem em par: [desktop, celular].
+// Each measure comes in a pair: [desktop, mobile].
 type Pair = [number, number];
 
 interface StackCoverSpec {
@@ -40,8 +40,8 @@ interface StackCoverSpec {
   mobileTitle: boolean;
 }
 
-// Pilha de capas da lateral: posição, tamanho e giro no desktop e no celular.
-// "spread" é quanto cada capa se afasta quando o mouse passa por cima da pilha.
+// Cover stack on the side: position, size and tilt on desktop and on mobile.
+// "spread" is how far each cover moves away when the mouse goes over the stack.
 const stackCovers: StackCoverSpec[] = [
   {
     title: 'O Hobbit',
@@ -81,7 +81,7 @@ const stackCovers: StackCoverSpec[] = [
   },
 ];
 
-// As capas caem uma de cada vez e se abrem em leque no hover.
+// The covers fall one at a time and fan out on hover.
 const coverVariants: Variants = {
   hidden: { opacity: 0, y: -48, rotate: 0 },
   visible: (cover: StackCoverSpec) => ({

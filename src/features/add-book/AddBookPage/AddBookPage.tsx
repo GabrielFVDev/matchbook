@@ -157,7 +157,7 @@ export default function AddBookPage() {
     const response = await booksApi.create(bookData);
 
     if (response.success) {
-      // Quem adiciona um livro ao catálogo já o leva para os seus favoritos.
+      // Whoever adds a book to the catalog also takes it to their favorites.
       const likeResponse = await likedBooksApi.like(user.id, response.data.id);
       if (likeResponse.success) {
         add(1);

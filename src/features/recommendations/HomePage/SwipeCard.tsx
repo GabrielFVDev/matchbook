@@ -8,11 +8,11 @@ import { exitEase } from '@/styles/motion';
 import type { GenreColors } from '@/styles/tokens';
 import type { BookDto } from '@/lib/api/types';
 
-// Distância (px) ou velocidade (px/s) do arraste que conta como decisão.
+// Drag distance (px) or speed (px/s) that counts as a decision.
 const DISTANCE_THRESHOLD = 120;
 const VELOCITY_THRESHOLD = 700;
 
-// Entra subindo da pilha; sai voando para o lado da decisão (1 = direita, -1 = esquerda).
+// Enters rising from the stack; flies off to the side of the decision (1 = right, -1 = left).
 const cardVariants: Variants = {
   enter: { opacity: 0, scale: 0.92, y: 24 },
   idle: {
@@ -30,8 +30,8 @@ const cardVariants: Variants = {
 
 export type SwipeChoice = 'love' | 'next';
 
-// O livro da carta. Ela também lê "capaUrl", que o backend nunca manda (ver LikedBookItem em
-// src/lib/api/types.ts); a leitura fica até a fase do backend.
+// The card's book. It also reads "capaUrl", which the backend never sends (see LikedBookItem in
+// src/lib/api/types.ts); the read stays until the backend phase.
 export type CardBook = BookDto & { capaUrl?: string | null };
 
 interface SwipeCardProps {
@@ -41,7 +41,7 @@ interface SwipeCardProps {
   onDecide: (choice: SwipeChoice) => void;
 }
 
-// Carta do livro recomendado. Dá para arrastar: direita é Amei, esquerda é Próximo.
+// Card of the recommended book. It can be dragged: right is Amei, left is Próximo.
 export function SwipeCard({ book, bookColors, disabled, onDecide }: SwipeCardProps) {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-260, 260], [-14, 14]);

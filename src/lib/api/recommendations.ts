@@ -1,9 +1,9 @@
 import api, { errorMessage } from './client';
 import type { ApiResult, BookDto, RecommendationStats, RejectResult } from './types';
 
-// Serviços de recomendação
+// Recommendation services
 export const recommendationsApi = {
-  // Obter recomendação adaptativa
+  // Get the adaptive recommendation
   async getAdaptive(userId: number): Promise<ApiResult<BookDto[]>> {
     try {
       const response = await api.get<BookDto[]>(
@@ -23,7 +23,7 @@ export const recommendationsApi = {
     }
   },
 
-  // Registrar aceitação de livro
+  // Record that a book was accepted
   async accept(userId: number, bookId: number): Promise<ApiResult<unknown>> {
     try {
       const response = await api.post(
@@ -43,7 +43,7 @@ export const recommendationsApi = {
     }
   },
 
-  // Registrar recusa de livro
+  // Record that a book was rejected
   async reject(userId: number, bookId: number): Promise<ApiResult<RejectResult>> {
     try {
       const response = await api.post<RejectResult>(
@@ -63,7 +63,7 @@ export const recommendationsApi = {
     }
   },
 
-  // Obter estatísticas do usuário
+  // Get the user's statistics
   async getStats(userId: number): Promise<ApiResult<RecommendationStats>> {
     try {
       const response = await api.get<RecommendationStats>(`/recomendacao/estatisticas/${userId}`);
@@ -81,7 +81,7 @@ export const recommendationsApi = {
     }
   },
 
-  // Resetar algoritmo
+  // Reset the algorithm
   async resetAlgorithm(userId: number): Promise<ApiResult<unknown>> {
     try {
       const response = await api.post(`/recomendacao/resetarAlgoritmo/${userId}`);

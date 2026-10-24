@@ -2,8 +2,8 @@ import { screen, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { changes, renderApp, trackApiCalls } from '@/test/renderApp';
 
-describe('Meus livros', () => {
-  it('remover descurte o livro, e "Desfazer" curte de novo', async () => {
+describe('My books', () => {
+  it('removing unlikes the book, and "Desfazer" likes it again', async () => {
     const calls = trackApiCalls();
     const { user } = renderApp('/meus-livros', { loggedIn: true });
     const removeButton = { name: 'Remover Fundação dos favoritos' };

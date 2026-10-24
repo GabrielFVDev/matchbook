@@ -91,7 +91,7 @@ const panelAnimation = {
   exit: { opacity: 0, y: 16, scale: 0.98, transition: { duration: 0.15, ease: exitEase } },
 } satisfies MotionAnimation;
 
-// Janela sobre a tela. Fecha com Esc, clique fora ou no botão de fechar.
+// Window over the screen. Closes with Esc, a click outside or the close button.
 interface DialogProps {
   open: boolean;
   title: ReactNode;
@@ -183,7 +183,7 @@ interface ConfirmDialogProps {
   onCancel: () => void;
 }
 
-// Confirmação de ação sem volta, como excluir a conta.
+// Confirmation of an action with no way back, like deleting the account.
 export function ConfirmDialog({
   open,
   title,

@@ -1,11 +1,11 @@
-// Os dados como o servidor manda e recebe, com os nomes de campo do servidor. Quando o backend
-// for refeito, o contrato muda aqui e o compilador aponta o resto.
+// The data as the server sends and receives it, with the server field names. When the backend
+// is rebuilt, the contract changes here and the compiler points out the rest.
 
 export interface UserDto {
   id: number;
   nome: string;
   email: string;
-  // O backend devolve a senha no cadastro e em GET /usuario/all; a sessão guarda o usuário sem ela.
+  // The backend returns the password on sign-up and in GET /usuario/all; the session drops it.
   senha?: string;
   generoFavorito?: string | null;
   autorPreferido?: string | null;
@@ -18,10 +18,10 @@ export interface UserDto {
   fotoUrl?: string | null;
 }
 
-// O que vai no cadastro: o usuário ainda sem id.
+// What goes in the sign-up: the user still without an id.
 export type SignUpRequest = Omit<UserDto, 'id'> & { senha: string };
 
-// O que vai no PUT /usuario/update: o formulário do Perfil, sem a senha (comportamento atual).
+// What goes in PUT /usuario/update: the Profile form, without the password (current behavior).
 export type UpdateUserRequest = Omit<UserDto, 'senha'>;
 
 export interface BookDto {
@@ -35,14 +35,14 @@ export interface BookDto {
   idioma?: string | null;
   isbn?: string | null;
   sinopse?: string | null;
-  // O campo da capa no backend se chama "capa".
+  // The cover field in the backend is called "capa".
   capa?: string | null;
   disponivel?: boolean;
   dataCadastro?: string | null;
 }
 
-// O que o formulário de Adicionar livro envia hoje. A capa vai como "capaUrl", que o backend
-// ignora (o campo dele é "capa"); muda quando o backend for refeito.
+// What the Add book form sends today. The cover goes as "capaUrl", which the backend
+// ignores (its field is "capa"); changes when the backend is rebuilt.
 export interface CreateBookRequest {
   titulo: string;
   autor: string;
@@ -57,10 +57,10 @@ export interface CreateBookRequest {
   disponivel: boolean;
 }
 
-// Um item da lista de favoritos. O backend manda o livro direto; Meus livros e a carta também
-// leem campos que ele nunca manda ("livro", "livroId", "capaUrl", "imagem", "imagemUrl",
-// "dataCurtida"). As leituras ficam como estão até a fase do backend (ver
-// ~/.claude/handoffs/reestruturacao-matchbook.files/analise-arquitetura.md, seção 1.2).
+// An item of the favorites list. The backend sends the book directly; My books and the card also
+// read fields it never sends ("livro", "livroId", "capaUrl", "imagem", "imagemUrl",
+// "dataCurtida"). The reads stay as they are until the backend phase (see
+// ~/.claude/handoffs/reestruturacao-matchbook.files/analise-arquitetura.md, section 1.2).
 export interface LikedBookItem extends Partial<BookDto> {
   livro?: Partial<BookDto> & {
     capaUrl?: string;
@@ -100,6 +100,6 @@ export interface LikedCount {
   total: number;
 }
 
-// O que cada função de src/lib/api devolve: nunca lança, sempre responde neste formato.
+// What each function in src/lib/api returns: it never throws, it always answers in this shape.
 export type ApiResult<T, F = null> =
   { success: true; data: T; message: string | null } | { success: false; data: F; error: string };

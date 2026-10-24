@@ -5,7 +5,7 @@ export interface ShellAppearance {
   accentColor: string;
 }
 
-// Cada tela informa ao shell a cor de fundo e a cor de destaque que quer.
+// Each screen tells the shell the background color and the accent color it wants.
 export const ShellContext = createContext<(appearance: ShellAppearance) => void>(() => {});
 
 export const useSetShell = () => useContext(ShellContext);

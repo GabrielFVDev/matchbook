@@ -50,7 +50,7 @@ export default function HomePage() {
   const [loadError, setLoadError] = useState<'empty' | 'failed' | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [notice, setNotice] = useState<Notice | null>(null);
-  // Lado para onde a carta sai: 1 é direita (Amei), -1 é esquerda (Próximo).
+  // Side the card leaves through: 1 is right (Amei), -1 is left (Próximo).
   const [direction, setDirection] = useState(1);
   const [beats, setBeats] = useState(0);
   const [decisions, setDecisions] = useState(0);
@@ -64,7 +64,7 @@ export default function HomePage() {
     const response = await recommendationsApi.getAdaptive(user.id);
 
     if (response.success && response.data?.length > 0) {
-      // A API devolve uma lista; mostramos o primeiro livro dela.
+      // The API returns a list; we show its first book.
       setCurrentBook(response.data[0]);
     } else {
       setCurrentBook(null);
@@ -77,14 +77,14 @@ export default function HomePage() {
     loadNextRecommendation();
   }, [loadNextRecommendation]);
 
-  // O aviso some sozinho; um aviso novo reinicia a contagem.
+  // The notice goes away by itself; a new notice restarts the countdown.
   useEffect(() => {
     if (!notice) return undefined;
     const timer = setTimeout(() => setNotice(null), NOTICE_DURATION);
     return () => clearTimeout(timer);
   }, [notice]);
 
-  // A carta sai na hora; se a API falhar, ela volta para a pilha.
+  // The card leaves right away; if the API fails, it comes back to the stack.
   const decide = async (choice: SwipeChoice) => {
     if (!currentBook || !user?.id || isProcessing) return;
     const book = currentBook;
@@ -99,7 +99,7 @@ export default function HomePage() {
     if (loved) {
       const acceptResponse = await recommendationsApi.accept(user.id, book.id);
       if (acceptResponse.success) {
-        // Aceitar ensina o algoritmo; curtir guarda o livro em "Meus livros".
+        // Accepting teaches the algorithm; liking stores the book in "Meus livros".
         const likeResponse = await likedBooksApi.like(user.id, book.id);
         if (likeResponse.success) {
           add(1);
@@ -147,7 +147,7 @@ export default function HomePage() {
     setIsProcessing(false);
   };
 
-  // Setas do teclado: direita é Amei, esquerda é Próximo.
+  // Arrow keys: right is Amei, left is Próximo.
   const decideRef = useRef(decide);
   useEffect(() => {
     decideRef.current = decide;
@@ -245,7 +245,7 @@ export default function HomePage() {
                     <SwipeCard
                       key={currentBook.id}
                       book={currentBook}
-                      // Com a carta na tela há livro, e com livro há cores.
+                      // With the card on screen there is a book, and with a book there are colors.
                       bookColors={bookColors!}
                       disabled={isProcessing}
                       onDecide={decide}

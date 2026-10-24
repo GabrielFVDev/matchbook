@@ -63,7 +63,7 @@ export const NavItem = styled(NavLink)`
   }
 `;
 
-// Fundo branco do item ativo. Desliza entre os itens ao trocar de tela.
+// White background of the active item. Slides between items when the screen changes.
 export const ActivePill = styled(motion.span)`
   position: absolute;
   inset: 0;

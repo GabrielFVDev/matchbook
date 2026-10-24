@@ -37,7 +37,7 @@ import { colors, genreColors, genreName } from '@/styles/tokens';
 import { exitEase, spring, softSpring } from '@/styles/motion';
 import { paths } from '@/app/paths';
 
-// Os livros entram em sequência, saem encolhendo e o resto da grade se reorganiza.
+// Books enter in sequence, leave shrinking, and the rest of the grid reorders.
 const itemVariants: Variants = {
   enter: { opacity: 0, y: 16, scale: 0.96 },
   idle: (order: number) => ({
@@ -59,9 +59,9 @@ interface FavoriteBook {
   likedAt?: string;
 }
 
-// A API pode devolver o livro direto ou dentro de "livro"; aqui vira um formato só.
-// Ela nunca manda "livro", "livroId", "capaUrl", "imagem" nem "dataCurtida" (ver LikedBookItem
-// em src/lib/api/types.ts); as leituras ficam até a fase do backend.
+// The API may return the book directly or inside "livro"; here it becomes a single shape.
+// It never sends "livro", "livroId", "capaUrl", "imagem" or "dataCurtida" (see LikedBookItem
+// in src/lib/api/types.ts); the reads stay until the backend phase.
 const normalizeBook = (item: LikedBookItem): FavoriteBook => {
   const book = item.livro || item;
   return {
@@ -77,7 +77,7 @@ const normalizeBook = (item: LikedBookItem): FavoriteBook => {
 
 const formatDate = (date?: string) => (date ? new Date(date).toLocaleDateString('pt-BR') : '');
 
-// O instante da curtida para ordenar; sem data, NaN, como new Date(undefined) dava.
+// When the book was liked, for sorting; without a date, NaN, as new Date(undefined) gave.
 const timestampOf = (date?: string) => (date ? new Date(date).getTime() : NaN);
 
 type ListNotice =
@@ -118,7 +118,7 @@ export default function MyBooksPage() {
 
   const closeNotice = useCallback(() => setNotice(null), []);
 
-  // A tela só abre com sessão (ProtectedRoute), por isso o "user!" nas ações.
+  // The screen only opens with a session (ProtectedRoute), hence the "user!" in the actions.
   const handleRemoveBook = async (book: FavoriteBook) => {
     const position = books.findIndex((item) => item.id === book.id);
     setRemovingId(book.id);

@@ -65,7 +65,7 @@ const Actions = styled.div`
   margin-top: 6px;
 `;
 
-// Bloco para tela vazia, erro ou sucesso: ícone, título, texto e ações.
+// Block for an empty, error or success screen: icon, title, text and actions.
 interface EmptyStateProps {
   icon?: ReactNode;
   tone?: Tone;

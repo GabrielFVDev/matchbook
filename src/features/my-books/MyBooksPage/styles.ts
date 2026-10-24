@@ -68,7 +68,7 @@ export const FilterChip = styled.button.attrs({ type: 'button' })<{ $active?: bo
   }
 `;
 
-// Fundo escuro do filtro ativo. Desliza até o gênero escolhido.
+// Dark background of the active filter. Slides to the chosen genre.
 export const FilterPill = styled(motion.span)`
   position: absolute;
   inset: 0;
@@ -115,8 +115,8 @@ export const BookCard = styled(motion.li)`
   flex-direction: column;
 `;
 
-// Visual do cartão. Fica separado do item da lista para o "levantar" no hover
-// não brigar com a animação de reorganizar a grade.
+// The card visuals. Kept apart from the list item so the hover "lift" does not
+// fight the grid reorder animation.
 export const BookCardInner = styled.div`
   flex: 1;
   display: flex;

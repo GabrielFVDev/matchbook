@@ -1,14 +1,14 @@
 import { createContext, useContext } from 'react';
 
 export interface LikedCountValue {
-  // null enquanto o contador ainda não chegou da API.
+  // null while the counter has not arrived from the API yet.
   total: number | null;
   load: () => void;
   add: (amount: number) => void;
   set: (value: number | null) => void;
 }
 
-// Contador de livros curtidos mostrado no cabeçalho de todas as telas.
+// Counter of liked books shown in the header of every screen.
 export const LikedCountContext = createContext<LikedCountValue>({
   total: null,
   load: () => {},

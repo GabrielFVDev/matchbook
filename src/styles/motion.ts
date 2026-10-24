@@ -1,6 +1,6 @@
 import type { BezierDefinition, MotionProps, Transition } from 'motion/react';
 
-// Curvas e transições do app. Movimento curto, com propósito: entrar suave, sair rápido.
+// App curves and transitions. Short, purposeful motion: enter softly, leave fast.
 
 export const enterEase = [0.22, 1, 0.36, 1] satisfies BezierDefinition;
 export const exitEase = [0.4, 0, 1, 1] satisfies BezierDefinition;
@@ -8,17 +8,17 @@ export const exitEase = [0.4, 0, 1, 1] satisfies BezierDefinition;
 export const spring = { type: 'spring', stiffness: 380, damping: 32 } satisfies Transition;
 export const softSpring = { type: 'spring', stiffness: 260, damping: 26 } satisfies Transition;
 
-// As props de entrada e saída que os componentes animados recebem espalhadas, como {...cardEntrance}.
+// The enter and exit props that animated components receive spread, like {...cardEntrance}.
 type MotionAnimation = Pick<MotionProps, 'initial' | 'animate' | 'exit'>;
 
-// Troca de tela: o conteúdo novo sobe um pouco ao entrar e o antigo some rápido.
+// Screen change: the new content rises a little as it enters and the old one goes away fast.
 export const screenTransition = {
   initial: { opacity: 0, y: 16 },
   animate: { opacity: 1, y: 0, transition: { duration: 0.35, ease: enterEase } },
   exit: { opacity: 0, y: -8, transition: { duration: 0.15, ease: exitEase } },
 } satisfies MotionAnimation;
 
-// Entrada em sequência: cada bloco aparece um pouco depois do anterior.
+// Staggered entrance: each block shows up a little after the previous one.
 export const appear = (order = 0): MotionAnimation => ({
   initial: { opacity: 0, y: 14 },
   animate: {
@@ -28,13 +28,13 @@ export const appear = (order = 0): MotionAnimation => ({
   },
 });
 
-// Cartão principal de login e cadastro: sobe depois do resto da tela.
+// Main card of login and sign-up: rises after the rest of the screen.
 export const cardEntrance = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0, transition: { duration: 0.45, ease: enterEase, delay: 0.1 } },
 } satisfies MotionAnimation;
 
-// Avisos: entram com mola e saem rápido. Quem mostra o aviso envolve em AnimatePresence.
+// Notices: enter with a spring and leave fast. The caller wraps the notice in AnimatePresence.
 export const toastAnimation = {
   initial: { opacity: 0, y: 16, scale: 0.96 },
   animate: {

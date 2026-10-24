@@ -1,10 +1,10 @@
-// Dados de exemplo da API falsa. Tudo inventado; os nomes dos campos são os do backend.
+// Sample data for the fake API. All made up; the field names are the backend's.
 
 export const user = {
   id: 1,
   nome: 'Ana Ribeiro',
   email: 'ana@email.com',
-  // O backend devolve a senha em GET /usuario/all, e o login do front compara com ela.
+  // The backend returns the password in GET /usuario/all, and the front login compares against it.
   senha: '123456',
   generoFavorito: 'Ficção Científica',
   autorPreferido: 'Isaac Asimov',
@@ -16,7 +16,7 @@ export const user = {
   dataCadastro: '2026-03-10',
 };
 
-// O que o front grava no localStorage depois do login: o usuário sem a senha.
+// What the front stores in localStorage after login: the user without the password.
 const { senha: _password, ...sessionUser } = user;
 export { sessionUser };
 
@@ -47,7 +47,7 @@ export const books = [
     id: 3,
     titulo: 'O Hobbit',
     autor: 'J.R.R. Tolkien',
-    // Em minúsculas de propósito: o front normaliza o nome do gênero.
+    // Lowercase on purpose: the front normalizes the genre name.
     genero: 'fantasia',
     numeroPaginas: 336,
     anoPublicacao: 1937,
@@ -77,7 +77,7 @@ export const books = [
   },
 ];
 
-// Os favoritos vêm sem "dataCurtida": o backend não manda esse campo.
+// Favorites come without "dataCurtida": the backend does not send that field.
 export const likedBooks = books;
 
 export const likedCount = { total: 8 };

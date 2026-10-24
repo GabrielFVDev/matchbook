@@ -5,15 +5,15 @@ import { ProtectedRoute, PublicRoute } from '@/features/auth/RouteGuards';
 import { AppShell } from '@/layouts/AppShell';
 import { paths } from './paths';
 
-// Cada tela vem num arquivo à parte, baixado quando a rota é aberta. O roteador espera o arquivo
-// chegar antes de trocar de tela, então as transições do AppShell não ganham um "carregando".
+// Each screen comes in a separate file, downloaded when its route opens. The router waits for the
+// file before switching screens, so the AppShell transitions do not get a "loading" state.
 const page = (load: () => Promise<{ default: ComponentType }>) => async () => ({
   Component: (await load()).default,
 });
 
 export const routes: RouteObject[] = [
   {
-    // Nada na tela enquanto o arquivo da primeira tela chega. Sem isto, o roteador avisa no console.
+    // Blank while the first screen's file arrives. Without it, the router warns in the console.
     HydrateFallback: () => null,
     children: [
       {
@@ -28,7 +28,7 @@ export const routes: RouteObject[] = [
         ],
       },
       {
-        // Telas de quem já entrou: dividem o mesmo cabeçalho e barra do celular.
+        // Screens of a logged-in user: they share the same header and mobile bar.
         element: (
           <ProtectedRoute>
             <AppShell />
@@ -44,7 +44,7 @@ export const routes: RouteObject[] = [
           { path: paths.profile, lazy: page(() => import('@/features/profile/ProfilePage')) },
         ],
       },
-      // Endereço desconhecido: tela vazia, como antes da troca de roteador. A 404 é o M8.
+      // Unknown address: empty screen, as before the router change. The 404 is M8.
       { path: '*', Component: () => null },
     ],
   },

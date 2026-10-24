@@ -46,7 +46,7 @@ const OptionButton = styled.button.attrs({ type: 'button' })<{ $active?: boolean
   }
 `;
 
-// Fundo branco da opção escolhida. Desliza até a opção nova.
+// White background of the chosen option. Slides to the new option.
 const Indicator = styled(motion.span)`
   position: absolute !important;
   inset: 0;
@@ -55,7 +55,7 @@ const Indicator = styled(motion.span)`
   box-shadow: ${shadow.active};
 `;
 
-// Escolha única entre poucas opções (nível de leitura).
+// Single choice among a few options (reading level).
 interface SegmentedProps {
   id: string;
   label: ReactNode;
@@ -131,8 +131,8 @@ const StepperRow = styled.div`
   gap: 12px;
 `;
 
-// Contador com botões de menos e mais (livros já lidos).
-// O número novo entra por baixo quando sobe e por cima quando desce.
+// Counter with minus and plus buttons (books already read).
+// The new number comes in from below when it goes up and from above when it goes down.
 const rollNumber: Variants = {
   enter: (direction: number) => ({ y: direction * 18, opacity: 0 }),
   idle: { y: 0, opacity: 1, transition: { duration: 0.18 } },
@@ -221,7 +221,7 @@ const SwitchTrack = styled.button.attrs({ type: 'button', role: 'switch' })<{ $c
   }
 `;
 
-// Interruptor liga e desliga (receber recomendações).
+// On/off switch (receive recommendations).
 interface SwitchProps {
   id: string;
   label: ReactNode;

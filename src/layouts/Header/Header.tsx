@@ -32,7 +32,7 @@ const links = [
   { to: paths.profile, label: 'Perfil' },
 ];
 
-// Botão do canto direito no celular, que muda conforme a tela.
+// Button in the right corner on mobile, which changes with the screen.
 const mobileActions: Record<string, { to: string; label: string; icon: ReactNode }> = {
   [paths.myBooks]: { to: paths.addBook, label: 'Adicionar livro', icon: <IconPlus /> },
   [paths.profile]: {
@@ -52,7 +52,7 @@ export default function Header({ accentColor = colors.brand }: { accentColor?: s
     load();
   }, [load]);
 
-  // Só pulsa quando o número muda depois de carregado, não na primeira vez.
+  // Only pulses when the number changes after loading, not the first time.
   const pulse = previousTotal.current !== null && previousTotal.current !== total;
   useEffect(() => {
     previousTotal.current = total;

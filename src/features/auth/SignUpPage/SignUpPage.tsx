@@ -39,7 +39,7 @@ import { paths } from '@/app/paths';
 import { isValidEmail, normalizeUserData } from '@/lib/formatters';
 import { enterEase, exitEase, cardEntrance } from '@/styles/motion';
 
-// A etapa nova entra pelo lado do avanço: da direita ao continuar, da esquerda ao voltar.
+// The new step enters from the side of travel: from the right going on, from the left going back.
 const stepVariants: Variants = {
   enter: (direction: number) => ({ opacity: 0, x: direction * 40 }),
   idle: { opacity: 1, x: 0, transition: { duration: 0.3, ease: enterEase } },
@@ -55,7 +55,7 @@ const steps = [
   { number: 2, name: 'Seu gosto', detail: 'Gênero, autor e ritmo de leitura' },
 ];
 
-// O formulário das duas etapas, com os nomes de campo da API.
+// The form of both steps, with the API field names.
 interface SignUpForm {
   nome: string;
   email: string;
@@ -94,7 +94,7 @@ export default function SignUpPage() {
     biografia: '',
   });
 
-  // Depois de criar a conta, leva para o login.
+  // After creating the account, goes to the login.
   useEffect(() => {
     if (!accountCreated) return undefined;
     const timer = setTimeout(() => navigate(paths.login), 3000);
@@ -147,7 +147,7 @@ export default function SignUpPage() {
     }
   };
 
-  // Mensagens embaixo das senhas: erro de envio vence a validação ao vivo.
+  // Messages under the passwords: a submit error wins over the live validation.
   const passwordMessage = errors.senha
     ? { error: errors.senha }
     : formData.senha

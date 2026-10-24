@@ -3,10 +3,10 @@ import type { ReactNode } from 'react';
 import { GlobalStyle } from '@/styles/GlobalStyle';
 import { LikedCountProvider } from '@/lib/LikedCountProvider';
 
-// O que envolve o app inteiro, por fora do roteador. Os testes usam o mesmo com um roteador próprio.
+// What wraps the whole app, outside the router. The tests use the same with a router of their own.
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
-    // reducedMotion="user": quem pediu menos movimento no sistema não vê deslocamentos.
+    // reducedMotion="user": whoever asked the system for less motion sees no movement.
     <MotionConfig reducedMotion="user">
       <LikedCountProvider>
         <GlobalStyle />

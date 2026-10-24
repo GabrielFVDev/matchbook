@@ -1,7 +1,7 @@
 import axios, { isAxiosError } from 'axios';
 import { apiUrl } from '@/lib/env';
 
-// Configuração base da API
+// Base API configuration
 const api = axios.create({
   baseURL: apiUrl,
   headers: {
@@ -9,7 +9,7 @@ const api = axios.create({
   },
 });
 
-// Interceptador para tratamento de erros globais
+// Interceptor for global error handling
 api.interceptors.response.use(
   (response) => response,
   (error: unknown) => {
@@ -17,7 +17,7 @@ api.interceptors.response.use(
 
     const status = isAxiosError(error) ? error.response?.status : undefined;
 
-    // Tratamento específico de erros
+    // Specific error handling
     if (status === 404) {
       throw new Error('Recurso não encontrado');
     }
@@ -34,6 +34,6 @@ api.interceptors.response.use(
 
 export default api;
 
-// A mensagem de um erro pego num catch, ou a mensagem padrão de quem chamou.
+// The message of an error caught in a catch, or the caller's default message.
 export const errorMessage = (error: unknown, fallback: string) =>
   (error instanceof Error && error.message) || fallback;

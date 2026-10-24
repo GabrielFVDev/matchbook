@@ -45,7 +45,7 @@ const Row = styled.div`
 
 const readingLevels = ['Iniciante', 'Intermediário', 'Avançado'];
 
-// Os campos do gosto, com os nomes de campo da API.
+// The taste fields, with the API field names.
 export interface TasteValues {
   generoFavorito: string;
   autorPreferido: string;
@@ -61,8 +61,8 @@ interface TasteFieldsProps {
   idPrefix: string;
 }
 
-// Campos do gosto literário, usados na etapa 2 do cadastro e na edição do perfil.
-// "values" tem os nomes de campo da API; "onChange(field, value)" atualiza um deles.
+// Reading taste fields, used in step 2 of sign-up and in the profile edit.
+// "values" has the API field names; "onChange(field, value)" updates one of them.
 export function TasteFields({ values, onChange, idPrefix }: TasteFieldsProps) {
   const currentGenre = genreName(values.generoFavorito);
 

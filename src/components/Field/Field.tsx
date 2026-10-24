@@ -115,7 +115,7 @@ const Group = styled.div<{ $span?: boolean }>`
     `}
 `;
 
-// O que o Field põe no controle filho (Input, Select, TextArea, PasswordInput).
+// What Field puts on the child control (Input, Select, TextArea, PasswordInput).
 interface InjectedControlProps {
   id?: string;
   $invalid?: boolean;
@@ -134,8 +134,8 @@ interface FieldProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
   children: ReactNode;
 }
 
-// Campo com rótulo, marcação de opcional ou obrigatório e uma mensagem embaixo.
-// Liga sozinho aria-describedby e aria-invalid no controle filho.
+// Field with a label, an optional or required tag and a message below.
+// Wires aria-describedby and aria-invalid on the child control by itself.
 export function Field({
   id,
   label,
@@ -187,7 +187,7 @@ export function Field({
   );
 }
 
-// Erro do formulário inteiro, mostrado perto do botão de enviar.
+// Error of the whole form, shown near the submit button.
 export const FormAlert = styled.p`
   display: flex;
   align-items: flex-start;

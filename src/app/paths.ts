@@ -1,4 +1,4 @@
-// Os endereços do app num lugar só.
+// The app addresses in one place.
 export const paths = {
   login: '/',
   signUp: '/cadastro',

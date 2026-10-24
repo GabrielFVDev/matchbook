@@ -27,7 +27,7 @@ interface AppLayoutProps {
   children: ReactNode;
 }
 
-// Conteúdo de uma tela dentro do AppShell. Avisa ao shell o fundo e a cor de destaque.
+// Content of a screen inside the AppShell. Tells the shell the background and the accent color.
 export function AppLayout({
   background = colors.appBackground,
   accentColor = colors.brand,
