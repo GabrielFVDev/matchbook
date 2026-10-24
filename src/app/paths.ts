@@ -1,6 +1,7 @@
 // The app addresses in one place.
 export const paths = {
-  login: '/',
+  welcome: '/',
+  login: '/entrar',
   signUp: '/cadastro',
   home: '/home',
   myBooks: '/meus-livros',

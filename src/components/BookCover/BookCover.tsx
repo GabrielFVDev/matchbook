@@ -8,6 +8,7 @@ import { Tag } from '@/components/Chip';
 // first on desktop and then on mobile.
 const sizes = {
   match: { height: [340, 260], padding: [24, 20], titleSize: [64, 48] },
+  demo: { height: [290, 230], padding: [22, 18], titleSize: [56, 44] },
   grid: { height: [250, 200], padding: [16, 12], titleSize: [27, 19] },
   preview: { height: [320, 320], padding: [20, 20], titleSize: [40, 40] },
   mini: { height: [148, 148], padding: [10, 10], titleSize: [16, 16] },

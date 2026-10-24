@@ -13,7 +13,7 @@ npm install
 npm run dev:mock   # o app com uma API falsa, sem backend
 ```
 
-No modo `dev:mock`, entre com **`ana@email.com` / `123456`**. A API falsa (MSW, em `src/mocks/`) responde no formato do backend de verdade, com dados de exemplo.
+O app abre na página de primeira visita (`/`); o login fica em `/entrar`. No modo `dev:mock`, entre com **`ana@email.com` / `123456`**. A API falsa (MSW, em `src/mocks/`) responde no formato do backend de verdade, com dados de exemplo.
 
 | Comando             | O que faz                                                                         |
 | ------------------- | --------------------------------------------------------------------------------- |
@@ -35,7 +35,8 @@ src/
   app/             App, provedores, rotas (cada tela carregada sob demanda) e endereços (paths.ts)
   layouts/         a moldura das telas: AppShell, AppLayout, AuthLayout, Header, MobileNav
   components/      o design system: peças visuais que não sabem de API nem de sessão
-  features/        uma pasta por assunto: auth, recommendations, my-books, add-book, profile
+  features/        uma pasta por assunto: welcome (primeira visita), auth, recommendations, my-books,
+                   add-book, profile, not-found (404)
   lib/             código sem tela: api/ (um arquivo por assunto), sessão, contador de curtidos
   styles/          tokens (cores, raios, sombras, gêneros), motion (curvas e transições), GlobalStyle
   mocks/           a API falsa (MSW), usada pelos testes e pelo dev:mock

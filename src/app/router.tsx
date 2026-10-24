@@ -23,6 +23,7 @@ export const routes: RouteObject[] = [
           </PublicRoute>
         ),
         children: [
+          { path: paths.welcome, lazy: page(() => import('@/features/welcome/WelcomePage')) },
           { path: paths.login, lazy: page(() => import('@/features/auth/LoginPage')) },
           { path: paths.signUp, lazy: page(() => import('@/features/auth/SignUpPage')) },
         ],
@@ -44,8 +45,8 @@ export const routes: RouteObject[] = [
           { path: paths.profile, lazy: page(() => import('@/features/profile/ProfilePage')) },
         ],
       },
-      // Unknown address: empty screen, as before the router change. The 404 is M8.
-      { path: '*', Component: () => null },
+      // Unknown address: the 404, on its own frame, for logged-in users too.
+      { path: '*', lazy: page(() => import('@/features/not-found/NotFoundPage')) },
     ],
   },
 ];
