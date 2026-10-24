@@ -1,8 +1,9 @@
-import axios from 'axios';
+import axios, { isAxiosError } from 'axios';
+import { apiUrl } from '@/lib/env';
 
 // Configuração base da API
 const api = axios.create({
-  baseURL: 'http://localhost:8080/api',
+  baseURL: apiUrl,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -11,17 +12,19 @@ const api = axios.create({
 // Interceptador para tratamento de erros globais
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  (error: unknown) => {
     console.error('Erro na API:', error);
 
+    const status = isAxiosError(error) ? error.response?.status : undefined;
+
     // Tratamento específico de erros
-    if (error.response?.status === 404) {
+    if (status === 404) {
       throw new Error('Recurso não encontrado');
     }
-    if (error.response?.status === 400) {
+    if (status === 400) {
       throw new Error('Dados inválidos');
     }
-    if (error.response?.status === 500) {
+    if (status === 500) {
       throw new Error('Erro interno do servidor');
     }
 
@@ -30,3 +33,7 @@ api.interceptors.response.use(
 );
 
 export default api;
+
+// A mensagem de um erro pego num catch, ou a mensagem padrão de quem chamou.
+export const errorMessage = (error: unknown, fallback: string) =>
+  (error instanceof Error && error.message) || fallback;

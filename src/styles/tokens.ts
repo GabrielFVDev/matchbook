@@ -17,6 +17,11 @@ export const cores = {
   desligado: '#BDB9CC',
 };
 
+export interface CoresGenero {
+  capa: string;
+  fundo: string;
+}
+
 // Cada gênero tem a cor da capa gerada e a cor de fundo da tela.
 // Texto branco sobre "capa" e "capa" sobre "fundo" passam no contraste AA.
 export const generos = {
@@ -40,22 +45,31 @@ export const generos = {
   Policial: { capa: '#00719E', fundo: '#D5F2FF' },
   Suspense: { capa: '#007779', fundo: '#D3F5F4' },
   Outros: { capa: '#4A4658', fundo: '#ECEAF1' },
-};
+} satisfies Record<string, CoresGenero>;
 
-export const listaGeneros = Object.keys(generos);
+// O nome oficial de um gênero: uma das chaves do mapa acima.
+export type NomeGenero = keyof typeof generos;
 
-const semAcento = (texto) => texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+export const listaGeneros = Object.keys(generos) as NomeGenero[];
 
-const generosPorChave = Object.fromEntries(listaGeneros.map((nome) => [semAcento(nome), nome]));
+const semAcento = (texto: string) =>
+  texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+
+const generosPorChave: Record<string, NomeGenero> = Object.fromEntries(
+  listaGeneros.map((nome) => [semAcento(nome), nome]),
+);
 
 // Aceita o gênero como vier da API ("ficção científica", "FICCAO CIENTIFICA"...)
 // e devolve o nome oficial da lista, ou null se não for nenhum deles.
-export const nomeDoGenero = (genero) => {
+export const nomeDoGenero = (genero?: string | null): NomeGenero | null => {
   if (!genero) return null;
   return generosPorChave[semAcento(genero)] || null;
 };
 
-export const coresDoGenero = (genero) => generos[nomeDoGenero(genero)] || generos['Outros'];
+export const coresDoGenero = (genero?: string | null): CoresGenero => {
+  const nome = nomeDoGenero(genero);
+  return (nome && generos[nome]) || generos['Outros'];
+};
 
 export const fonte = "'Bricolage Grotesque', system-ui, sans-serif";
 
