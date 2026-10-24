@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { authService } from '@/lib/api/services';
 import type { SignUpRequest } from '@/lib/api/types';
-import { clearSessionUser, getSessionUser, hasSession, saveSessionUser } from '@/lib/session';
+import { hasSession, saveSessionUser } from '@/lib/session';
 
-// Hook para gerenciar autenticação
+// Hook do login e das rotas protegidas. Quem só precisa ler ou apagar a sessão usa @/lib/session.
 export const useAuth = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,26 +33,14 @@ export const useAuth = () => {
     }
   };
 
-  // Função para fazer logout
-  const logout = () => {
-    clearSessionUser();
-  };
-
   // Função para verificar se está logado
   const isLoggedIn = () => {
     return hasSession();
   };
 
-  // Função para obter usuário atual
-  const getCurrentUser = () => {
-    return getSessionUser();
-  };
-
   return {
     login,
-    logout,
     isLoggedIn,
-    getCurrentUser,
     loading,
     error,
     setError,

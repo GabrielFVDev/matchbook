@@ -1,7 +1,7 @@
 import { MotionConfig } from 'motion/react';
 import AppRoutes from './router';
 import { GlobalStyle } from '@/styles/GlobalStyle';
-import { CurtidosProvider } from '@/features/my-books/LikedCountProvider';
+import { CurtidosProvider } from '@/lib/LikedCountProvider';
 
 function App() {
   return (

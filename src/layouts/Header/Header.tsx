@@ -19,8 +19,8 @@ import {
 } from './styles';
 import { Logo } from '@/components/Logo';
 import { IconHeart, IconPencil, IconPlus } from '@/components/Icons';
-import { useAuth } from '@/features/auth/useAuth';
-import { useCurtidos } from '@/features/my-books/likedCount';
+import { useCurtidos } from '@/lib/likedCount';
+import { clearSessionUser } from '@/lib/session';
 import { paths } from '@/app/paths';
 import { cores } from '@/styles/tokens';
 import { mola } from '@/styles/motion';
@@ -45,7 +45,6 @@ const acoesCelular: Record<string, { to: string; label: string; icone: ReactNode
 export default function Header({ corDestaque = cores.marca }: { corDestaque?: string }) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const { logout } = useAuth();
   const { total, carregar } = useCurtidos();
   const totalAnterior = useRef(total);
 
@@ -60,7 +59,7 @@ export default function Header({ corDestaque = cores.marca }: { corDestaque?: st
   }, [total]);
 
   const handleLogout = () => {
-    logout();
+    clearSessionUser();
     navigate(paths.login);
   };
 

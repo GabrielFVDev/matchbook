@@ -29,9 +29,9 @@ import {
   MobilePreviewText,
   SuccessWrapper,
 } from './styles';
-import { useAuth } from '@/features/auth/useAuth';
-import { useCurtidos } from '@/features/my-books/likedCount';
+import { useCurtidos } from '@/lib/likedCount';
 import { livroService, recomendacaoService } from '@/lib/api/services';
+import { getSessionUser } from '@/lib/session';
 import { cores, listaGeneros } from '@/styles/tokens';
 import { curvaSaida, surgir } from '@/styles/motion';
 
@@ -72,7 +72,6 @@ const isValidUrl = (texto) => {
 };
 
 export default function AddBookPage() {
-  const { getCurrentUser } = useAuth();
   const { somar } = useCurtidos();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -130,7 +129,7 @@ export default function AddBookPage() {
       return;
     }
 
-    const usuario = getCurrentUser();
+    const usuario = getSessionUser();
     if (!usuario) {
       navigate('/');
       return;
