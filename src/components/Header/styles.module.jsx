@@ -1,83 +1,143 @@
-
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
+import { motion } from 'motion/react';
+import { cores, celular, raio, sombra } from '../../styles/tokens';
 
 export const HeaderContainer = styled.header`
+  width: 100%;
+`;
+
+export const HeaderContent = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 18px 40px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  ${celular} {
+    padding: 12px 20px;
+    gap: 12px;
+  }
+`;
+
+export const NavigationContainer = styled.nav`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+
+  ${celular} {
+    display: none;
+  }
+`;
+
+const estiloItem = `
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 17px;
+  border: 0;
+  border-radius: ${raio.pilula};
+  background: transparent;
+  color: ${cores.tintaSuave};
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s ease;
+`;
+
+export const NavItem = styled(NavLink)`
+  ${estiloItem}
+
+  &:hover {
+    color: ${cores.tinta};
+  }
+
+  &[aria-current='page'] {
+    color: ${cores.tinta};
+    font-weight: 700;
+  }
+`;
+
+// Fundo branco do item ativo. Desliza entre os itens ao trocar de tela.
+export const ActivePill = styled(motion.span)`
+  position: absolute;
+  inset: 0;
+  border-radius: ${raio.pilula};
+  background: ${cores.branco};
+  box-shadow: ${sombra.ativo};
+`;
+
+export const NavLabel = styled.span`
+  position: relative;
+`;
+
+export const LogoutButton = styled.button.attrs({ type: 'button' })`
+  ${estiloItem}
+
+  &:hover {
+    color: ${cores.tinta};
+  }
+`;
+
+export const RightSide = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+export const MobileAction = styled(motion.div)`
+  display: none;
+
+  ${celular} {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 40px;
-    background-color: #fff;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
+  }
 `;
 
-export const Logo = styled(Link)`
-    font-family: 'Crimson Text', serif;
-    font-size: 2em;
-    color: #6b4423;
-    text-decoration: none;
-    font-weight: 600;
+export const MobileIconLink = styled(Link)`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: ${raio.pilula};
+  background: ${cores.branco};
+  color: ${cores.tinta};
 `;
 
-export const IconWrapper = styled.div`
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    cursor: pointer;
-    border: 2px solid ${props => props.isActive ? '#667eea' : '#d4a574'};
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5em;
-    color: ${props => props.isActive ? '#fff' : '#6b4423'};
-    background: ${props => {
-        if (props.isActive && props.isAddButton) return 'linear-gradient(135deg, #27ae60 0%, #219a52 100%)';
-        if (props.isActive) return 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-        if (props.isAddButton) return 'linear-gradient(135deg, #27ae60 0%, #219a52 100%)';
-        return 'transparent';
-    }};
-    transition: all 0.3s ease;
+export const Counter = styled.p`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: ${raio.pilula};
+  background: ${cores.branco};
+  font-size: 14px;
 
-    &:hover {
-        background: ${props => {
-            if (props.isActive && props.isAddButton) return 'linear-gradient(135deg, #219a52 0%, #1e8449 100%)';
-            if (props.isActive) return 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)';
-            if (props.isAddButton) return 'linear-gradient(135deg, #27ae60 0%, #219a52 100%)';
-            return '#f0f0f0';
-        }};
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
+  strong {
+    display: inline-block;
+    font-weight: 800;
+  }
 
-    ${props => props.isAddButton && `
-        color: #fff;
-        border-color: #27ae60;
-    `}
+  svg {
+    color: ${({ $cor }) => $cor};
+    transition: color 0.4s ease;
+  }
+
+  ${celular} {
+    min-height: 36px;
+    padding: 0 14px;
+    font-size: 13px;
+  }
 `;
 
-export const NavigationContainer = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 15px;
+export const CounterHeart = styled(motion.span)`
+  display: flex;
 `;
 
-export const LogoutButton = styled.button`
-    background-color: #d4a574;
-    color: #fff;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1em;
-    transition: all 0.3s ease;
-
-    &:hover {
-        background-color: #c09060;
-        transform: translateY(-2px);
-    }
-`;
+export const CounterNumber = styled(motion.strong)``;

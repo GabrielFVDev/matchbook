@@ -1,289 +1,211 @@
-
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
+import { motion } from 'motion/react';
+import { cores, celular, raio, sombra } from '../../styles/tokens';
 
-// Reutilizando de home/styles.module.jsx
-export const PageContainer = styled.main`
-  min-height: 100vh;
-  width: 100vw;
-  background: linear-gradient(135deg, #2d1b69 0%, #1a1a2e 50%, #0f0f23 100%);
-  padding-top: 80px; /* Espaço para o header fixo */
-  position: relative;
-`;
-
-export const MainContent = styled.div`
-  padding: 40px;
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
-
-  @media (max-width: 768px) {
-    padding: 20px;
-  }
-`;
-
-export const HeaderNavigation = styled.div`
+export const PageHeading = styled.div`
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
   gap: 20px;
-  margin-bottom: 30px;
 `;
 
-export const BackButton = styled.button`
-  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
-  color: white;
-  border: 1px solid rgba(255,255,255,0.2);
-  padding: 12px 24px;
-  border-radius: 25px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-
-  &:hover {
-    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-  }
+export const TitleBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 `;
 
 export const PageTitle = styled.h1`
-  font-size: 2.5rem;
-  color: white;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  font-weight: 700;
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
 
-  @media (max-width: 768px) {
-    font-size: 2rem;
+  ${celular} {
+    font-size: 32px;
   }
 `;
 
-export const StatsContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
+export const PageSubtitle = styled.p`
+  font-size: 17px;
+  color: ${cores.tintaSuave};
+
+  ${celular} {
+    font-size: 15px;
+  }
 `;
 
-export const StatCard = styled.div`
-  background: linear-gradient(135deg, #f8f5f0 0%, #f2ede5 100%);
-  border-radius: 15px;
-  padding: 20px;
-  text-align: center;
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+export const HeadingActions = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  ${celular} {
+    display: none;
+  }
 `;
 
-export const StatNumber = styled.div`
-  font-size: 2rem;
-  font-weight: 700;
-  color: #2d1b69;
-  margin-bottom: 5px;
+export const FilterChip = styled.button.attrs({ type: 'button' })`
+  position: relative;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: ${raio.pilula};
+  background: ${cores.branco};
+  color: ${({ $ativo }) => ($ativo ? cores.branco : cores.tinta)};
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: color 0.2s ease, transform 0.12s ease;
+
+  &:active {
+    transform: scale(0.96);
+  }
 `;
 
-export const StatLabel = styled.div`
-  font-size: 0.9rem;
-  color: #666;
-  font-weight: 500;
+// Fundo escuro do filtro ativo. Desliza até o gênero escolhido.
+export const FilterPill = styled(motion.span)`
+  position: absolute;
+  inset: 0;
+  border-radius: ${raio.pilula};
+  background: ${cores.tinta};
+`;
+
+export const FilterLabel = styled.span`
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 `;
 
 export const FilterContainer = styled.div`
   display: flex;
-  gap: 10px;
-  margin-bottom: 30px;
   flex-wrap: wrap;
-`;
+  gap: 8px;
 
-export const FilterButton = styled.button`
-  padding: 10px 20px;
-  border: none;
-  border-radius: 25px;
-  background: ${({ active }) => active ? 'linear-gradient(135deg, #f8f5f0 0%, #f2ede5 100%)' : 'rgba(248, 245, 240, 0.2)'};
-  color: ${({ active }) => active ? '#2d1b69' : 'white'};
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: 1px solid rgba(248, 245, 240, 0.3);
-
-  &:hover {
-    background: ${({ active }) => active ? 'linear-gradient(135deg, #f0f0f0 0%, #e8e3dc 100%)' : 'rgba(248, 245, 240, 0.3)'};
-    transform: translateY(-2px);
+  ${celular} {
+    flex-wrap: nowrap;
+    margin: 0 -20px;
+    padding: 0 20px 4px;
+    overflow-x: auto;
   }
 `;
 
-export const BooksGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 25px;
-  width: 100%;
-  margin-top: 20px;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-`;
-
-export const BookCard = styled.div`
-  background: linear-gradient(135deg, #f8f5f0 0%, #f2ede5 100%);
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
-  display: flex;
-  flex-direction: row;
-  gap: 15px;
+export const BooksGrid = styled.ul`
   position: relative;
-  width: 100%;
-  min-height: 140px;
-  box-sizing: border-box;
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(230px, 100%), 1fr));
+  gap: 20px;
 
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 
-      0 15px 40px rgba(0, 0, 0, 0.4),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  ${celular} {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
   }
 `;
 
-export const RemoveButton = styled.button`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: rgba(255, 76, 76, 0.9);
-  color: white;
-  border: none;
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
+export const BookCard = styled(motion.li)`
   display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-  opacity: 0;
-
-  ${BookCard}:hover & {
-    opacity: 1;
-  }
-
-  &:hover {
-    background: rgba(255, 50, 50, 1);
-    transform: scale(1.1);
-  }
+  flex-direction: column;
 `;
 
-export const BookCover = styled.img`
-  width: 80px;
-  height: 120px;
-  object-fit: cover;
-  border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-  flex-shrink: 0;
-`;
-
-export const BookCoverPlaceholder = styled.div`
-  width: 80px;
-  height: 120px;
-  background: linear-gradient(135deg, #2d1b69, #1a1a2e);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-align: center;
-  line-height: 1.2;
-  flex-shrink: 0;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-`;
-
-export const BookInfo = styled.div`
+// Visual do cartão. Fica separado do item da lista para o "levantar" no hover
+// não brigar com a animação de reorganizar a grade.
+export const BookCardInner = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
+  padding: 10px 10px 14px;
+  border-radius: ${raio.cartao};
+  background: ${cores.branco};
+  box-shadow: ${sombra.leve};
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  @media (hover: hover) {
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 18px 40px rgba(26, 23, 38, 0.12);
+    }
+  }
+
+  ${celular} {
+    gap: 10px;
+    padding: 8px 8px 12px;
+    border-radius: 20px;
+  }
 `;
 
-export const BookTitle = styled.h3`
-  margin: 0;
-  font-size: 1.2rem;
-  color: #2d1b69;
+export const RemoveButton = styled.button.attrs({ type: 'button' })`
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: ${raio.pilula};
+  background: transparent;
+  color: ${cores.tinta};
+
+  span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: ${raio.pilula};
+    background: ${cores.branco};
+    transition: transform 0.12s ease, color 0.15s ease;
+  }
+
+  &:hover span {
+    color: ${cores.erro};
+  }
+
+  &:active:not(:disabled) span {
+    transform: scale(0.88);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+  }
+`;
+
+export const BookInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 6px;
+
+  ${celular} {
+    gap: 2px;
+    padding: 0 4px;
+  }
+`;
+
+export const BookAuthor = styled.p`
+  font-size: 16px;
   font-weight: 700;
-  line-height: 1.3;
+
+  ${celular} {
+    font-size: 14px;
+  }
 `;
 
 export const BookDetail = styled.p`
-  margin: 0;
-  color: #666;
-  font-size: 0.95rem;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 500;
+  font-size: 13px;
+  color: ${cores.tintaSuave};
 
-  &.genre {
-    color: #1a1a2e;
-    font-size: 0.9rem;
-    font-weight: 600;
+  ${celular} {
+    font-size: 12px;
   }
-
-  &.pages {
-    color: #888;
-    font-size: 0.85rem;
-  }
-
-  &.date {
-    color: #999;
-    font-size: 0.8rem;
-    font-style: italic;
-  }
-`;
-
-export const EmptyState = styled.div`
-  text-align: center;
-  padding: 60px 20px;
-  background: linear-gradient(135deg, #f8f5f0 0%, #f2ede5 100%);
-  border-radius: 25px;
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-`;
-
-export const EmptyIcon = styled.div`
-  font-size: 4rem;
-  color: #2d1b69;
-  margin-bottom: 20px;
-  opacity: 0.7;
-`;
-
-export const EmptyTitle = styled.h2`
-  color: #2d1b69;
-  margin: 0 0 15px 0;
-  font-size: 1.8rem;
-  font-weight: 600;
-`;
-
-export const EmptyDescription = styled.p`
-  color: #666;
-  margin: 0 0 30px 0;
-  font-size: 1rem;
-  line-height: 1.6;
-  max-width: 500px;
-  margin-left: auto;
-  margin-right: auto;
 `;
 
 export const LoadingContainer = styled.div`
@@ -291,40 +213,8 @@ export const LoadingContainer = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 100px 20px;
-  color: white;
-  font-size: 1.2rem;
-  gap: 20px;
-
-  svg {
-    font-size: 3rem;
-    opacity: 0.7;
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { 
-      opacity: 0.7; 
-    }
-    50% { 
-      opacity: 1; 
-    }
-  }
-`;
-
-export const ErrorContainer = styled.div`
-  text-align: center;
-  padding: 60px 20px;
-  background: linear-gradient(135deg, #f8f5f0 0%, #f2ede5 100%);
-  border-radius: 25px;
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  border: 2px solid rgba(255, 76, 76, 0.3);
-
-  div {
-    font-size: 1.2rem;
-    margin-bottom: 20px;
-    color: #2d1b69;
-  }
+  gap: 16px;
+  min-height: 360px;
+  font-size: 17px;
+  font-weight: 700;
 `;

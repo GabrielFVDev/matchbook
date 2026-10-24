@@ -1,27 +1,62 @@
-
-import { useState } from "react";
-import { PageWrapper } from "../../../components/PageWrapper";
-import { BookContainer } from "../../../components/BookContainer";
-import { LeftPage } from "../../../components/LeftPage";
-import { RightPage } from "../../../components/RightPage";
-import { Title } from "../../../components/Title";
-import { Form } from "../../../components/Form";
-import { FormRow } from "../../../components/FormRow";
-import { InputGroup } from "../../../components/InputGroup";
-import { Label } from "../../../components/Label";
-import { Input } from "../../../components/Input";
-import { Button } from "../../../components/Button";
-import { Checkbox } from "../../../components/Checkbox";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { AnimatePresence } from "motion/react";
+import {
+  AuthLayout,
+  AuthCard,
+  AuthHeading,
+  AuthEyebrow,
+  AuthTitle,
+  AuthText,
+  AuthForm
+} from "../../../components/AuthLayout";
+import { Field, FormAlert, Input } from "../../../components/Field";
+import { PasswordInput } from "../../../components/PasswordInput";
+import { TasteFields } from "../../../components/TasteFields";
+import { Button, ButtonLink } from "../../../components/Button";
+import { EmptyState } from "../../../components/EmptyState";
+import { Spinner } from "../../../components/Spinner";
+import { IconAlert, IconArrowLeft, IconArrowRight, IconCheck } from "../../../components/Icons";
+import {
+  CadastroSide,
+  SideTitle,
+  SideHeadline,
+  StepList,
+  StepItem,
+  StepNumber,
+  StepText,
+  StepPills,
+  StepPill,
+  PillNumber,
+  ButtonRow,
+  EtapaConteudo
+} from "./styles.module.jsx";
 import { useRegister } from "../../../hooks/useAuth";
 import { validarEmail, normalizarDadosUsuario } from "../../../utils/formatters";
-import { NotificationModal } from "../../../components/NotificationModal";
-import styles from "./styles.module.css";
+import { curvaEntrada, curvaSaida, entradaCartao } from "../../../styles/movimento";
+
+// A etapa nova entra pelo lado do avanço: da direita ao continuar, da esquerda ao voltar.
+const variantesEtapa = {
+  entrar: (sentido) => ({ opacity: 0, x: sentido * 40 }),
+  parado: { opacity: 1, x: 0, transition: { duration: 0.3, ease: curvaEntrada } },
+  sair: (sentido) => ({ opacity: 0, x: sentido * -40, transition: { duration: 0.15, ease: curvaSaida } }),
+};
+
+const etapas = [
+  { numero: 1, nome: "Sua conta", detalhe: "Nome, email e senha" },
+  { numero: 2, nome: "Seu gosto", detalhe: "Gênero, autor e ritmo de leitura" },
+];
 
 export default function CadastroPage() {
   const navigate = useNavigate();
-  const { register, loading, error, success, setError } = useRegister();
-  
+  const { register, loading } = useRegister();
+
+  const [etapa, setEtapa] = useState(1);
+  const [sentido, setSentido] = useState(1);
+  const [erros, setErros] = useState({});
+  const [erroCadastro, setErroCadastro] = useState(null);
+  const [contaCriada, setContaCriada] = useState(false);
+
   const [formData, setFormData] = useState({
     nome: "",
     email: "",
@@ -36,332 +71,192 @@ export default function CadastroPage() {
     biografia: ""
   });
 
-  const [showModal, setShowModal] = useState(false);
-  const [modalConfig, setModalConfig] = useState({
-    type: 'success',
-    title: '',
-    message: ''
-  });
+  // Depois de criar a conta, leva para o login.
+  useEffect(() => {
+    if (!contaCriada) return undefined;
+    const timer = setTimeout(() => navigate("/"), 3000);
+    return () => clearTimeout(timer);
+  }, [contaCriada, navigate]);
 
-  const handleInputChange = (e) => {
-    const { id, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [id]: type === 'checkbox' ? checked : value
-    }));
-    // Limpa erro quando usuário começa a digitar
-    if (error) {
-      setError(null);
+  const atualizar = (campo, valor) => {
+    setFormData(prev => ({ ...prev, [campo]: valor }));
+    if (erros[campo]) setErros(prev => ({ ...prev, [campo]: null }));
+    if (erroCadastro) setErroCadastro(null);
+  };
+
+  const handleInputChange = (e) => atualizar(e.target.name, e.target.value);
+
+  const senhaValida = formData.senha.length >= 6;
+  const senhasConferem = formData.confirmarSenha && formData.senha === formData.confirmarSenha;
+
+  const validarEtapa1 = () => {
+    const novosErros = {};
+    if (!formData.nome.trim()) novosErros.nome = "Informe seu nome";
+    if (!formData.email.trim()) novosErros.email = "Informe seu email";
+    else if (!validarEmail(formData.email)) novosErros.email = "Esse email parece incompleto";
+    if (!formData.senha) novosErros.senha = "Crie uma senha";
+    else if (!senhaValida) novosErros.senha = "Use pelo menos 6 caracteres";
+    if (!formData.confirmarSenha) novosErros.confirmarSenha = "Repita a senha";
+    else if (!senhasConferem) novosErros.confirmarSenha = "As senhas não coincidem";
+    setErros(novosErros);
+    return Object.keys(novosErros).length === 0;
+  };
+
+  const continuar = (e) => {
+    e.preventDefault();
+    if (validarEtapa1()) {
+      setSentido(1);
+      setEtapa(2);
     }
-  };
-
-  // Função para verificar se as senhas coincidem
-  const senhasConferem = () => {
-    return formData.senha && formData.confirmarSenha && 
-           formData.senha === formData.confirmarSenha;
-  };
-
-  // Função para verificar se a senha tem o tamanho mínimo
-  const senhaValida = () => {
-    return formData.senha && formData.senha.length >= 6;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validações básicas
-    if (!formData.nome || !formData.email || !formData.senha || !formData.confirmarSenha) {
-      setModalConfig({
-        type: 'error',
-        title: 'Campos Obrigatórios ⚠️',
-        message: 'Por favor, preencha todos os campos obrigatórios (nome, email, senha e confirmação de senha).'
-      });
-      setShowModal(true);
-      return;
-    }
 
-    if (!validarEmail(formData.email)) {
-      setModalConfig({
-        type: 'error',
-        title: 'Email Inválido ⚠️',
-        message: 'Por favor, insira um email válido.'
-      });
-      setShowModal(true);
-      return;
-    }
+    const { confirmarSenha: _confirmarSenha, ...dadosParaEnvio } = formData;
+    const resultado = await register(normalizarDadosUsuario(dadosParaEnvio));
 
-    if (formData.senha.length < 6) {
-      setModalConfig({
-        type: 'error',
-        title: 'Senha Muito Curta ⚠️',
-        message: 'A senha deve ter pelo menos 6 caracteres.'
-      });
-      setShowModal(true);
-      return;
-    }
-
-    if (formData.senha !== formData.confirmarSenha) {
-      setModalConfig({
-        type: 'error',
-        title: 'Senhas Não Coincidem ⚠️',
-        message: 'A senha e a confirmação de senha devem ser iguais.'
-      });
-      setShowModal(true);
-      return;
-    }
-
-    // Remove confirmação de senha dos dados a serem enviados
-    const { confirmarSenha, ...dadosParaEnvio } = formData;
-    
-    // Normaliza e prepara dados para envio
-    const userData = normalizarDadosUsuario(dadosParaEnvio);
-
-    console.log("Enviando dados:", userData);
-
-    const resultado = await register(userData);
-    
-    console.log("Resultado:", resultado);
-    
     if (resultado.success) {
-      // Mostra modal de sucesso
-      setModalConfig({
-        type: 'success',
-        title: 'Conta Criada com Sucesso! 🎉',
-        message: `Olá ${userData.nome}! Sua conta foi criada com sucesso. Você será redirecionado para fazer login em instantes.`
-      });
-      setShowModal(true);
-      
-      // Redireciona após 3 segundos
-      setTimeout(() => {
-        navigate("/");
-      }, 3000);
+      setContaCriada(true);
     } else {
-      // Mostra modal de erro se houver
-      if (resultado.error) {
-        setModalConfig({
-          type: 'error',
-          title: 'Erro no Cadastro ❌',
-          message: resultado.error
-        });
-        setShowModal(true);
-      }
+      setErroCadastro(resultado.error || "Não deu para criar sua conta. Tente de novo.");
     }
   };
+
+  // Mensagens embaixo das senhas: erro de envio vence a validação ao vivo.
+  const mensagemSenha = erros.senha
+    ? { error: erros.senha }
+    : formData.senha
+      ? senhaValida ? { success: "Senha válida" } : { error: "Muito curta, use pelo menos 6 caracteres" }
+      : { help: "Pelo menos 6 caracteres" };
+
+  const mensagemConfirmacao = erros.confirmarSenha
+    ? { error: erros.confirmarSenha }
+    : formData.confirmarSenha
+      ? senhasConferem ? { success: "As senhas coincidem" } : { error: "As senhas não coincidem" }
+      : {};
+
+  const estadoEtapa = (numero) => (numero === etapa ? "atual" : numero < etapa ? "feito" : "proximo");
+
   return (
-    <PageWrapper>
-      <BookContainer>
-        <LeftPage>
-          <div className={styles.formSection}>
-            <div className={styles.sectionHeader}>
-              <Title className={styles.sectionTitle}>Crie sua Conta</Title>
-              <p className={styles.sectionSubtitle}>Preencha seus dados pessoais</p>
-            </div>
-            
-            <div className={styles.fieldGroup}>
-              <FormRow className={styles.formRow}>
-                <InputGroup>
-                  <Label htmlFor="nome">Nome Completo *</Label>
-                  <Input 
-                    id="nome"
-                    type="text" 
-                    placeholder="Seu nome completo"
-                    value={formData.nome}
-                    onChange={handleInputChange}
-                    required 
-                  />
-                </InputGroup>
-              </FormRow>
-              
-              <FormRow className={styles.formRow}>
-                <InputGroup>
-                  <Label htmlFor="email">Email *</Label>
-                  <Input 
-                    id="email"
-                    type="email" 
-                    placeholder="seu@email.com"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    required 
-                  />
-                </InputGroup>
-              </FormRow>
-              
-              <FormRow className={styles.formRow}>
-                <InputGroup>
-                  <Label htmlFor="senha">Senha * (mín. 6 caracteres)</Label>
-                  <Input 
-                    id="senha"
-                    type="password" 
-                    placeholder="••••••••"
-                    value={formData.senha}
-                    onChange={handleInputChange}
-                    className={`${styles.passwordInput} ${
-                      formData.senha ? (senhaValida() ? styles.valid : styles.invalid) : ''
-                    }`}
-                    required 
-                  />
-                  {formData.senha && (
-                    <div className={`${styles.validationMessage} ${
-                      senhaValida() ? styles.success : styles.error
-                    }`}>
-                      {senhaValida() ? '✓ Senha válida' : '✗ Muito curta (mín. 6 caracteres)'}
-                    </div>
+    <AuthLayout
+      alinhar="flex-start"
+      linkTopo={<>Já tem conta? <Link to="/">Entrar</Link></>}
+    >
+      <CadastroSide>
+        <SideTitle>
+          <AuthEyebrow $marca>Criar conta</AuthEyebrow>
+          <SideHeadline>Duas etapas e você recebe seu primeiro livro.</SideHeadline>
+        </SideTitle>
+        <StepList aria-label="Etapas do cadastro">
+          {etapas.map((item) => {
+            const estado = estadoEtapa(item.numero);
+            return (
+              <StepItem key={item.numero} aria-current={estado === "atual" ? "step" : undefined}>
+                <StepNumber $estado={estado}>
+                  {estado === "feito" ? <IconCheck tamanho={20} /> : item.numero}
+                </StepNumber>
+                <StepText $apagado={estado === "proximo"}>
+                  <strong>{item.nome}</strong>
+                  <span>{estado === "feito" ? "Pronta" : item.detalhe}</span>
+                </StepText>
+              </StepItem>
+            );
+          })}
+        </StepList>
+        <StepPills aria-label="Etapas do cadastro">
+          {etapas.map((item) => {
+            const estado = estadoEtapa(item.numero);
+            return (
+              <StepPill key={item.numero} $atual={estado === "atual"} aria-current={estado === "atual" ? "step" : undefined}>
+                {estado === "feito" ? <IconCheck tamanho={16} /> : <PillNumber $atual={estado === "atual"}>{item.numero}</PillNumber>}
+                {item.nome}
+              </StepPill>
+            );
+          })}
+        </StepPills>
+      </CadastroSide>
+
+      <AuthCard $largura={560} aria-labelledby="tituloCadastro" {...entradaCartao}>
+        <AnimatePresence mode="wait" initial={false} custom={sentido}>
+          {contaCriada ? (
+            <EtapaConteudo key="contaCriada" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <EmptyState
+                icone={<IconCheck tamanho={30} />}
+                tom="sucesso"
+                titulo="Conta criada"
+                descricao={`Boas-vindas, ${formData.nome.trim().split(" ")[0]}! Em instantes você vai para o login.`}
+                role="status"
+              >
+                <ButtonLink to="/" $variante="primario">Entrar agora</ButtonLink>
+              </EmptyState>
+            </EtapaConteudo>
+          ) : (
+            <EtapaConteudo
+              key={etapa}
+              custom={sentido}
+              variants={variantesEtapa}
+              initial="entrar"
+              animate="parado"
+              exit="sair"
+            >
+              <AuthHeading>
+                <AuthEyebrow>Etapa {etapa} de 2</AuthEyebrow>
+                <AuthTitle id="tituloCadastro">{etapa === 1 ? "Sua conta" : "Seu gosto"}</AuthTitle>
+                {etapa === 2 && (
+                  <AuthText>Ajuda o Matchbook a acertar desde o primeiro livro. Tudo aqui é opcional.</AuthText>
+                )}
+              </AuthHeading>
+
+              {etapa === 1 ? (
+                <AuthForm onSubmit={continuar} noValidate>
+                  <Field id="nome" label="Nome completo" error={erros.nome}>
+                    <Input name="nome" type="text" autoComplete="name" placeholder="Seu nome" value={formData.nome} onChange={handleInputChange} />
+                  </Field>
+                  <Field id="email" label="Email" error={erros.email}>
+                    <Input name="email" type="email" autoComplete="email" placeholder="seu@email.com" value={formData.email} onChange={handleInputChange} />
+                  </Field>
+                  <Field id="senha" label="Senha" {...mensagemSenha}>
+                    <PasswordInput name="senha" autoComplete="new-password" placeholder="Crie uma senha" value={formData.senha} onChange={handleInputChange} />
+                  </Field>
+                  <Field id="confirmarSenha" label="Confirmar senha" {...mensagemConfirmacao}>
+                    <PasswordInput name="confirmarSenha" autoComplete="new-password" placeholder="Repita a senha" value={formData.confirmarSenha} onChange={handleInputChange} />
+                  </Field>
+                  <Field id="dataNascimento" label="Data de nascimento" tag="opcional">
+                    <Input name="dataNascimento" type="date" value={formData.dataNascimento} onChange={handleInputChange} />
+                  </Field>
+                  <Button type="submit" $tamanho="grande" $total>
+                    Continuar
+                    <IconArrowRight tamanho={18} />
+                  </Button>
+                </AuthForm>
+              ) : (
+                <AuthForm onSubmit={handleSubmit} noValidate>
+                  <TasteFields dados={formData} onChange={atualizar} prefixo="cadastro" />
+
+                  {erroCadastro && (
+                    <FormAlert role="alert">
+                      <IconAlert tamanho={18} />
+                      {erroCadastro}
+                    </FormAlert>
                   )}
-                </InputGroup>
-              </FormRow>
-              
-              <FormRow className={styles.formRow}>
-                <InputGroup>
-                  <Label htmlFor="confirmarSenha">Confirmar Senha *</Label>
-                  <Input 
-                    id="confirmarSenha"
-                    type="password" 
-                    placeholder="Repita sua senha"
-                    value={formData.confirmarSenha}
-                    onChange={handleInputChange}
-                    className={`${styles.passwordInput} ${
-                      formData.confirmarSenha ? (senhasConferem() ? styles.valid : styles.invalid) : ''
-                    }`}
-                    required 
-                  />
-                  {formData.confirmarSenha && (
-                    <div className={`${styles.validationMessage} ${
-                      senhasConferem() ? styles.success : styles.error
-                    }`}>
-                      {senhasConferem() ? '✓ Senhas coincidem' : '✗ Senhas não coincidem'}
-                    </div>
-                  )}
-                </InputGroup>
-              </FormRow>
-              
-              <FormRow className={styles.formRow}>
-                <InputGroup>
-                  <Label htmlFor="dataNascimento">Data de Nascimento</Label>
-                  <Input 
-                    id="dataNascimento"
-                    type="date"
-                    value={formData.dataNascimento}
-                    onChange={handleInputChange}
-                  />
-                </InputGroup>
-              </FormRow>
-            </div>
-          </div>
-        </LeftPage>
-        
-        <RightPage>
-          <div className={styles.rightPageContainer}>
-            <Form onSubmit={handleSubmit}>
-              <div className={`${styles.formSection} ${styles.compactSpacing}`}>
-                <div className={styles.sectionHeader}>
-                  <p className={styles.sectionSubtitle}>Conte-nos sobre seus gostos literários</p>
-                </div>
-                
-                <div className={`${styles.fieldGroup} ${styles.tightSpacing}`}>
-                <FormRow className={styles.formRow}>
-                  <InputGroup>
-                    <Label htmlFor="generoFavorito">Gênero Favorito</Label>
-                    <Input 
-                      id="generoFavorito"
-                      type="text" 
-                      placeholder="Ex: Ficção Científica, Romance, etc."
-                      value={formData.generoFavorito}
-                      onChange={handleInputChange}
-                    />
-                  </InputGroup>
-                </FormRow>
-                
-                <FormRow className={styles.formRow}>
-                  <InputGroup>
-                    <Label htmlFor="livrosLidos">Livros Lidos (Quantidade)</Label>
-                    <Input 
-                      id="livrosLidos"
-                      type="number" 
-                      placeholder="0"
-                      min="0"
-                      value={formData.livrosLidos}
-                      onChange={handleInputChange}
-                    />
-                  </InputGroup>
-                </FormRow>
-                
-                <FormRow className={styles.formRow}>
-                  <InputGroup>
-                    <Label htmlFor="autorPreferido">Autor Preferido</Label>
-                    <Input 
-                      id="autorPreferido"
-                      type="text" 
-                      placeholder="Ex: Machado de Assis, Agatha Christie, etc."
-                      value={formData.autorPreferido}
-                      onChange={handleInputChange}
-                    />
-                  </InputGroup>
-                </FormRow>
-                
-                <FormRow className={styles.formRow}>
-                  <InputGroup>
-                    <Label htmlFor="nivelLeitura">Nível de Leitura</Label>
-                    <Input 
-                      id="nivelLeitura"
-                      type="text" 
-                      placeholder="Iniciante, Intermediário ou Avançado"
-                      value={formData.nivelLeitura}
-                      onChange={handleInputChange}
-                    />
-                  </InputGroup>
-                </FormRow>
-                
-                <FormRow className={styles.formRow}>
-                  <InputGroup>
-                    <Label htmlFor="biografia">Biografia (Opcional)</Label>
-                    <Input 
-                      id="biografia"
-                      type="text" 
-                      placeholder="Conte um pouco sobre seus gostos literários..."
-                      value={formData.biografia}
-                      onChange={handleInputChange}
-                    />
-                  </InputGroup>
-                </FormRow>
-              </div>
-              
-              <div className={styles.checkboxContainer}>
-                <Checkbox 
-                  id="receberRecomendacoes"
-                  type="checkbox"
-                  checked={formData.receberRecomendacoes}
-                  onChange={handleInputChange}
-                />
-                <Label htmlFor="receberRecomendacoes">Desejo receber recomendações personalizadas</Label>
-              </div>
-              
-              <div className={styles.submitSection}>
-                <Button 
-                  type="submit" 
-                  disabled={loading}
-                  className={styles.submitButton}
-                >
-                  {loading ? "Criando conta..." : "Criar Conta"}
-                </Button>
-                <div className={styles.loginLink}>
-                  <Link to="/">Já tem uma conta? Faça login</Link>
-                </div>
-              </div>
-            </div>
-          </Form>
-          </div>
-        </RightPage>
-      </BookContainer>
-      
-      <NotificationModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        type={modalConfig.type}
-        title={modalConfig.title}
-        message={modalConfig.message}
-        autoClose={modalConfig.type === 'success'}
-        autoCloseDelay={3000}
-      />
-    </PageWrapper>
+
+                  <ButtonRow>
+                    <Button $variante="secundario" $tamanho="grande" onClick={() => { setSentido(-1); setEtapa(1); }}>
+                      <IconArrowLeft tamanho={18} />
+                      Voltar
+                    </Button>
+                    <Button type="submit" $tamanho="grande" disabled={loading}>
+                      {loading && <Spinner />}
+                      {loading ? "Criando conta" : "Criar conta"}
+                    </Button>
+                  </ButtonRow>
+                </AuthForm>
+              )}
+            </EtapaConteudo>
+          )}
+        </AnimatePresence>
+      </AuthCard>
+    </AuthLayout>
   );
 }

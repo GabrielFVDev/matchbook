@@ -1,320 +1,271 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import Header from "../../components/Header";
-import { NotificationModal } from "../../components/NotificationModal";
-import { FaBook, FaHeart, FaArrowLeft, FaCalendarAlt, FaUser, FaTags, FaTrash } from 'react-icons/fa';
-import { useAuth } from "../../hooks/useAuth";
-import { recomendacaoService } from "../../apis/services";
+import { useCallback, useEffect, useState } from "react";
+import { AnimatePresence } from "motion/react";
+import { AppLayout } from "../../components/AppLayout";
+import { BookCover } from "../../components/BookCover";
+import { ChipCount } from "../../components/Chip";
+import { ButtonLink, Button } from "../../components/Button";
+import { StatGrid, StatTile } from "../../components/StatTile";
+import { EmptyState } from "../../components/EmptyState";
+import { Toast } from "../../components/Toast";
+import { Spinner } from "../../components/Spinner";
+import { IconAlert, IconHeart, IconPlus, IconRefresh, IconTrash } from "../../components/Icons";
 import {
-  PageContainer,
-  MainContent,
-  HeaderNavigation,
-  BackButton,
+  PageHeading,
+  TitleBlock,
   PageTitle,
-  StatsContainer,
-  StatCard,
-  StatNumber,
-  StatLabel,
+  PageSubtitle,
+  HeadingActions,
   FilterContainer,
-  FilterButton,
+  FilterChip,
+  FilterPill,
+  FilterLabel,
   BooksGrid,
   BookCard,
+  BookCardInner,
   RemoveButton,
-  BookCover,
-  BookCoverPlaceholder,
   BookInfo,
-  BookTitle,
+  BookAuthor,
   BookDetail,
-  EmptyState,
-  EmptyIcon,
-  EmptyTitle,
-  EmptyDescription,
-  LoadingContainer,
-  ErrorContainer,
+  LoadingContainer
 } from './styles.module.jsx';
+import { useAuth } from "../../hooks/useAuth";
+import { useCurtidos } from "../../contexts/curtidos";
+import { recomendacaoService } from "../../apis/services";
+import { cores, coresDoGenero, nomeDoGenero } from "../../styles/tokens";
+import { curvaSaida, mola, molaSuave } from "../../styles/movimento";
+
+// Os livros entram em sequência, saem encolhendo e o resto da grade se reorganiza.
+const variantesItem = {
+  entrar: { opacity: 0, y: 16, scale: 0.96 },
+  parado: (ordem) => ({ opacity: 1, y: 0, scale: 1, transition: { ...molaSuave, delay: Math.min(ordem * 0.04, 0.32) } }),
+  sair: { opacity: 0, scale: 0.9, transition: { duration: 0.2, ease: curvaSaida } },
+};
+
+// A API pode devolver o livro direto ou dentro de "livro"; aqui vira um formato só.
+const normalizarLivro = (item) => {
+  const livro = item.livro || item;
+  return {
+    id: item.livroId ?? livro.id ?? item.id,
+    titulo: livro.titulo,
+    autor: livro.autor,
+    genero: nomeDoGenero(livro.genero) || livro.genero || 'Outros',
+    numeroPaginas: livro.numeroPaginas,
+    capaUrl: livro.capaUrl || livro.capa || livro.imagem || livro.imagemUrl,
+    dataCurtida: item.dataCurtida || livro.dataCurtida
+  };
+};
+
+const formatarData = (data) => (data ? new Date(data).toLocaleDateString('pt-BR') : '');
 
 export default function MeusLivrosPage() {
   const { getCurrentUser } = useAuth();
-  const navigate = useNavigate();
-  const [usuario, setUsuario] = useState(null);
+  const { somar } = useCurtidos();
+  const [usuario] = useState(() => getCurrentUser());
   const [livros, setLivros] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [notification, setNotification] = useState(null);
-  const [filtroGenero, setFiltroGenero] = useState('todos');
-  const [imagensComErro, setImagensComErro] = useState(new Set());
+  const [filtroGenero, setFiltroGenero] = useState('Todos');
+  const [removendo, setRemovendo] = useState(null);
+  const [aviso, setAviso] = useState(null);
+
+  const carregarLivrosCurtidos = useCallback(async () => {
+    if (!usuario?.id) return;
+    setLoading(true);
+    setError(null);
+
+    const response = await recomendacaoService.obterLivrosCurtidos(usuario.id);
+
+    if (response.success) {
+      const livrosOrdenados = (response.data || [])
+        .map(normalizarLivro)
+        .sort((a, b) => new Date(b.dataCurtida) - new Date(a.dataCurtida));
+      setLivros(livrosOrdenados);
+    } else {
+      setError(response.error || 'Erro ao carregar seus livros.');
+    }
+    setLoading(false);
+  }, [usuario?.id]);
 
   useEffect(() => {
-    const user = getCurrentUser();
-    if (!user) {
-      navigate('/login');
-      return;
+    carregarLivrosCurtidos();
+  }, [carregarLivrosCurtidos]);
+
+  const fecharAviso = useCallback(() => setAviso(null), []);
+
+  const handleRemoverLivro = async (livro) => {
+    const posicao = livros.findIndex((item) => item.id === livro.id);
+    setRemovendo(livro.id);
+
+    const response = await recomendacaoService.descurtirLivro(usuario.id, livro.id);
+
+    if (response.success) {
+      setLivros((atual) => atual.filter((item) => item.id !== livro.id));
+      somar(-1);
+      setAviso({ tipo: 'removido', livro, posicao, chave: Date.now() });
+    } else {
+      setAviso({ tipo: 'erro', mensagem: 'Não deu para remover agora.', chave: Date.now() });
     }
-    setUsuario(user);
-    carregarLivrosCurtidos(user.id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigate]);
-
-  const carregarLivrosCurtidos = async (idUsuario) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await recomendacaoService.obterLivrosCurtidos(idUsuario);
-      
-      if (response.success) {
-        const livrosOrdenados = response.data.sort((a, b) => 
-          new Date(b.dataCurtida) - new Date(a.dataCurtida)
-        );
-        setLivros(livrosOrdenados);
-      } else {
-        if (response.error && !response.error.includes('Nenhum livro')) {
-          setError(response.error);
-        } else {
-          setLivros([]);
-        }
-      }
-    } catch (err) {
-      console.error('Erro ao carregar livros curtidos:', err);
-      setError('Erro ao carregar seus livros. Tente novamente.');
-    } finally {
-      setLoading(false);
-    }
+    setRemovendo(null);
   };
 
-  const voltarParaHome = () => {
-    navigate('/home');
-  };
+  const desfazerRemocao = async () => {
+    if (aviso?.tipo !== 'removido') return;
+    const { livro, posicao } = aviso;
+    setAviso(null);
 
-  const fecharNotificacao = () => {
-    setNotification(null);
-  };
+    const response = await recomendacaoService.curtirLivro(usuario.id, livro.id);
 
-    const handleImageError = (livroId) => {
-    setImagensComErro(prev => new Set(prev).add(livroId));
-  };
-
-  const handleRemoverLivro = async (livroId) => {
-    try {
-      setLoading(true);
-      await recomendacaoService.removerLivro(livroId);
-      setNotification({
-        tipo: 'sucesso',
-        mensagem: 'Livro removido dos favoritos com sucesso!'
+    if (response.success) {
+      setLivros((atual) => {
+        const lista = [...atual];
+        lista.splice(Math.min(posicao, lista.length), 0, livro);
+        return lista;
       });
-      carregarLivros();
-    } catch (error) {
-      setNotification({
-        tipo: 'erro',
-        mensagem: error.message || 'Erro ao remover livro'
-      });
-    } finally {
-      setLoading(false);
+      somar(1);
+    } else {
+      setAviso({ tipo: 'erro', mensagem: 'Não deu para desfazer.', chave: Date.now() });
     }
   };
 
-  const livrosFiltrados = filtroGenero === 'todos' 
-    ? livros 
-    : livros.filter(livro => livro.genero?.toLowerCase() === filtroGenero.toLowerCase());
-
-  const generos = [...new Set(livros.map(livro => livro.genero).filter(Boolean))];
-
-  const totalLivros = livros.length;
-  const totalPaginas = livros.reduce((total, livro) => total + (livro.numeroPaginas || 0), 0);
-  const generoMaisLido = generos.reduce((max, genero) => {
-    const count = livros.filter(livro => livro.genero === genero).length;
-    return count > (max.count || 0) ? { genero, count } : max;
+  const contagem = livros.reduce((total, livro) => {
+    total[livro.genero] = (total[livro.genero] || 0) + 1;
+    return total;
   }, {});
+  const generos = Object.keys(contagem);
+  const filtro = filtroGenero !== 'Todos' && !contagem[filtroGenero] ? 'Todos' : filtroGenero;
+  const livrosFiltrados = filtro === 'Todos' ? livros : livros.filter((livro) => livro.genero === filtro);
 
-  const formatarData = (data) => {
-    if (!data) return '';
-    return new Date(data).toLocaleDateString('pt-BR');
-  };
-
-  if (loading) {
-    return (
-      <PageContainer>
-        <Header />
-        <MainContent>
-          <LoadingContainer>
-            <FaBook />
-            <div>Carregando seus livros...</div>
-          </LoadingContainer>
-        </MainContent>
-      </PageContainer>
-    );
-  }
-
-  if (error) {
-    return (
-      <PageContainer>
-        <Header />
-        <MainContent>
-          <ErrorContainer>
-            <div>❌ {error}</div>
-            <BackButton onClick={() => carregarLivrosCurtidos(usuario?.id)}>
-              Tentar Novamente
-            </BackButton>
-          </ErrorContainer>
-        </MainContent>
-      </PageContainer>
-    );
-  }
+  const totalPaginas = livros.reduce((total, livro) => total + (Number(livro.numeroPaginas) || 0), 0);
+  const generoMaisLido = generos.reduce((maior, genero) => (contagem[genero] > (contagem[maior] || 0) ? genero : maior), null);
+  const coresMaisLido = generoMaisLido ? coresDoGenero(generoMaisLido) : null;
 
   return (
-    <PageContainer>
-      <Header />
-      
-      <MainContent>
-        <HeaderNavigation>
-          <BackButton onClick={voltarParaHome}>
-            <FaArrowLeft /> Voltar
-          </BackButton>
-          <PageTitle>
-            <FaHeart /> Meus Livros Favoritos
-          </PageTitle>
-        </HeaderNavigation>
+    <AppLayout>
+      <PageHeading>
+        <TitleBlock>
+          <PageTitle>Meus livros</PageTitle>
+          <PageSubtitle>Os livros que você amou, do mais recente ao mais antigo.</PageSubtitle>
+        </TitleBlock>
+        <HeadingActions>
+          <ButtonLink to="/adicionar-livro" $variante="branco">
+            <IconPlus tamanho={17} />
+            Adicionar livro
+          </ButtonLink>
+          <ButtonLink to="/home">
+            <IconHeart tamanho={17} />
+            Descobrir livros
+          </ButtonLink>
+        </HeadingActions>
+      </PageHeading>
 
-        {totalLivros > 0 && (
-          <StatsContainer>
-            <StatCard>
-              <StatNumber>{totalLivros}</StatNumber>
-              <StatLabel>Livros Curtidos</StatLabel>
-            </StatCard>
-            <StatCard>
-              <StatNumber>{totalPaginas.toLocaleString()}</StatNumber>
-              <StatLabel>Páginas Totais</StatLabel>
-            </StatCard>
-            <StatCard>
-              <StatNumber>{generos.length}</StatNumber>
-              <StatLabel>Gêneros Diferentes</StatLabel>
-            </StatCard>
-            {generoMaisLido.genero && (
-              <StatCard>
-                <StatNumber>{generoMaisLido.genero}</StatNumber>
-                <StatLabel>Gênero Favorito</StatLabel>
-              </StatCard>
+      {loading && (
+        <LoadingContainer role="status">
+          <Spinner tamanho={36} cor={cores.marca} />
+          Carregando seus livros
+        </LoadingContainer>
+      )}
+
+      {!loading && error && (
+        <EmptyState icone={<IconAlert tamanho={28} />} tom="erro" titulo="Não deu para carregar seus livros" descricao="Confira sua conexão e tente de novo.">
+          <Button onClick={carregarLivrosCurtidos}>
+            <IconRefresh tamanho={16} />
+            Tentar de novo
+          </Button>
+        </EmptyState>
+      )}
+
+      {!loading && !error && livros.length === 0 && (
+        <EmptyState icone={<IconHeart tamanho={30} />} titulo="Nenhum livro por aqui ainda" descricao="Dê Amei nas recomendações e os livros aparecem aqui.">
+          <ButtonLink to="/home">Descobrir livros</ButtonLink>
+          <ButtonLink to="/adicionar-livro" $variante="secundario">Adicionar livro</ButtonLink>
+        </EmptyState>
+      )}
+
+      {!loading && !error && livros.length > 0 && (
+        <>
+          <StatGrid>
+            <StatTile ordem={0} rotulo="Livros curtidos" valor={livros.length} />
+            <StatTile ordem={1} rotulo="Páginas no total" valor={totalPaginas.toLocaleString('pt-BR')} />
+            <StatTile ordem={2} rotulo="Gêneros diferentes" valor={generos.length} />
+            {generoMaisLido && (
+              <StatTile ordem={3} rotulo="Gênero mais curtido" valor={generoMaisLido} fundo={coresMaisLido.fundo} cor={coresMaisLido.capa} texto />
             )}
-          </StatsContainer>
-        )}
+          </StatGrid>
 
-        {generos.length > 1 && (
-          <FilterContainer>
-            <FilterButton 
-              active={filtroGenero === 'todos'}
-              onClick={() => setFiltroGenero('todos')}
-            >
-              Todos
-            </FilterButton>
-            {generos.map(genero => (
-              <FilterButton 
-                key={genero}
-                active={filtroGenero === genero}
-                onClick={() => setFiltroGenero(genero)}
-              >
-                {genero}
-              </FilterButton>
-            ))}
-          </FilterContainer>
-        )}
+          {generos.length > 1 && (
+            <FilterContainer role="group" aria-label="Filtrar por gênero">
+              {['Todos', ...generos].map((genero) => {
+                const ativo = genero === filtro;
+                return (
+                  <FilterChip key={genero} $ativo={ativo} aria-pressed={ativo} onClick={() => setFiltroGenero(genero)}>
+                    {ativo && <FilterPill layoutId="filtroAtivo" transition={mola} />}
+                    <FilterLabel>
+                      {genero}
+                      <ChipCount $ativo={ativo}>{genero === 'Todos' ? livros.length : contagem[genero]}</ChipCount>
+                    </FilterLabel>
+                  </FilterChip>
+                );
+              })}
+            </FilterContainer>
+          )}
 
-        {livrosFiltrados.length === 0 ? (
-          <EmptyState>
-            <EmptyIcon>
-              <FaBook />
-            </EmptyIcon>
-            <EmptyTitle>
-              {filtroGenero === 'todos' 
-                ? "Nenhum livro encontrado"
-                : `Nenhum livro de ${filtroGenero}`
-              }
-            </EmptyTitle>
-            <EmptyDescription>
-              {filtroGenero === 'todos'
-                ? "Que tal descobrir alguns livros incríveis? Use o quiz de recomendações para encontrar seu próximo livro favorito!"
-                : `Você ainda não curtiu nenhum livro de ${filtroGenero}. Continue explorando!`
-              }
-            </EmptyDescription>
-            {filtroGenero === 'todos' && (
-              <>
-                <BackButton onClick={voltarParaHome}>
-                  Descobrir Livros
-                </BackButton>
-                <BackButton 
-                  onClick={() => navigate('/adicionar-livro')} 
-                  style={{ 
-                    background: 'linear-gradient(135deg, #27ae60 0%, #219a52 100%)',
-                    marginTop: '10px'
-                  }}
-                >
-                  📚 Adicionar Livro ao Catálogo
-                </BackButton>
-              </>
-            )}
-          </EmptyState>
-        ) : (
           <BooksGrid>
-            {livrosFiltrados.map((livro) => (
-              <BookCard key={livro.id}>
-                <RemoveButton 
-                  onClick={() => removerLivro(livro.id, livro.titulo)}
-                  title="Remover dos favoritos"
+            <AnimatePresence mode="popLayout">
+              {livrosFiltrados.map((livro, ordem) => (
+                <BookCard
+                  key={livro.id}
+                  layout
+                  custom={ordem}
+                  variants={variantesItem}
+                  initial="entrar"
+                  animate="parado"
+                  exit="sair"
                 >
-                  <FaTrash />
-                </RemoveButton>
-                
-                {(() => {
-                  const capaUrl = livro.capaUrl || livro.capa || livro.imagem || livro.imagemUrl;
-                  
-                  if (imagensComErro.has(livro.id) || !capaUrl) {
-                    return (
-                      <BookCoverPlaceholder>
-                        📚<br/>Sem Capa
-                      </BookCoverPlaceholder>
-                    );
-                  }
-                  
-                  return (
-                    <BookCover 
-                      src={capaUrl} 
-                      alt={`Capa do livro ${livro.titulo}`}
-                      onError={() => handleImageError(livro.id)}
-                    />
-                  );
-                })()}
-                
-                <BookInfo>
-                  <BookTitle>{livro.titulo}</BookTitle>
-                  <BookDetail>
-                    <FaUser /> {livro.autor}
-                  </BookDetail>
-                  <BookDetail className="genre">
-                    <FaTags /> {livro.genero}
-                  </BookDetail>
-                  <BookDetail className="pages">
-                    {livro.numeroPaginas} páginas
-                  </BookDetail>
-                  {livro.dataCurtida && (
-                    <BookDetail className="date">
-                      <FaCalendarAlt /> Curtido em {formatarData(livro.dataCurtida)}
-                    </BookDetail>
-                  )}
-                </BookInfo>
-              </BookCard>
-            ))}
+                  <BookCardInner>
+                    <BookCover titulo={livro.titulo} genero={livro.genero} capaUrl={livro.capaUrl} tamanho="grade">
+                      <RemoveButton
+                        aria-label={`Remover ${livro.titulo} dos favoritos`}
+                        onClick={() => handleRemoverLivro(livro)}
+                        disabled={removendo === livro.id}
+                      >
+                        <span>
+                          {removendo === livro.id ? <Spinner tamanho={16} /> : <IconTrash tamanho={17} />}
+                        </span>
+                      </RemoveButton>
+                    </BookCover>
+                    <BookInfo>
+                      <BookAuthor>{livro.autor}</BookAuthor>
+                      <BookDetail>
+                        {[livro.numeroPaginas && `${livro.numeroPaginas} páginas`, livro.dataCurtida && `Curtido em ${formatarData(livro.dataCurtida)}`]
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </BookDetail>
+                    </BookInfo>
+                  </BookCardInner>
+                </BookCard>
+              ))}
+            </AnimatePresence>
           </BooksGrid>
+        </>
+      )}
+
+      <AnimatePresence>
+        {aviso && (
+          <Toast
+            key={aviso.chave}
+            chave={aviso.chave}
+            onFechar={fecharAviso}
+            duracao={aviso.tipo === 'removido' ? 6000 : 4000}
+            acao={aviso.tipo === 'removido' ? { rotulo: 'Desfazer', onClick: desfazerRemocao } : undefined}
+          >
+            {aviso.tipo === 'removido' ? (
+              <><strong>{aviso.livro.titulo}</strong> saiu dos seus livros.</>
+            ) : (
+              aviso.mensagem
+            )}
+          </Toast>
         )}
-      </MainContent>
-      
-      <NotificationModal
-        isOpen={!!notification}
-        type={notification?.type || 'success'}
-        title={notification?.title || ''}
-        message={notification?.message || ''}
-        onClose={fecharNotificacao}
-        autoClose={true}
-        autoCloseDelay={3000}
-      />
-    </PageContainer>
+      </AnimatePresence>
+    </AppLayout>
   );
 }

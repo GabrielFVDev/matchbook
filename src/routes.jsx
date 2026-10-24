@@ -1,4 +1,3 @@
-
 import { Route, BrowserRouter, Routes } from "react-router-dom";
 import LoginPage from "./pages/auth/login";
 import CadastroPage from "./pages/auth/cadastro";
@@ -7,6 +6,7 @@ import ProfilePage from "./pages/profile";
 import MeusLivrosPage from "./pages/meus-livros";
 import AdicionarLivroPage from "./pages/adicionar-livro";
 import { ProtectedRoute, PublicRoute } from "./components/ProtectedRoute";
+import { AppShell } from "./components/AppShell";
 
 export default function AppRoutes() {
   return (
@@ -22,29 +22,19 @@ export default function AppRoutes() {
             <CadastroPage />
           </PublicRoute>
         } />
-        <Route path="/home" element={
+        {/* Telas de quem já entrou: dividem o mesmo cabeçalho e barra do celular */}
+        <Route element={
           <ProtectedRoute>
-            <HomePage />
+            <AppShell />
           </ProtectedRoute>
-        } />
-        <Route path="/profile" element={
-          <ProtectedRoute>
-            <ProfilePage />
-          </ProtectedRoute>
-        } />
-        <Route path="/meus-livros" element={
-          <ProtectedRoute>
-            <MeusLivrosPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/adicionar-livro" element={
-          <ProtectedRoute>
-            <AdicionarLivroPage />
-          </ProtectedRoute>
-        } />
+        }>
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/meus-livros" element={<MeusLivrosPage />} />
+          <Route path="/adicionar-livro" element={<AdicionarLivroPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+        </Route>
         {/* <Route path="/about" element={<About />} /> */}
       </Routes>
     </BrowserRouter>
   );
 }
-

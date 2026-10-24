@@ -1,29 +1,88 @@
+import styled, { css } from 'styled-components';
+import { Link } from 'react-router-dom';
+import { cores, raio } from '../../styles/tokens';
 
-import styled from 'styled-components';
+const variantes = {
+  primario: css`
+    background: ${cores.tinta};
+    color: ${cores.branco};
+    font-weight: 700;
+  `,
+  secundario: css`
+    background: ${cores.fundoApp};
+    color: ${cores.tinta};
+    font-weight: 600;
+  `,
+  branco: css`
+    background: ${cores.branco};
+    color: ${cores.tinta};
+    font-weight: 600;
+  `,
+  discreto: css`
+    background: transparent;
+    color: ${cores.marca};
+    font-weight: 700;
+  `,
+  perigo: css`
+    background: ${cores.erroFundo};
+    color: ${cores.erro};
+    font-weight: 700;
+  `,
+  perigoForte: css`
+    background: ${cores.erro};
+    color: ${cores.branco};
+    font-weight: 700;
+  `,
+};
 
-export const Button = styled.button`
-  width: 100%;
-  padding: 15px;
-  margin-top: 10px;
-  background: linear-gradient(135deg, #6b4423 0%, #8b5a2b 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1.1em;
-  cursor: pointer;
-  font-family: 'Crimson Text', serif;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+const tamanhos = {
+  grande: css`
+    min-height: 56px;
+    padding: 0 28px;
+    font-size: 17px;
+  `,
+  medio: css`
+    min-height: 48px;
+    padding: 0 20px;
+    font-size: 15px;
+  `,
+};
 
-  &:hover {
-    background: linear-gradient(135deg, #8b5a2b 0%, #6b4423 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(107, 68, 35, 0.3);
+const estiloBotao = css`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 0;
+  border-radius: ${raio.pilula};
+  text-decoration: none;
+  line-height: 1.1;
+  text-align: center;
+  transition: transform 0.18s ease, opacity 0.15s ease, background-color 0.2s ease;
+  ${({ $variante = 'primario' }) => variantes[$variante]}
+  ${({ $tamanho = 'medio' }) => tamanhos[$tamanho]}
+  ${({ $total }) => $total && css`width: 100%;`}
+
+  @media (hover: hover) {
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
   }
 
-  &:active {
-    transform: translateY(0);
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+    transition-duration: 0.08s;
   }
+
+  &:disabled {
+    opacity: 0.4;
+  }
+`;
+
+export const Button = styled.button.attrs(({ type }) => ({ type: type || 'button' }))`
+  ${estiloBotao}
+`;
+
+export const ButtonLink = styled(Link)`
+  ${estiloBotao}
 `;
