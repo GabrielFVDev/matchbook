@@ -7,11 +7,11 @@ describe('login and sign-up', () => {
     renderApp('/home');
 
     expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeInTheDocument();
-    expect(window.location.pathname).toBe('/');
+    expect(window.location.pathname).toBe('/entrar');
   });
 
   it('warns when the password is wrong', async () => {
-    const { user } = renderApp('/');
+    const { user } = renderApp('/entrar');
 
     await user.type(await screen.findByLabelText('Email'), 'ana@email.com');
     await user.type(screen.getByLabelText('Senha'), 'errada');
@@ -22,7 +22,7 @@ describe('login and sign-up', () => {
   });
 
   it('the right password opens Home and stores the session without the password', async () => {
-    const { user } = renderApp('/');
+    const { user } = renderApp('/entrar');
 
     await user.type(await screen.findByLabelText('Email'), 'ana@email.com');
     await user.type(screen.getByLabelText('Senha'), '123456');

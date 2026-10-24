@@ -1,9 +1,13 @@
 import '@testing-library/jest-dom/vitest';
-import { cleanup } from '@testing-library/react';
+import { cleanup, configure } from '@testing-library/react';
 import { MotionGlobalConfig } from 'motion/react';
 import { afterAll, afterEach, beforeAll } from 'vitest';
 import { resetMockState } from '@/mocks/handlers';
 import { server } from '@/mocks/server';
+
+// Each screen arrives on demand, and the first import of a big one can take over the default
+// 1 s of findBy/waitFor while Vitest transforms it.
+configure({ asyncUtilTimeout: 3000 });
 
 // Animations finish instantly, so assertions do not wait for exits and springs.
 MotionGlobalConfig.skipAnimations = true;

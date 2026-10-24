@@ -63,7 +63,7 @@ export function AuthLayout({ topLink, align = 'center', children }: AuthLayoutPr
   return (
     <Page>
       <TopBar>
-        <Logo to={paths.login} />
+        <Logo to={paths.welcome} />
         {topLink && <TopLinkText>{topLink}</TopLinkText>}
       </TopBar>
       <Main $align={align}>{children}</Main>
