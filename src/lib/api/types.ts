@@ -62,7 +62,12 @@ export interface CreateBookRequest {
 // "dataCurtida"). As leituras ficam como estão até a fase do backend (ver
 // ~/.claude/handoffs/reestruturacao-matchbook.files/analise-arquitetura.md, seção 1.2).
 export interface LikedBookItem extends Partial<BookDto> {
-  livro?: Partial<BookDto> & { capaUrl?: string; imagem?: string; imagemUrl?: string };
+  livro?: Partial<BookDto> & {
+    capaUrl?: string;
+    imagem?: string;
+    imagemUrl?: string;
+    dataCurtida?: string;
+  };
   livroId?: number;
   capaUrl?: string;
   imagem?: string;

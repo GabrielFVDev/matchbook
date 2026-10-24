@@ -45,7 +45,7 @@ export const HeadingActions = styled.div`
   }
 `;
 
-export const FilterChip = styled.button.attrs({ type: 'button' })`
+export const FilterChip = styled.button.attrs({ type: 'button' })<{ $ativo?: boolean }>`
   position: relative;
   flex: 0 0 auto;
   display: inline-flex;

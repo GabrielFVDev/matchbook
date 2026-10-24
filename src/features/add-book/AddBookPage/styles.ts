@@ -150,7 +150,7 @@ export const PreviewCard = styled.div`
   box-shadow: 0 18px 44px rgba(26, 23, 38, 0.1);
 `;
 
-export const PreviewInfo = styled.div`
+export const PreviewInfo = styled.div<{ $vazio?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -183,7 +183,7 @@ export const MobilePreview = styled.div`
   }
 `;
 
-export const MobilePreviewText = styled.div`
+export const MobilePreviewText = styled.div<{ $vazio?: boolean }>`
   flex: 1;
   min-width: 0;
   display: flex;

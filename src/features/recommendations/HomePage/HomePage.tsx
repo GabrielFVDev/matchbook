@@ -7,6 +7,7 @@ import { Spinner } from '@/components/Spinner';
 import { ToastPill, ToastDetail } from '@/components/Toast';
 import { IconAlert, IconArrowRight, IconBook, IconHeart, IconRefresh } from '@/components/Icons';
 import { SwipeCard } from './SwipeCard';
+import type { Escolha, LivroCarta } from './SwipeCard';
 import {
   MatchArea,
   Intro,
@@ -29,17 +30,25 @@ import { recomendacaoService } from '@/lib/api/services';
 import { getSessionUser } from '@/lib/session';
 import { cores, coresDoGenero } from '@/styles/tokens';
 import { animacaoAviso, surgir } from '@/styles/motion';
+import { paths } from '@/app/paths';
 
 const TEMPO_AVISO = 3500;
+
+interface Aviso {
+  tipo: Escolha | 'erro';
+  titulo: string;
+  texto: string;
+  chave: number;
+}
 
 export default function HomePage() {
   const { somar } = useCurtidos();
   const [usuario] = useState(() => getSessionUser());
-  const [currentBook, setCurrentBook] = useState(null);
+  const [currentBook, setCurrentBook] = useState<LivroCarta | null>(null);
   const [loading, setLoading] = useState(true);
-  const [erro, setErro] = useState(null);
+  const [erro, setErro] = useState<'vazio' | 'falha' | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [aviso, setAviso] = useState(null);
+  const [aviso, setAviso] = useState<Aviso | null>(null);
   // Lado para onde a carta sai: 1 é direita (Amei), -1 é esquerda (Próximo).
   const [direcao, setDirecao] = useState(1);
   const [batidas, setBatidas] = useState(0);
@@ -75,7 +84,7 @@ export default function HomePage() {
   }, [aviso]);
 
   // A carta sai na hora; se a API falhar, ela volta para a pilha.
-  const decidir = async (escolha) => {
+  const decidir = async (escolha: Escolha) => {
     if (!currentBook || !usuario?.id || isProcessing) return;
     const livro = currentBook;
     const amei = escolha === 'amei';
@@ -144,9 +153,9 @@ export default function HomePage() {
   });
 
   useEffect(() => {
-    const aoTeclar = (evento) => {
+    const aoTeclar = (evento: KeyboardEvent) => {
       if (evento.altKey || evento.ctrlKey || evento.metaKey || evento.shiftKey) return;
-      if (evento.target.closest?.('input, textarea, select, [role="dialog"]')) return;
+      if ((evento.target as Element).closest?.('input, textarea, select, [role="dialog"]')) return;
       if (evento.key === 'ArrowRight') {
         evento.preventDefault();
         decidirRef.current('amei');
@@ -185,8 +194,8 @@ export default function HomePage() {
               titulo="Você viu tudo por enquanto"
               descricao="Adicione um livro ao catálogo ou volte mais tarde."
             >
-              <ButtonLink to="/adicionar-livro">Adicionar livro</ButtonLink>
-              <ButtonLink to="/meus-livros" $variante="secundario">
+              <ButtonLink to={paths.addBook}>Adicionar livro</ButtonLink>
+              <ButtonLink to={paths.myBooks} $variante="secundario">
                 Ver meus livros
               </ButtonLink>
             </EmptyState>
@@ -235,7 +244,8 @@ export default function HomePage() {
                     <SwipeCard
                       key={currentBook.id}
                       livro={currentBook}
-                      coresLivro={coresLivro}
+                      // Com a carta na tela há livro, e com livro há cores.
+                      coresLivro={coresLivro!}
                       desabilitado={isProcessing}
                       onDecidir={decidir}
                     />

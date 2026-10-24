@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AnimatePresence } from 'motion/react';
+import type { Variants } from 'motion/react';
 import { AppLayout } from '@/layouts/AppLayout';
 import { BookCover } from '@/components/BookCover';
 import { ChipCount } from '@/components/Chip';
@@ -30,14 +31,16 @@ import {
 } from './styles';
 import { useCurtidos } from '@/lib/likedCount';
 import { recomendacaoService } from '@/lib/api/services';
+import type { LikedBookItem } from '@/lib/api/types';
 import { getSessionUser } from '@/lib/session';
 import { cores, coresDoGenero, nomeDoGenero } from '@/styles/tokens';
 import { curvaSaida, mola, molaSuave } from '@/styles/motion';
+import { paths } from '@/app/paths';
 
 // Os livros entram em sequência, saem encolhendo e o resto da grade se reorganiza.
-const variantesItem = {
+const variantesItem: Variants = {
   entrar: { opacity: 0, y: 16, scale: 0.96 },
-  parado: (ordem) => ({
+  parado: (ordem: number) => ({
     opacity: 1,
     y: 0,
     scale: 1,
@@ -46,11 +49,23 @@ const variantesItem = {
   sair: { opacity: 0, scale: 0.9, transition: { duration: 0.2, ease: curvaSaida } },
 };
 
+interface LivroFavorito {
+  id: number;
+  titulo?: string;
+  autor?: string;
+  genero: string;
+  numeroPaginas?: number | null;
+  capaUrl?: string | null;
+  dataCurtida?: string;
+}
+
 // A API pode devolver o livro direto ou dentro de "livro"; aqui vira um formato só.
-const normalizarLivro = (item) => {
+// Ela nunca manda "livro", "livroId", "capaUrl", "imagem" nem "dataCurtida" (ver LikedBookItem
+// em src/lib/api/types.ts); as leituras ficam até a fase do backend.
+const normalizarLivro = (item: LikedBookItem): LivroFavorito => {
   const livro = item.livro || item;
   return {
-    id: item.livroId ?? livro.id ?? item.id,
+    id: (item.livroId ?? livro.id ?? item.id) as number,
     titulo: livro.titulo,
     autor: livro.autor,
     genero: nomeDoGenero(livro.genero) || livro.genero || 'Outros',
@@ -60,17 +75,24 @@ const normalizarLivro = (item) => {
   };
 };
 
-const formatarData = (data) => (data ? new Date(data).toLocaleDateString('pt-BR') : '');
+const formatarData = (data?: string) => (data ? new Date(data).toLocaleDateString('pt-BR') : '');
+
+// O instante da curtida para ordenar; sem data, NaN, como new Date(undefined) dava.
+const quando = (data?: string) => (data ? new Date(data).getTime() : NaN);
+
+type AvisoLista =
+  | { tipo: 'removido'; livro: LivroFavorito; posicao: number; chave: number }
+  | { tipo: 'erro'; mensagem: string; chave: number };
 
 export default function MyBooksPage() {
   const { somar } = useCurtidos();
   const [usuario] = useState(() => getSessionUser());
-  const [livros, setLivros] = useState([]);
+  const [livros, setLivros] = useState<LivroFavorito[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [filtroGenero, setFiltroGenero] = useState('Todos');
-  const [removendo, setRemovendo] = useState(null);
-  const [aviso, setAviso] = useState(null);
+  const [removendo, setRemovendo] = useState<number | null>(null);
+  const [aviso, setAviso] = useState<AvisoLista | null>(null);
 
   const carregarLivrosCurtidos = useCallback(async () => {
     if (!usuario?.id) return;
@@ -82,7 +104,7 @@ export default function MyBooksPage() {
     if (response.success) {
       const livrosOrdenados = (response.data || [])
         .map(normalizarLivro)
-        .sort((a, b) => new Date(b.dataCurtida) - new Date(a.dataCurtida));
+        .sort((a, b) => quando(b.dataCurtida) - quando(a.dataCurtida));
       setLivros(livrosOrdenados);
     } else {
       setError(response.error || 'Erro ao carregar seus livros.');
@@ -96,11 +118,12 @@ export default function MyBooksPage() {
 
   const fecharAviso = useCallback(() => setAviso(null), []);
 
-  const handleRemoverLivro = async (livro) => {
+  // A tela só abre com sessão (ProtectedRoute), por isso o "usuario!" nas ações.
+  const handleRemoverLivro = async (livro: LivroFavorito) => {
     const posicao = livros.findIndex((item) => item.id === livro.id);
     setRemovendo(livro.id);
 
-    const response = await recomendacaoService.descurtirLivro(usuario.id, livro.id);
+    const response = await recomendacaoService.descurtirLivro(usuario!.id, livro.id);
 
     if (response.success) {
       setLivros((atual) => atual.filter((item) => item.id !== livro.id));
@@ -117,7 +140,7 @@ export default function MyBooksPage() {
     const { livro, posicao } = aviso;
     setAviso(null);
 
-    const response = await recomendacaoService.curtirLivro(usuario.id, livro.id);
+    const response = await recomendacaoService.curtirLivro(usuario!.id, livro.id);
 
     if (response.success) {
       setLivros((atual) => {
@@ -131,7 +154,7 @@ export default function MyBooksPage() {
     }
   };
 
-  const contagem = livros.reduce((total, livro) => {
+  const contagem = livros.reduce<Record<string, number>>((total, livro) => {
     total[livro.genero] = (total[livro.genero] || 0) + 1;
     return total;
   }, {});
@@ -144,8 +167,9 @@ export default function MyBooksPage() {
     (total, livro) => total + (Number(livro.numeroPaginas) || 0),
     0,
   );
-  const generoMaisLido = generos.reduce(
-    (maior, genero) => (contagem[genero] > (contagem[maior] || 0) ? genero : maior),
+  const generoMaisLido = generos.reduce<string | null>(
+    (maior, genero) =>
+      contagem[genero] > ((maior !== null && contagem[maior]) || 0) ? genero : maior,
     null,
   );
   const coresMaisLido = generoMaisLido ? coresDoGenero(generoMaisLido) : null;
@@ -158,11 +182,11 @@ export default function MyBooksPage() {
           <PageSubtitle>Os livros que você amou, do mais recente ao mais antigo.</PageSubtitle>
         </TitleBlock>
         <HeadingActions>
-          <ButtonLink to="/adicionar-livro" $variante="branco">
+          <ButtonLink to={paths.addBook} $variante="branco">
             <IconPlus tamanho={17} />
             Adicionar livro
           </ButtonLink>
-          <ButtonLink to="/home">
+          <ButtonLink to={paths.home}>
             <IconHeart tamanho={17} />
             Descobrir livros
           </ButtonLink>
@@ -196,8 +220,8 @@ export default function MyBooksPage() {
           titulo="Nenhum livro por aqui ainda"
           descricao="Dê Amei nas recomendações e os livros aparecem aqui."
         >
-          <ButtonLink to="/home">Descobrir livros</ButtonLink>
-          <ButtonLink to="/adicionar-livro" $variante="secundario">
+          <ButtonLink to={paths.home}>Descobrir livros</ButtonLink>
+          <ButtonLink to={paths.addBook} $variante="secundario">
             Adicionar livro
           </ButtonLink>
         </EmptyState>
@@ -218,8 +242,8 @@ export default function MyBooksPage() {
                 ordem={3}
                 rotulo="Gênero mais curtido"
                 valor={generoMaisLido}
-                fundo={coresMaisLido.fundo}
-                cor={coresMaisLido.capa}
+                fundo={coresMaisLido?.fundo}
+                cor={coresMaisLido?.capa}
                 texto
               />
             )}

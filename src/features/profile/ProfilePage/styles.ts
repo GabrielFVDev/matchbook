@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import { motion } from 'motion/react';
 import { cores, celular, raio } from '@/styles/tokens';
 
-export const Card = styled(motion.section)`
+export const Card = styled(motion.section)<{ $fundo?: string }>`
   display: flex;
   flex-direction: column;
   gap: 22px;
@@ -181,7 +181,7 @@ export const InfoList = styled.dl`
   }
 `;
 
-export const InfoItem = styled.div`
+export const InfoItem = styled.div<{ $span?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -216,7 +216,7 @@ export const Biography = styled.dd`
   line-height: 1.5;
 `;
 
-export const StatusRow = styled.div`
+export const StatusRow = styled.div<{ $ligado?: boolean | null }>`
   grid-column: 1 / -1;
   display: flex;
   align-items: center;
@@ -254,7 +254,7 @@ export const StrategyList = styled.ul`
   gap: 8px;
 `;
 
-export const StrategyItem = styled.li`
+export const StrategyItem = styled.li<{ $atual?: boolean }>`
   display: flex;
   align-items: center;
   gap: 6px;

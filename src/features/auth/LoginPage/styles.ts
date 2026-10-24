@@ -15,7 +15,19 @@ export const CoverStack = styled(motion.div)`
   }
 `;
 
-export const StackCover = styled(motion.div)`
+// Cada medida vem em par: [desktop, celular].
+type Par = readonly [number, number];
+
+export const StackCover = styled(motion.div)<{
+  $cor: string;
+  $x: Par;
+  $y: Par;
+  $w: Par;
+  $h: Par;
+  $giro: number;
+  $fonte: Par;
+  $tituloCelular: boolean;
+}>`
   position: absolute;
   left: ${({ $x }) => $x[0]}px;
   top: ${({ $y }) => $y[0]}px;
