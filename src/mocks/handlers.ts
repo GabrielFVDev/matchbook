@@ -6,7 +6,9 @@ const API = 'http://localhost:8080/api';
 
 type Body = Record<string, unknown>;
 
-// A recomendação gira entre os 3 primeiros livros, um a cada pedido.
+// A recomendação gira entre os 3 primeiros livros e só avança com Amei ou Próximo, como no
+// backend, que tira da lista o livro já decidido. Pedir de novo sem decidir (o React pede duas
+// vezes no modo dev) devolve o mesmo livro, e o Início abre sempre em "Fundação".
 let turn = 0;
 let nextLikeId = 100;
 let nextBookId = 6;
@@ -35,13 +37,19 @@ export const handlers = [
 
   // O backend devolve o catálogo inteiro ordenado; o front mostra o primeiro.
   http.get(`${API}/recomendacao/getRecomendacaoAdaptativa/:userId`, () => {
-    const first = books[turn++ % 3];
+    const first = books[turn % 3];
     return HttpResponse.json([first, ...books.filter((book) => book !== first)]);
   }),
 
-  http.post(`${API}/recomendacao/aceitar`, emptyOk),
+  http.post(`${API}/recomendacao/aceitar`, () => {
+    turn++;
+    return emptyOk();
+  }),
 
-  http.post(`${API}/recomendacao/recusar`, () => HttpResponse.json(rejectResult)),
+  http.post(`${API}/recomendacao/recusar`, () => {
+    turn++;
+    return HttpResponse.json(rejectResult);
+  }),
 
   http.get(`${API}/recomendacao/estatisticas/:userId`, () => HttpResponse.json(stats)),
 
