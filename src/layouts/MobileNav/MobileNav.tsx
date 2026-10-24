@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 import { cores, celular, raio, sombra } from '@/styles/tokens';
 import { mola } from '@/styles/motion';
 import { IconHeartOutline, IconHome, IconPlus, IconUser } from '@/components/Icons';
+import { paths } from '@/app/paths';
 
 const Barra = styled.nav`
   display: none;
@@ -59,10 +60,10 @@ const AbaAtiva = styled(motion.span)`
 `;
 
 const abas = [
-  { to: '/home', label: 'Início', icone: <IconHome /> },
-  { to: '/meus-livros', label: 'Meus livros', icone: <IconHeartOutline /> },
-  { to: '/adicionar-livro', label: 'Adicionar', icone: <IconPlus /> },
-  { to: '/profile', label: 'Perfil', icone: <IconUser /> },
+  { to: paths.home, label: 'Início', icone: <IconHome /> },
+  { to: paths.myBooks, label: 'Meus livros', icone: <IconHeartOutline /> },
+  { to: paths.addBook, label: 'Adicionar', icone: <IconPlus /> },
+  { to: paths.profile, label: 'Perfil', icone: <IconUser /> },
 ];
 
 // Barra de navegação do celular. No celular o "Sair" fica dentro do Perfil.

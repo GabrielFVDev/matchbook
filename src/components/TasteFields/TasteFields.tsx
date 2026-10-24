@@ -45,9 +45,25 @@ const Linha = styled.div`
 
 const niveisLeitura = ['Iniciante', 'Intermediário', 'Avançado'];
 
+// Os campos do gosto, com os nomes de campo da API.
+export interface DadosGosto {
+  generoFavorito: string;
+  autorPreferido: string;
+  nivelLeitura: string;
+  livrosLidos: number | string;
+  biografia: string;
+  receberRecomendacoes: boolean;
+}
+
+interface TasteFieldsProps {
+  dados: DadosGosto;
+  onChange: <K extends keyof DadosGosto>(campo: K, valor: DadosGosto[K]) => void;
+  prefixo: string;
+}
+
 // Campos do gosto literário, usados na etapa 2 do cadastro e na edição do perfil.
 // "dados" tem os nomes de campo da API; "onChange(campo, valor)" atualiza um deles.
-export function TasteFields({ dados, onChange, prefixo }) {
+export function TasteFields({ dados, onChange, prefixo }: TasteFieldsProps) {
   const generoAtual = nomeDoGenero(dados.generoFavorito);
 
   return (

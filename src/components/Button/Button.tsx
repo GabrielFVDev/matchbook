@@ -48,7 +48,16 @@ const tamanhos = {
   `,
 };
 
-const estiloBotao = css`
+export type ButtonVariante = keyof typeof variantes;
+export type ButtonTamanho = keyof typeof tamanhos;
+
+interface EstiloBotaoProps {
+  $variante?: ButtonVariante;
+  $tamanho?: ButtonTamanho;
+  $total?: boolean;
+}
+
+const estiloBotao = css<EstiloBotaoProps>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -86,10 +95,12 @@ const estiloBotao = css`
   }
 `;
 
-export const Button = styled.button.attrs(({ type }) => ({ type: type || 'button' }))`
+export const Button = styled.button.attrs<EstiloBotaoProps>(({ type }) => ({
+  type: type || 'button',
+}))<EstiloBotaoProps>`
   ${estiloBotao}
 `;
 
-export const ButtonLink = styled(Link)`
+export const ButtonLink = styled(Link)<EstiloBotaoProps>`
   ${estiloBotao}
 `;

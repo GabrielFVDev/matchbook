@@ -109,7 +109,7 @@ export const MobileIconLink = styled(Link)`
   color: ${cores.tinta};
 `;
 
-export const Counter = styled.p`
+export const Counter = styled.p<{ $cor: string }>`
   display: flex;
   align-items: center;
   gap: 8px;

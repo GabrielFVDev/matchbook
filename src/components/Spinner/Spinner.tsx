@@ -11,7 +11,12 @@ const Svg = styled.svg`
   animation: ${girar} 0.9s linear infinite;
 `;
 
-export const Spinner = ({ tamanho = 18, cor = 'currentColor' }) => (
+interface SpinnerProps {
+  tamanho?: number;
+  cor?: string;
+}
+
+export const Spinner = ({ tamanho = 18, cor = 'currentColor' }: SpinnerProps) => (
   <Svg
     width={tamanho}
     height={tamanho}

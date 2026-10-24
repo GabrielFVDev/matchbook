@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import type { ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence } from 'motion/react';
 import {
@@ -20,27 +21,28 @@ import { Logo } from '@/components/Logo';
 import { IconHeart, IconPencil, IconPlus } from '@/components/Icons';
 import { useAuth } from '@/features/auth/useAuth';
 import { useCurtidos } from '@/features/my-books/likedCount';
+import { paths } from '@/app/paths';
 import { cores } from '@/styles/tokens';
 import { mola } from '@/styles/motion';
 
 const links = [
-  { to: '/home', label: 'Início' },
-  { to: '/meus-livros', label: 'Meus livros' },
-  { to: '/adicionar-livro', label: 'Adicionar livro' },
-  { to: '/profile', label: 'Perfil' },
+  { to: paths.home, label: 'Início' },
+  { to: paths.myBooks, label: 'Meus livros' },
+  { to: paths.addBook, label: 'Adicionar livro' },
+  { to: paths.profile, label: 'Perfil' },
 ];
 
 // Botão do canto direito no celular, que muda conforme a tela.
-const acoesCelular = {
-  '/meus-livros': { to: '/adicionar-livro', label: 'Adicionar livro', icone: <IconPlus /> },
-  '/profile': {
-    to: '/profile?editar=1',
+const acoesCelular: Record<string, { to: string; label: string; icone: ReactNode }> = {
+  [paths.myBooks]: { to: paths.addBook, label: 'Adicionar livro', icone: <IconPlus /> },
+  [paths.profile]: {
+    to: `${paths.profile}?editar=1`,
     label: 'Editar perfil',
     icone: <IconPencil tamanho={18} />,
   },
 };
 
-export default function Header({ corDestaque = cores.marca }) {
+export default function Header({ corDestaque = cores.marca }: { corDestaque?: string }) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { logout } = useAuth();
@@ -59,7 +61,7 @@ export default function Header({ corDestaque = cores.marca }) {
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate(paths.login);
   };
 
   const acao = acoesCelular[pathname];
@@ -67,7 +69,7 @@ export default function Header({ corDestaque = cores.marca }) {
   return (
     <HeaderContainer>
       <HeaderContent>
-        <Logo para="/home" />
+        <Logo para={paths.home} />
         <NavigationContainer aria-label="Principal">
           {links.map((link) => (
             <NavItem key={link.to} to={link.to}>

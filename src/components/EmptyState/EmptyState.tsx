@@ -1,3 +1,4 @@
+import type { AriaRole, ReactNode } from 'react';
 import styled from 'styled-components';
 import { motion } from 'motion/react';
 import { cores, celular } from '@/styles/tokens';
@@ -9,7 +10,9 @@ const tons = {
   sucesso: { fundo: cores.sucessoFundo, cor: cores.sucesso },
 };
 
-const Caixa = styled(motion.div)`
+type Tom = keyof typeof tons;
+
+const Caixa = styled(motion.div)<{ $fundo?: string }>`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -26,7 +29,7 @@ const Caixa = styled(motion.div)`
   }
 `;
 
-const Icone = styled(motion.span)`
+const Icone = styled(motion.span)<{ $tom: Tom }>`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -63,7 +66,25 @@ const Acoes = styled.div`
 `;
 
 // Bloco para tela vazia, erro ou sucesso: ícone, título, texto e ações.
-export function EmptyState({ icone, tom = 'marca', titulo, descricao, fundo, children, role }) {
+interface EmptyStateProps {
+  icone?: ReactNode;
+  tom?: Tom;
+  titulo: ReactNode;
+  descricao?: ReactNode;
+  fundo?: string;
+  children?: ReactNode;
+  role?: AriaRole;
+}
+
+export function EmptyState({
+  icone,
+  tom = 'marca',
+  titulo,
+  descricao,
+  fundo,
+  children,
+  role,
+}: EmptyStateProps) {
   return (
     <Caixa
       $fundo={fundo}

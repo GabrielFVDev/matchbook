@@ -1,9 +1,12 @@
 import { useEffect, useId } from 'react';
+import type { ReactNode } from 'react';
 import styled from 'styled-components';
 import { AnimatePresence, motion } from 'motion/react';
+import type { MotionProps } from 'motion/react';
 import { cores, celular, raio } from '@/styles/tokens';
 import { curvaSaida } from '@/styles/motion';
 import { Button } from '@/components/Button';
+import type { ButtonVariante } from '@/components/Button';
 import { IconX } from '@/components/Icons';
 
 const Fundo = styled(motion.div)`
@@ -23,7 +26,7 @@ const Fundo = styled(motion.div)`
   }
 `;
 
-const Caixa = styled(motion.div)`
+const Caixa = styled(motion.div)<{ $largura: number }>`
   width: 100%;
   max-width: ${({ $largura }) => $largura}px;
   max-height: calc(100vh - 48px);
@@ -69,11 +72,13 @@ const Fechar = styled.button.attrs({ type: 'button' })`
   color: ${cores.tinta};
 `;
 
+type Animacao = Pick<MotionProps, 'initial' | 'animate' | 'exit'>;
+
 const animacaoFundo = {
   initial: { opacity: 0 },
   animate: { opacity: 1, transition: { duration: 0.2 } },
   exit: { opacity: 0, transition: { duration: 0.18, delay: 0.04 } },
-};
+} satisfies Animacao;
 
 const animacaoCaixa = {
   initial: { opacity: 0, y: 28, scale: 0.98 },
@@ -84,15 +89,23 @@ const animacaoCaixa = {
     transition: { type: 'spring', stiffness: 380, damping: 32 },
   },
   exit: { opacity: 0, y: 16, scale: 0.98, transition: { duration: 0.15, ease: curvaSaida } },
-};
+} satisfies Animacao;
 
 // Janela sobre a tela. Fecha com Esc, clique fora ou no botão de fechar.
-export function Dialog({ aberto, titulo, onFechar, largura = 560, children }) {
+interface DialogProps {
+  aberto: boolean;
+  titulo: ReactNode;
+  onFechar: () => void;
+  largura?: number;
+  children: ReactNode;
+}
+
+export function Dialog({ aberto, titulo, onFechar, largura = 560, children }: DialogProps) {
   const tituloId = useId();
 
   useEffect(() => {
     if (!aberto) return undefined;
-    const aoTeclar = (evento) => {
+    const aoTeclar = (evento: KeyboardEvent) => {
       if (evento.key === 'Escape') onFechar();
     };
     document.addEventListener('keydown', aoTeclar);
@@ -130,7 +143,7 @@ export function Dialog({ aberto, titulo, onFechar, largura = 560, children }) {
   );
 }
 
-const IconeAlerta = styled.span`
+const IconeAlerta = styled.span<{ $perigo?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -157,6 +170,19 @@ const Botoes = styled.div`
   }
 `;
 
+interface ConfirmDialogProps {
+  aberto: boolean;
+  titulo: ReactNode;
+  descricao: ReactNode;
+  icone?: ReactNode;
+  rotuloConfirmar: ReactNode;
+  rotuloCarregando?: ReactNode;
+  variante?: ButtonVariante;
+  carregando?: boolean;
+  onConfirmar: () => void;
+  onCancelar: () => void;
+}
+
 // Confirmação de ação sem volta, como excluir a conta.
 export function ConfirmDialog({
   aberto,
@@ -169,7 +195,7 @@ export function ConfirmDialog({
   carregando,
   onConfirmar,
   onCancelar,
-}) {
+}: ConfirmDialogProps) {
   return (
     <Dialog aberto={aberto} titulo={titulo} onFechar={onCancelar} largura={400}>
       {icone && <IconeAlerta $perigo={variante === 'perigoForte'}>{icone}</IconeAlerta>}

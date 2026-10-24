@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { ComponentProps } from 'react';
 import styled from 'styled-components';
 import { cores, raio } from '@/styles/tokens';
 import { Input } from '@/components/Field';
@@ -29,7 +30,7 @@ const Mostrar = styled.button.attrs({ type: 'button' })`
 `;
 
 // Campo de senha com o botão de mostrar e esconder.
-export function PasswordInput(props) {
+export function PasswordInput(props: Omit<ComponentProps<typeof Input>, 'type'>) {
   const [visivel, setVisivel] = useState(false);
 
   return (

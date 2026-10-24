@@ -1,4 +1,5 @@
 import { Children, cloneElement, isValidElement } from 'react';
+import type { ComponentProps, HTMLAttributes, ReactNode } from 'react';
 import styled, { css } from 'styled-components';
 import { cores, raio } from '@/styles/tokens';
 import { IconAlert, IconCheck, IconChevronDown } from '@/components/Icons';
@@ -17,7 +18,11 @@ export const LabelTag = styled.span`
   color: ${cores.tintaSuave};
 `;
 
-const estiloEntrada = css`
+interface EntradaProps {
+  $erro?: boolean;
+}
+
+const estiloEntrada = css<EntradaProps>`
   width: 100%;
   min-width: 0;
   border: 0;
@@ -41,13 +46,13 @@ const estiloEntrada = css`
   }
 `;
 
-export const Input = styled.input`
+export const Input = styled.input<EntradaProps>`
   ${estiloEntrada}
   height: 52px;
   padding: 0 16px;
 `;
 
-export const TextArea = styled.textarea`
+export const TextArea = styled.textarea<EntradaProps>`
   ${estiloEntrada}
   min-height: 112px;
   padding: 14px 16px;
@@ -68,7 +73,7 @@ const SelectWrap = styled.div`
   }
 `;
 
-const SelectBase = styled.select`
+const SelectBase = styled.select<EntradaProps>`
   ${estiloEntrada}
   height: 52px;
   padding: 0 44px 0 16px;
@@ -76,14 +81,14 @@ const SelectBase = styled.select`
   cursor: pointer;
 `;
 
-export const Select = ({ children, ...props }) => (
+export const Select = ({ children, ...props }: ComponentProps<typeof SelectBase>) => (
   <SelectWrap>
     <SelectBase {...props}>{children}</SelectBase>
     <IconChevronDown tamanho={18} />
   </SelectWrap>
 );
 
-const Mensagem = styled.p`
+const Mensagem = styled.p<{ $tom: 'erro' | 'sucesso' | 'ajuda' }>`
   display: flex;
   align-items: center;
   gap: 6px;
@@ -98,7 +103,7 @@ const Mensagem = styled.p`
   }
 `;
 
-const Grupo = styled.div`
+const Grupo = styled.div<{ $span?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -110,14 +115,43 @@ const Grupo = styled.div`
     `}
 `;
 
+// O que o Field põe no controle filho (Input, Select, TextArea, PasswordInput).
+interface ControleInjetado {
+  id?: string;
+  $erro?: boolean;
+  'aria-invalid'?: boolean;
+  'aria-describedby'?: string;
+}
+
+interface FieldProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+  id: string;
+  label: ReactNode;
+  tag?: ReactNode;
+  help?: ReactNode;
+  error?: ReactNode;
+  success?: ReactNode;
+  span?: boolean;
+  children: ReactNode;
+}
+
 // Campo com rótulo, marcação de opcional ou obrigatório e uma mensagem embaixo.
 // Liga sozinho aria-describedby e aria-invalid no controle filho.
-export function Field({ id, label, tag, help, error, success, span, children, ...resto }) {
+export function Field({
+  id,
+  label,
+  tag,
+  help,
+  error,
+  success,
+  span,
+  children,
+  ...resto
+}: FieldProps) {
   const mensagemId = `${id}Mensagem`;
   const temMensagem = Boolean(error || success || help);
 
   const controle = Children.map(children, (filho) =>
-    isValidElement(filho)
+    isValidElement<ControleInjetado>(filho)
       ? cloneElement(filho, {
           id,
           $erro: Boolean(error),

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import type { ReactNode } from 'react';
 import styled, { css } from 'styled-components';
 import { motion } from 'motion/react';
 import { cores, celular, raio, sombra } from '@/styles/tokens';
@@ -19,7 +20,9 @@ const Area = styled.div`
   }
 `;
 
-export const ToastPill = styled(motion.div)`
+type ToastTom = 'escuro' | 'claro';
+
+export const ToastPill = styled(motion.div)<{ $tom: ToastTom }>`
   pointer-events: auto;
   display: flex;
   align-items: center;
@@ -75,7 +78,25 @@ const Acao = styled.button.attrs({ type: 'button' })`
 
 // Aviso rápido no rodapé, sem travar a tela. Some sozinho depois de "duracao".
 // Para animar a saída, renderize dentro de <AnimatePresence> com uma key por aviso.
-export function Toast({ children, icone, acao, tom = 'escuro', duracao = 4000, onFechar, chave }) {
+interface ToastProps {
+  children: ReactNode;
+  icone?: ReactNode;
+  acao?: { rotulo: string; onClick: () => void };
+  tom?: ToastTom;
+  duracao?: number;
+  onFechar?: () => void;
+  chave?: number | string;
+}
+
+export function Toast({
+  children,
+  icone,
+  acao,
+  tom = 'escuro',
+  duracao = 4000,
+  onFechar,
+  chave,
+}: ToastProps) {
   const fecharRef = useRef(onFechar);
 
   useEffect(() => {

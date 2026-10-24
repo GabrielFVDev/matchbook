@@ -1,7 +1,9 @@
+import type { ReactNode } from 'react';
 import styled from 'styled-components';
 import { motion } from 'motion/react';
 import { cores, celular, sombra } from '@/styles/tokens';
 import { Logo } from '@/components/Logo';
+import { paths } from '@/app/paths';
 
 const Pagina = styled.div`
   min-height: 100vh;
@@ -31,7 +33,7 @@ const LinkTopo = styled.p`
   color: ${cores.tintaSuave};
 `;
 
-const Principal = styled.main`
+const Principal = styled.main<{ $alinhar: string }>`
   flex: 1;
   width: 100%;
   max-width: 1200px;
@@ -51,11 +53,17 @@ const Principal = styled.main`
 `;
 
 // Estrutura de login e cadastro: fundo da marca, logo no topo e duas colunas.
-export function AuthLayout({ linkTopo, alinhar = 'center', children }) {
+interface AuthLayoutProps {
+  linkTopo?: ReactNode;
+  alinhar?: string;
+  children: ReactNode;
+}
+
+export function AuthLayout({ linkTopo, alinhar = 'center', children }: AuthLayoutProps) {
   return (
     <Pagina>
       <Topo>
-        <Logo para="/" />
+        <Logo para={paths.login} />
         {linkTopo && <LinkTopo>{linkTopo}</LinkTopo>}
       </Topo>
       <Principal $alinhar={alinhar}>{children}</Principal>
@@ -76,7 +84,7 @@ export const AuthSide = styled(motion.div)`
   }
 `;
 
-export const AuthCard = styled(motion.section)`
+export const AuthCard = styled(motion.section)<{ $largura?: number }>`
   flex: 0 1 ${({ $largura = 440 }) => $largura}px;
   min-width: 0;
   padding: 40px;
@@ -101,7 +109,7 @@ export const AuthHeading = styled.div`
   gap: 6px;
 `;
 
-export const AuthEyebrow = styled.p`
+export const AuthEyebrow = styled.p<{ $marca?: boolean }>`
   font-size: 14px;
   font-weight: 700;
   color: ${({ $marca }) => ($marca ? cores.marca : cores.tintaSuave)};

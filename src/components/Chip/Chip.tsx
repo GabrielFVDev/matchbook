@@ -1,11 +1,16 @@
 import styled from 'styled-components';
 import { cores, raio } from '@/styles/tokens';
 
+interface ChipProps {
+  $ativo?: boolean;
+  $fundo?: string;
+}
+
 // Etiqueta clicável (filtros e escolha de gênero). O estado vai em aria-pressed.
-export const Chip = styled.button.attrs(({ $ativo }) => ({
+export const Chip = styled.button.attrs<ChipProps>(({ $ativo }) => ({
   type: 'button',
   'aria-pressed': Boolean($ativo),
-}))`
+}))<ChipProps>`
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
@@ -29,14 +34,14 @@ export const Chip = styled.button.attrs(({ $ativo }) => ({
   }
 `;
 
-export const ChipCount = styled.span`
+export const ChipCount = styled.span<{ $ativo?: boolean }>`
   font-size: 13px;
   font-weight: 700;
   color: ${({ $ativo }) => ($ativo ? cores.tintaSobreEscuro : cores.tintaSuave)};
 `;
 
 // Etiqueta só de leitura (gênero, páginas, ano).
-export const Tag = styled.span`
+export const Tag = styled.span<{ $pequena?: boolean; $fundo?: string; $cor?: string }>`
   display: inline-flex;
   align-items: center;
   align-self: flex-start;

@@ -39,7 +39,7 @@ const Nome = styled.span`
   }
 `;
 
-export function Logo({ para = '/' }) {
+export function Logo({ para = '/' }: { para?: string }) {
   return (
     <LogoLink to={para} aria-label="Matchbook, página inicial">
       <Marca>

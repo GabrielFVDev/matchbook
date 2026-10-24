@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import styled, { css } from 'styled-components';
 import { cores, celular, coresDoGenero, nomeDoGenero, raio } from '@/styles/tokens';
 import { Tag } from '@/components/Chip';
@@ -12,7 +13,9 @@ const tamanhos = {
   mini: { altura: [148, 148], respiro: [10, 10], titulo: [16, 16] },
 };
 
-const Moldura = styled.div`
+type Tamanho = keyof typeof tamanhos;
+
+const Moldura = styled.div<{ $capa: string; $tamanho: Tamanho }>`
   position: relative;
   flex: 0 0 auto;
   overflow: hidden;
@@ -36,7 +39,7 @@ const Moldura = styled.div`
     `}
 `;
 
-const Gerada = styled.div`
+const Gerada = styled.div<{ $soTitulo?: boolean; $tamanho: Tamanho }>`
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -53,7 +56,7 @@ const Gerada = styled.div`
   }}
 `;
 
-const Titulo = styled.span`
+const Titulo = styled.span<{ $vazio?: boolean; $tamanho: Tamanho }>`
   font-weight: 800;
   line-height: 0.96;
   letter-spacing: -0.03em;
@@ -80,8 +83,24 @@ const Imagem = styled.img`
 
 // Capa do livro: usa a imagem do link quando ela carrega; sem link ou com erro,
 // monta uma capa com a cor do gênero e o título.
-export function BookCover({ titulo, genero, capaUrl, tamanho = 'grade', tituloVazio, children }) {
-  const [urlComErro, setUrlComErro] = useState(null);
+interface BookCoverProps {
+  titulo?: string | null;
+  genero?: string | null;
+  capaUrl?: string | null;
+  tamanho?: Tamanho;
+  tituloVazio?: string;
+  children?: ReactNode;
+}
+
+export function BookCover({
+  titulo,
+  genero,
+  capaUrl,
+  tamanho = 'grade',
+  tituloVazio,
+  children,
+}: BookCoverProps) {
+  const [urlComErro, setUrlComErro] = useState<string | null | undefined>(null);
   const mostrarImagem = Boolean(capaUrl) && urlComErro !== capaUrl;
   const { capa } = coresDoGenero(genero);
   const nomeGenero = nomeDoGenero(genero) || genero;
@@ -91,7 +110,7 @@ export function BookCover({ titulo, genero, capaUrl, tamanho = 'grade', tituloVa
     <Moldura $capa={capa} $tamanho={tamanho}>
       {mostrarImagem ? (
         <Imagem
-          src={capaUrl}
+          src={capaUrl ?? undefined}
           alt={titulo ? `Capa de ${titulo}` : 'Capa do livro'}
           draggable={false}
           onError={() => setUrlComErro(capaUrl)}

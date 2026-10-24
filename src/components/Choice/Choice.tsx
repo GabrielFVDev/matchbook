@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
+import type { Variants } from 'motion/react';
 import styled from 'styled-components';
 import { cores, raio, sombra } from '@/styles/tokens';
 import { mola } from '@/styles/motion';
@@ -26,7 +28,7 @@ const Trilho = styled.div`
   background: ${cores.fundoApp};
 `;
 
-const Opcao = styled.button.attrs({ type: 'button' })`
+const Opcao = styled.button.attrs({ type: 'button' })<{ $ativo?: boolean }>`
   position: relative;
   flex: 1 1 0;
   min-width: 0;
@@ -54,7 +56,15 @@ const Marcador = styled(motion.span)`
 `;
 
 // Escolha única entre poucas opções (nível de leitura).
-export function Segmented({ id, label, opcoes, valor, onChange }) {
+interface SegmentedProps {
+  id: string;
+  label: ReactNode;
+  opcoes: readonly string[];
+  valor: string;
+  onChange: (opcao: string) => void;
+}
+
+export function Segmented({ id, label, opcoes, valor, onChange }: SegmentedProps) {
   return (
     <Grupo role="group" aria-labelledby={id}>
       <ChoiceLabel id={id}>{label}</ChoiceLabel>
@@ -123,16 +133,24 @@ const LinhaContador = styled.div`
 
 // Contador com botões de menos e mais (livros já lidos).
 // O número novo entra por baixo quando sobe e por cima quando desce.
-const rolarNumero = {
-  entrar: (direcao) => ({ y: direcao * 18, opacity: 0 }),
+const rolarNumero: Variants = {
+  entrar: (direcao: number) => ({ y: direcao * 18, opacity: 0 }),
   parado: { y: 0, opacity: 1, transition: { duration: 0.18 } },
-  sair: (direcao) => ({ y: direcao * -18, opacity: 0, transition: { duration: 0.18 } }),
+  sair: (direcao: number) => ({ y: direcao * -18, opacity: 0, transition: { duration: 0.18 } }),
 };
 
-export function Stepper({ id, label, valor, onChange, minimo = 0 }) {
+interface StepperProps {
+  id: string;
+  label: ReactNode;
+  valor: number;
+  onChange: (valor: number) => void;
+  minimo?: number;
+}
+
+export function Stepper({ id, label, valor, onChange, minimo = 0 }: StepperProps) {
   const [direcao, setDirecao] = useState(1);
 
-  const mudar = (passo) => {
+  const mudar = (passo: number) => {
     setDirecao(passo);
     onChange(Math.max(minimo, valor + passo));
   };
@@ -181,7 +199,7 @@ const TextoInterruptor = styled.span`
   font-weight: 600;
 `;
 
-const Trilha = styled.button.attrs({ type: 'button', role: 'switch' })`
+const Trilha = styled.button.attrs({ type: 'button', role: 'switch' })<{ $ligado: boolean }>`
   flex: 0 0 auto;
   display: flex;
   width: 52px;
@@ -204,7 +222,14 @@ const Trilha = styled.button.attrs({ type: 'button', role: 'switch' })`
 `;
 
 // Interruptor liga e desliga (receber recomendações).
-export function Switch({ id, label, ligado, onChange }) {
+interface SwitchProps {
+  id: string;
+  label: ReactNode;
+  ligado: boolean;
+  onChange: (ligado: boolean) => void;
+}
+
+export function Switch({ id, label, ligado, onChange }: SwitchProps) {
   return (
     <LinhaInterruptor>
       <TextoInterruptor id={id}>{label}</TextoInterruptor>
