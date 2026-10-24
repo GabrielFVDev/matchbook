@@ -13,7 +13,7 @@ describe('entrar e criar conta', () => {
   it('avisa quando a senha está errada', async () => {
     const { user } = renderApp('/');
 
-    await user.type(screen.getByLabelText('Email'), 'ana@email.com');
+    await user.type(await screen.findByLabelText('Email'), 'ana@email.com');
     await user.type(screen.getByLabelText('Senha'), 'errada');
     await user.click(screen.getByRole('button', { name: 'Entrar' }));
 
@@ -24,7 +24,7 @@ describe('entrar e criar conta', () => {
   it('com a senha certa leva ao Início e guarda a sessão sem a senha', async () => {
     const { user } = renderApp('/');
 
-    await user.type(screen.getByLabelText('Email'), 'ana@email.com');
+    await user.type(await screen.findByLabelText('Email'), 'ana@email.com');
     await user.type(screen.getByLabelText('Senha'), '123456');
     await user.click(screen.getByRole('button', { name: 'Entrar' }));
 
@@ -38,7 +38,7 @@ describe('entrar e criar conta', () => {
     const calls = trackApiCalls();
     const { user } = renderApp('/cadastro');
 
-    await user.type(screen.getByLabelText('Nome completo'), '  Bia Souza  ');
+    await user.type(await screen.findByLabelText('Nome completo'), '  Bia Souza  ');
     await user.type(screen.getByLabelText('Email'), 'Bia@Email.com');
     await user.type(screen.getByLabelText('Senha'), '123456');
     await user.type(screen.getByLabelText('Confirmar senha'), '123456');

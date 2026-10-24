@@ -1,17 +1,14 @@
-import { MotionConfig } from 'motion/react';
-import AppRoutes from './router';
-import { GlobalStyle } from '@/styles/GlobalStyle';
-import { LikedCountProvider } from '@/lib/LikedCountProvider';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { AppProviders } from './AppProviders';
+import { routes } from './router';
+
+const router = createBrowserRouter(routes);
 
 function App() {
   return (
-    // reducedMotion="user": quem pediu menos movimento no sistema não vê deslocamentos.
-    <MotionConfig reducedMotion="user">
-      <LikedCountProvider>
-        <GlobalStyle />
-        <AppRoutes />
-      </LikedCountProvider>
-    </MotionConfig>
+    <AppProviders>
+      <RouterProvider router={router} />
+    </AppProviders>
   );
 }
 

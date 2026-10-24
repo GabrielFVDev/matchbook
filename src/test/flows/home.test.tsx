@@ -6,7 +6,7 @@ describe('Início: a carta da recomendação', () => {
   it('"Amei" aceita, curte, avisa e soma 1 no contador do cabeçalho', async () => {
     const calls = trackApiCalls();
     const { user } = renderApp('/home', { loggedIn: true });
-    const header = screen.getByRole('banner');
+    const header = await screen.findByRole('banner');
 
     await screen.findByRole('img', { name: 'Capa de Fundação' });
     expect(await within(header).findByText('8')).toBeInTheDocument();

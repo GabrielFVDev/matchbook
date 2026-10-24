@@ -1,6 +1,8 @@
 import { render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import App from '@/app/App';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { AppProviders } from '@/app/AppProviders';
+import { routes } from '@/app/router';
 import { sessionUser } from '@/mocks/data';
 import { server } from '@/mocks/server';
 
@@ -9,12 +11,25 @@ interface RenderAppOptions {
   loggedIn?: boolean;
 }
 
-// Abre o app inteiro num endereço, como quem digita a URL na barra.
+let router: ReturnType<typeof createBrowserRouter> | null = null;
+
+// Abre o app inteiro num endereço, como quem digita a URL na barra. Cada teste ganha um roteador
+// novo, que lê o endereço que acabou de ser posto na barra. A primeira tela chega sob demanda:
+// procure o primeiro elemento com findBy, não com getBy.
 export function renderApp(url: string, { loggedIn = false }: RenderAppOptions = {}) {
   if (loggedIn) localStorage.setItem('usuario', JSON.stringify(sessionUser));
   window.history.pushState({}, '', url);
+  router?.dispose();
+  router = createBrowserRouter(routes);
   const user = userEvent.setup();
-  return { user, ...render(<App />) };
+  return {
+    user,
+    ...render(
+      <AppProviders>
+        <RouterProvider router={router} />
+      </AppProviders>,
+    ),
+  };
 }
 
 export interface ApiCall {
