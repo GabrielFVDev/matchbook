@@ -1,7 +1,7 @@
-import { MotionConfig } from "motion/react";
-import AppRoutes from "./routes.jsx";
-import { GlobalStyle } from "./styles/GlobalStyle";
-import { CurtidosProvider } from "./contexts/CurtidosProvider";
+import { MotionConfig } from 'motion/react';
+import AppRoutes from './routes.jsx';
+import { GlobalStyle } from './styles/GlobalStyle';
+import { CurtidosProvider } from './contexts/CurtidosProvider';
 
 function App() {
   return (

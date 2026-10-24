@@ -60,7 +60,12 @@ export function Segmented({ id, label, opcoes, valor, onChange }) {
       <ChoiceLabel id={id}>{label}</ChoiceLabel>
       <Trilho>
         {opcoes.map((opcao) => (
-          <Opcao key={opcao} $ativo={opcao === valor} aria-pressed={opcao === valor} onClick={() => onChange(opcao)}>
+          <Opcao
+            key={opcao}
+            $ativo={opcao === valor}
+            aria-pressed={opcao === valor}
+            onClick={() => onChange(opcao)}
+          >
             {opcao === valor && <Marcador layoutId={`${id}Marcador`} transition={mola} />}
             <span>{opcao}</span>
           </Opcao>
@@ -80,7 +85,9 @@ const BotaoRedondo = styled.button.attrs({ type: 'button' })`
   border-radius: ${raio.pilula};
   background: ${cores.branco};
   color: ${cores.tinta};
-  transition: transform 0.12s ease, opacity 0.15s ease;
+  transition:
+    transform 0.12s ease,
+    opacity 0.15s ease;
 
   &:active:not(:disabled) {
     transform: scale(0.9);
@@ -201,7 +208,12 @@ export function Switch({ id, label, ligado, onChange }) {
   return (
     <LinhaInterruptor>
       <TextoInterruptor id={id}>{label}</TextoInterruptor>
-      <Trilha $ligado={ligado} aria-checked={ligado} aria-labelledby={id} onClick={() => onChange(!ligado)}>
+      <Trilha
+        $ligado={ligado}
+        aria-checked={ligado}
+        aria-labelledby={id}
+        onClick={() => onChange(!ligado)}
+      >
         <span />
       </Trilha>
     </LinhaInterruptor>

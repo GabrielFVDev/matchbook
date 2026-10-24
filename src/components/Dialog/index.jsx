@@ -77,7 +77,12 @@ const animacaoFundo = {
 
 const animacaoCaixa = {
   initial: { opacity: 0, y: 28, scale: 0.98 },
-  animate: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 380, damping: 32 } },
+  animate: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: 'spring', stiffness: 380, damping: 32 },
+  },
   exit: { opacity: 0, y: 16, scale: 0.98, transition: { duration: 0.15, ease: curvaSaida } },
 };
 
@@ -163,7 +168,7 @@ export function ConfirmDialog({
   variante = 'perigoForte',
   carregando,
   onConfirmar,
-  onCancelar
+  onCancelar,
 }) {
   return (
     <Dialog aberto={aberto} titulo={titulo} onFechar={onCancelar} largura={400}>

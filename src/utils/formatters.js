@@ -3,7 +3,7 @@
 // Formata data para o padrão brasileiro
 export const formatarData = (data) => {
   if (!data) return '';
-  
+
   const date = new Date(data);
   return date.toLocaleDateString('pt-BR');
 };
@@ -11,12 +11,12 @@ export const formatarData = (data) => {
 // Formata data para input do tipo date (yyyy-mm-dd)
 export const formatarDataParaInput = (data) => {
   if (!data) return '';
-  
+
   const date = new Date(data);
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
-  
+
   return `${year}-${month}-${day}`;
 };
 
@@ -32,11 +32,11 @@ export const validarCamposObrigatorios = (dados, camposObrigatorios) => {
     if (!dados[campo] || dados[campo].toString().trim() === '') {
       return {
         valido: false,
-        erro: `O campo ${campo} é obrigatório`
+        erro: `O campo ${campo} é obrigatório`,
       };
     }
   }
-  
+
   return { valido: true, erro: null };
 };
 
@@ -51,6 +51,6 @@ export const normalizarDadosUsuario = (dados) => {
     nivelLeitura: dados.nivelLeitura?.trim(),
     biografia: dados.biografia?.trim(),
     livrosLidos: parseInt(dados.livrosLidos) || 0,
-    receberRecomendacoes: Boolean(dados.receberRecomendacoes)
+    receberRecomendacoes: Boolean(dados.receberRecomendacoes),
   };
 };

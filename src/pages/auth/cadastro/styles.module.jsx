@@ -60,7 +60,9 @@ export const StepNumber = styled.span`
   color: ${({ $estado }) => ($estado === 'proximo' ? cores.tintaSuave : cores.branco)};
   font-size: 17px;
   font-weight: 800;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 `;
 
 export const StepText = styled.span`
@@ -104,7 +106,9 @@ export const StepPill = styled.li`
   color: ${({ $atual }) => ($atual ? cores.branco : cores.tintaSuave)};
   font-size: 14px;
   font-weight: ${({ $atual }) => ($atual ? 700 : 600)};
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 
   svg {
     color: ${cores.sucesso};

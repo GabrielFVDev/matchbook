@@ -17,7 +17,7 @@ export function CurtidosProvider({ children }) {
     if (!usuario?.id || usuarioCarregado.current === usuario.id) return;
     usuarioCarregado.current = usuario.id;
     const resposta = await recomendacaoService.contarLivrosCurtidos(usuario.id);
-    setTotal(resposta.success ? resposta.data?.total ?? 0 : 0);
+    setTotal(resposta.success ? (resposta.data?.total ?? 0) : 0);
   }, []);
 
   const somar = useCallback((quantidade) => {
@@ -26,7 +26,10 @@ export function CurtidosProvider({ children }) {
 
   const definir = useCallback((valor) => setTotal(valor), []);
 
-  const valor = useMemo(() => ({ total, carregar, somar, definir }), [total, carregar, somar, definir]);
+  const valor = useMemo(
+    () => ({ total, carregar, somar, definir }),
+    [total, carregar, somar, definir],
+  );
 
   return <CurtidosContext.Provider value={valor}>{children}</CurtidosContext.Provider>;
 }

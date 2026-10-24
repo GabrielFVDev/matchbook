@@ -59,7 +59,9 @@ export const FilterChip = styled.button.attrs({ type: 'button' })`
   font-size: 15px;
   font-weight: 600;
   white-space: nowrap;
-  transition: color 0.2s ease, transform 0.12s ease;
+  transition:
+    color 0.2s ease,
+    transform 0.12s ease;
 
   &:active {
     transform: scale(0.96);
@@ -124,7 +126,9 @@ export const BookCardInner = styled.div`
   border-radius: ${raio.cartao};
   background: ${cores.branco};
   box-shadow: ${sombra.leve};
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 
   @media (hover: hover) {
     &:hover {
@@ -162,7 +166,9 @@ export const RemoveButton = styled.button.attrs({ type: 'button' })`
     height: 36px;
     border-radius: ${raio.pilula};
     background: ${cores.branco};
-    transition: transform 0.12s ease, color 0.15s ease;
+    transition:
+      transform 0.12s ease,
+      color 0.15s ease;
   }
 
   &:hover span {

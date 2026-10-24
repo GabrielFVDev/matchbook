@@ -25,7 +25,9 @@ const estiloEntrada = css`
   background: ${({ $erro }) => ($erro ? cores.erroFundo : cores.fundoApp)};
   color: ${cores.tinta};
   font-size: 16px;
-  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
 
   &:focus-visible {
     outline: none;
@@ -101,7 +103,11 @@ const Grupo = styled.div`
   flex-direction: column;
   gap: 8px;
   min-width: 0;
-  ${({ $span }) => $span && css`grid-column: 1 / -1;`}
+  ${({ $span }) =>
+    $span &&
+    css`
+      grid-column: 1 / -1;
+    `}
 `;
 
 // Campo com rótulo, marcação de opcional ou obrigatório e uma mensagem embaixo.
@@ -118,7 +124,7 @@ export function Field({ id, label, tag, help, error, success, span, children, ..
           'aria-invalid': error ? true : undefined,
           'aria-describedby': temMensagem ? mensagemId : undefined,
         })
-      : filho
+      : filho,
   );
 
   return (

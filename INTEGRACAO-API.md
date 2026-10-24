@@ -97,10 +97,10 @@ function CadastroComponente() {
 ### Serviços de API
 
 ```jsx
-import { authService, userService } from "../apis/services";
+import { authService, userService } from '../apis/services';
 
 // Login
-const loginResult = await authService.login("email", "senha");
+const loginResult = await authService.login('email', 'senha');
 
 // Cadastro
 const registerResult = await authService.cadastrar(userData);
@@ -146,7 +146,7 @@ const updateResult = await userService.atualizar(userData);
 
 ```jsx
 <Button type="submit" disabled={loading}>
-  {loading ? "Carregando..." : "Enviar"}
+  {loading ? 'Carregando...' : 'Enviar'}
 </Button>
 ```
 
@@ -157,12 +157,12 @@ const updateResult = await userService.atualizar(userData);
   error && (
     <div
       style={{
-        color: "#e74c3c",
-        backgroundColor: "#fdf2f2",
-        padding: "12px",
-        borderRadius: "8px",
-        border: "1px solid #fecaca",
-        marginBottom: "16px",
+        color: '#e74c3c',
+        backgroundColor: '#fdf2f2',
+        padding: '12px',
+        borderRadius: '8px',
+        border: '1px solid #fecaca',
+        marginBottom: '16px',
       }}
     >
       {error}

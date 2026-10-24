@@ -1,12 +1,18 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { AnimatePresence } from "motion/react";
-import { AppLayout } from "../../components/AppLayout";
-import { ButtonLink, Button } from "../../components/Button";
-import { EmptyState } from "../../components/EmptyState";
-import { Spinner } from "../../components/Spinner";
-import { ToastPill, ToastDetail } from "../../components/Toast";
-import { IconAlert, IconArrowRight, IconBook, IconHeart, IconRefresh } from "../../components/Icons";
-import { SwipeCard } from "./SwipeCard";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { AnimatePresence } from 'motion/react';
+import { AppLayout } from '../../components/AppLayout';
+import { ButtonLink, Button } from '../../components/Button';
+import { EmptyState } from '../../components/EmptyState';
+import { Spinner } from '../../components/Spinner';
+import { ToastPill, ToastDetail } from '../../components/Toast';
+import {
+  IconAlert,
+  IconArrowRight,
+  IconBook,
+  IconHeart,
+  IconRefresh,
+} from '../../components/Icons';
+import { SwipeCard } from './SwipeCard';
 import {
   MatchArea,
   Intro,
@@ -22,13 +28,13 @@ import {
   ActionCircle,
   HeartBeat,
   FeedbackArea,
-  Hint
+  Hint,
 } from './styles.module.jsx';
-import { useAuth } from "../../hooks/useAuth";
-import { useCurtidos } from "../../contexts/curtidos";
-import { recomendacaoService } from "../../apis/services";
-import { cores, coresDoGenero } from "../../styles/tokens";
-import { animacaoAviso, surgir } from "../../styles/movimento";
+import { useAuth } from '../../hooks/useAuth';
+import { useCurtidos } from '../../contexts/curtidos';
+import { recomendacaoService } from '../../apis/services';
+import { cores, coresDoGenero } from '../../styles/tokens';
+import { animacaoAviso, surgir } from '../../styles/movimento';
 
 const TEMPO_AVISO = 3500;
 
@@ -97,11 +103,21 @@ export default function HomePage() {
         } else {
           console.warn('Livro aceito, mas não foi salvo como curtido:', responseCurtir.error);
         }
-        setAviso({ tipo: 'amei', titulo: 'Foi pros seus livros.', texto: `“${livro.titulo}” está nos favoritos.`, chave: Date.now() });
+        setAviso({
+          tipo: 'amei',
+          titulo: 'Foi pros seus livros.',
+          texto: `“${livro.titulo}” está nos favoritos.`,
+          chave: Date.now(),
+        });
         await carregarProximaRecomendacao();
       } else {
         setCurrentBook(livro);
-        setAviso({ tipo: 'erro', titulo: 'Não deu para salvar.', texto: 'Tente de novo.', chave: Date.now() });
+        setAviso({
+          tipo: 'erro',
+          titulo: 'Não deu para salvar.',
+          texto: 'Tente de novo.',
+          chave: Date.now(),
+        });
       }
     } else {
       const response = await recomendacaoService.recusarLivro(usuario.id, livro.id);
@@ -111,12 +127,17 @@ export default function HomePage() {
           tipo: 'proximo',
           titulo: 'Anotado.',
           texto: algoritmoAlterado && sugestao ? sugestao : 'Bora tentar outro.',
-          chave: Date.now()
+          chave: Date.now(),
         });
         await carregarProximaRecomendacao();
       } else {
         setCurrentBook(livro);
-        setAviso({ tipo: 'erro', titulo: 'Não deu para registrar.', texto: 'Tente de novo.', chave: Date.now() });
+        setAviso({
+          tipo: 'erro',
+          titulo: 'Não deu para registrar.',
+          texto: 'Tente de novo.',
+          chave: Date.now(),
+        });
       }
     }
 
@@ -148,16 +169,20 @@ export default function HomePage() {
   const coresLivro = currentBook ? coresDoGenero(currentBook.genero) : null;
   const fundo = coresLivro ? coresLivro.fundo : cores.fundoMarca;
   const destaque = coresLivro ? coresLivro.capa : cores.marca;
-  const primeiroNome = usuario?.nome?.trim().split(" ")[0];
+  const primeiroNome = usuario?.nome?.trim().split(' ')[0];
   const semCarta = !currentBook || loading;
 
   return (
     <AppLayout fundo={fundo} corDestaque={destaque}>
       <MatchArea>
         <Intro>
-          <Eyebrow $cor={destaque} {...surgir(0)}>{primeiroNome ? `Para você, ${primeiroNome}` : 'Para você'}</Eyebrow>
+          <Eyebrow $cor={destaque} {...surgir(0)}>
+            {primeiroNome ? `Para você, ${primeiroNome}` : 'Para você'}
+          </Eyebrow>
           <Headline {...surgir(1)}>Achei um pra você.</Headline>
-          <Helper {...surgir(2)}>Amei guarda o livro nos seus favoritos. Próximo ensina ao Matchbook o que não é a sua.</Helper>
+          <Helper {...surgir(2)}>
+            Amei guarda o livro nos seus favoritos. Próximo ensina ao Matchbook o que não é a sua.
+          </Helper>
         </Intro>
 
         <Recommendation aria-label="Recomendação">
@@ -168,7 +193,9 @@ export default function HomePage() {
               descricao="Adicione um livro ao catálogo ou volte mais tarde."
             >
               <ButtonLink to="/adicionar-livro">Adicionar livro</ButtonLink>
-              <ButtonLink to="/meus-livros" $variante="secundario">Ver meus livros</ButtonLink>
+              <ButtonLink to="/meus-livros" $variante="secundario">
+                Ver meus livros
+              </ButtonLink>
             </EmptyState>
           )}
 
@@ -189,8 +216,16 @@ export default function HomePage() {
           {!erro && (
             <>
               <Stack>
-                <GhostCard aria-hidden="true" $opacidade={0.5} $transform="rotate(-5deg) translate(-18px, 14px)" />
-                <GhostCard aria-hidden="true" $opacidade={0.75} $transform="rotate(3.5deg) translate(16px, 6px)" />
+                <GhostCard
+                  aria-hidden="true"
+                  $opacidade={0.5}
+                  $transform="rotate(-5deg) translate(-18px, 14px)"
+                />
+                <GhostCard
+                  aria-hidden="true"
+                  $opacidade={0.75}
+                  $transform="rotate(3.5deg) translate(16px, 6px)"
+                />
                 <AnimatePresence mode="wait" custom={direcao} initial={false}>
                   {semCarta ? (
                     <LoadingCard
@@ -256,14 +291,22 @@ export default function HomePage() {
                 <ToastPill key={aviso.chave} $tom="claro" {...animacaoAviso}>
                   {aviso.tipo === 'amei' && <IconHeart tamanho={18} style={{ color: destaque }} />}
                   {aviso.tipo === 'proximo' && <IconArrowRight tamanho={18} />}
-                  {aviso.tipo === 'erro' && <IconAlert tamanho={18} style={{ color: cores.erro }} />}
+                  {aviso.tipo === 'erro' && (
+                    <IconAlert tamanho={18} style={{ color: cores.erro }} />
+                  )}
                   <span>
                     <strong>{aviso.titulo}</strong> <ToastDetail>{aviso.texto}</ToastDetail>
                   </span>
                 </ToastPill>
               ) : (
-                !erro && decisoes === 0 && (
-                  <Hint key="dica" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                !erro &&
+                decisoes === 0 && (
+                  <Hint
+                    key="dica"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
                     <span>Dica: arraste a carta ou use as setas ← e → do teclado.</span>
                     <span>Dica: arraste a carta para os lados.</span>
                   </Hint>

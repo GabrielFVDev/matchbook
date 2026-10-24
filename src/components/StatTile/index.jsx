@@ -5,7 +5,10 @@ import { surgir } from '../../styles/movimento';
 
 export const StatGrid = styled.dl`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(${({ $minimo = 220 }) => $minimo}px, 100%), 1fr));
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(${({ $minimo = 220 }) => $minimo}px, 100%), 1fr)
+  );
   gap: 16px;
 
   ${celular} {

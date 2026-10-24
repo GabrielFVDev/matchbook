@@ -13,7 +13,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     console.error('Erro na API:', error);
-    
+
     // Tratamento específico de erros
     if (error.response?.status === 404) {
       throw new Error('Recurso não encontrado');
@@ -24,9 +24,9 @@ api.interceptors.response.use(
     if (error.response?.status === 500) {
       throw new Error('Erro interno do servidor');
     }
-    
+
     throw error;
-  }
+  },
 );
 
 export default api;
