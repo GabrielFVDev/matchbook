@@ -13,7 +13,7 @@ const api = axios.create({
 api.interceptors.response.use(
   (response) => response,
   (error: unknown) => {
-    console.error('Erro na API:', error);
+    console.error('API error:', error);
 
     const status = isAxiosError(error) ? error.response?.status : undefined;
 

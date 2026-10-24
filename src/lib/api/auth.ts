@@ -15,9 +15,9 @@ export const authApi = {
       };
     } catch (error) {
       const response = isAxiosError(error) ? error.response : undefined;
-      console.error('Service: Erro na API:', error);
-      console.error('Service: Erro response:', response?.data);
-      console.error('Service: Erro status:', response?.status);
+      console.error('Service: API error:', error);
+      console.error('Service: error response:', response?.data);
+      console.error('Service: error status:', response?.status);
 
       let errorText = 'Erro ao cadastrar usuário';
 

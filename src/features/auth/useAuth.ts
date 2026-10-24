@@ -72,7 +72,7 @@ export const useSignUp = () => {
         return { success: false as const, error: result.error };
       }
     } catch (err) {
-      console.error('Hook: Erro inesperado:', err);
+      console.error('Hook: unexpected error:', err);
       setError('Erro inesperado ao cadastrar usuário');
       setLoading(false);
       return { success: false as const, error: 'Erro inesperado ao cadastrar usuário' };

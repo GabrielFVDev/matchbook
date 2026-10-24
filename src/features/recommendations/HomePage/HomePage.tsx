@@ -104,7 +104,7 @@ export default function HomePage() {
         if (likeResponse.success) {
           add(1);
         } else {
-          console.warn('Livro aceito, mas não foi salvo como curtido:', likeResponse.error);
+          console.warn('Book accepted, but not saved as liked:', likeResponse.error);
         }
         setNotice({
           type: 'love',

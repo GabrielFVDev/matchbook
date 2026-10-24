@@ -162,7 +162,7 @@ export default function AddBookPage() {
       if (likeResponse.success) {
         add(1);
       } else {
-        console.warn('Erro ao adicionar aos favoritos:', likeResponse.error);
+        console.warn('Error adding to favorites:', likeResponse.error);
       }
       setResult({ title: formData.titulo, inFavorites: likeResponse.success });
       setFormData(emptyForm);
