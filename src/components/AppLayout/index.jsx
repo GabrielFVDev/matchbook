@@ -20,7 +20,12 @@ const Principal = styled.main`
 `;
 
 // Conteúdo de uma tela dentro do AppShell. Avisa ao shell o fundo e a cor de destaque.
-export function AppLayout({ fundo = cores.fundoApp, corDestaque = cores.marca, espaco = '28px', children }) {
+export function AppLayout({
+  fundo = cores.fundoApp,
+  corDestaque = cores.marca,
+  espaco = '28px',
+  children,
+}) {
   const definirShell = useDefinirShell();
 
   useLayoutEffect(() => {

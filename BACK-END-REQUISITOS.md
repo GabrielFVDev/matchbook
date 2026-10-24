@@ -289,19 +289,19 @@ A aplicação estará disponível em `http://localhost:8080`
 
 ### `livro`
 
-| Campo          | Tipo         | Descrição               |
+| Campo | Tipo | Descrição |
 | -------------- | ------------ | ----------------------- | ------------------- |
-| id             | INT (PK, AI) | Identificador do livro  |
-| titulo         | VARCHAR(200) | Título do livro         |
-| autor          | VARCHAR(100) | Autor do livro          |
-| editora        | VARCHAR(100) | Editora do livro        |
-| genero         | VARCHAR(50)  | Gênero do livro         |
-| ano_publicacao | INT          | Ano de publicação       | ![img.png](img.png) |
-| numero_paginas | INT          | Número de páginas       |
-| idioma         | VARCHAR(50)  | Idioma do livro         |
-| isbn           | VARCHAR(20)  | Código ISBN             |
-| sinopse        | TEXT         | Sinopse/resumo do livro |
-| capa_url       | VARCHAR(500) | URL da imagem da capa   |
+| id | INT (PK, AI) | Identificador do livro |
+| titulo | VARCHAR(200) | Título do livro |
+| autor | VARCHAR(100) | Autor do livro |
+| editora | VARCHAR(100) | Editora do livro |
+| genero | VARCHAR(50) | Gênero do livro |
+| ano_publicacao | INT | Ano de publicação | ![img.png](img.png) |
+| numero_paginas | INT | Número de páginas |
+| idioma | VARCHAR(50) | Idioma do livro |
+| isbn | VARCHAR(20) | Código ISBN |
+| sinopse | TEXT | Sinopse/resumo do livro |
+| capa_url | VARCHAR(500) | URL da imagem da capa |
 
 ### `livro_recusado`
 

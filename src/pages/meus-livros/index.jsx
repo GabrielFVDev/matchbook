@@ -1,14 +1,14 @@
-import { useCallback, useEffect, useState } from "react";
-import { AnimatePresence } from "motion/react";
-import { AppLayout } from "../../components/AppLayout";
-import { BookCover } from "../../components/BookCover";
-import { ChipCount } from "../../components/Chip";
-import { ButtonLink, Button } from "../../components/Button";
-import { StatGrid, StatTile } from "../../components/StatTile";
-import { EmptyState } from "../../components/EmptyState";
-import { Toast } from "../../components/Toast";
-import { Spinner } from "../../components/Spinner";
-import { IconAlert, IconHeart, IconPlus, IconRefresh, IconTrash } from "../../components/Icons";
+import { useCallback, useEffect, useState } from 'react';
+import { AnimatePresence } from 'motion/react';
+import { AppLayout } from '../../components/AppLayout';
+import { BookCover } from '../../components/BookCover';
+import { ChipCount } from '../../components/Chip';
+import { ButtonLink, Button } from '../../components/Button';
+import { StatGrid, StatTile } from '../../components/StatTile';
+import { EmptyState } from '../../components/EmptyState';
+import { Toast } from '../../components/Toast';
+import { Spinner } from '../../components/Spinner';
+import { IconAlert, IconHeart, IconPlus, IconRefresh, IconTrash } from '../../components/Icons';
 import {
   PageHeading,
   TitleBlock,
@@ -26,18 +26,23 @@ import {
   BookInfo,
   BookAuthor,
   BookDetail,
-  LoadingContainer
+  LoadingContainer,
 } from './styles.module.jsx';
-import { useAuth } from "../../hooks/useAuth";
-import { useCurtidos } from "../../contexts/curtidos";
-import { recomendacaoService } from "../../apis/services";
-import { cores, coresDoGenero, nomeDoGenero } from "../../styles/tokens";
-import { curvaSaida, mola, molaSuave } from "../../styles/movimento";
+import { useAuth } from '../../hooks/useAuth';
+import { useCurtidos } from '../../contexts/curtidos';
+import { recomendacaoService } from '../../apis/services';
+import { cores, coresDoGenero, nomeDoGenero } from '../../styles/tokens';
+import { curvaSaida, mola, molaSuave } from '../../styles/movimento';
 
 // Os livros entram em sequência, saem encolhendo e o resto da grade se reorganiza.
 const variantesItem = {
   entrar: { opacity: 0, y: 16, scale: 0.96 },
-  parado: (ordem) => ({ opacity: 1, y: 0, scale: 1, transition: { ...molaSuave, delay: Math.min(ordem * 0.04, 0.32) } }),
+  parado: (ordem) => ({
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { ...molaSuave, delay: Math.min(ordem * 0.04, 0.32) },
+  }),
   sair: { opacity: 0, scale: 0.9, transition: { duration: 0.2, ease: curvaSaida } },
 };
 
@@ -51,7 +56,7 @@ const normalizarLivro = (item) => {
     genero: nomeDoGenero(livro.genero) || livro.genero || 'Outros',
     numeroPaginas: livro.numeroPaginas,
     capaUrl: livro.capaUrl || livro.capa || livro.imagem || livro.imagemUrl,
-    dataCurtida: item.dataCurtida || livro.dataCurtida
+    dataCurtida: item.dataCurtida || livro.dataCurtida,
   };
 };
 
@@ -133,10 +138,17 @@ export default function MeusLivrosPage() {
   }, {});
   const generos = Object.keys(contagem);
   const filtro = filtroGenero !== 'Todos' && !contagem[filtroGenero] ? 'Todos' : filtroGenero;
-  const livrosFiltrados = filtro === 'Todos' ? livros : livros.filter((livro) => livro.genero === filtro);
+  const livrosFiltrados =
+    filtro === 'Todos' ? livros : livros.filter((livro) => livro.genero === filtro);
 
-  const totalPaginas = livros.reduce((total, livro) => total + (Number(livro.numeroPaginas) || 0), 0);
-  const generoMaisLido = generos.reduce((maior, genero) => (contagem[genero] > (contagem[maior] || 0) ? genero : maior), null);
+  const totalPaginas = livros.reduce(
+    (total, livro) => total + (Number(livro.numeroPaginas) || 0),
+    0,
+  );
+  const generoMaisLido = generos.reduce(
+    (maior, genero) => (contagem[genero] > (contagem[maior] || 0) ? genero : maior),
+    null,
+  );
   const coresMaisLido = generoMaisLido ? coresDoGenero(generoMaisLido) : null;
 
   return (
@@ -166,7 +178,12 @@ export default function MeusLivrosPage() {
       )}
 
       {!loading && error && (
-        <EmptyState icone={<IconAlert tamanho={28} />} tom="erro" titulo="Não deu para carregar seus livros" descricao="Confira sua conexão e tente de novo.">
+        <EmptyState
+          icone={<IconAlert tamanho={28} />}
+          tom="erro"
+          titulo="Não deu para carregar seus livros"
+          descricao="Confira sua conexão e tente de novo."
+        >
           <Button onClick={carregarLivrosCurtidos}>
             <IconRefresh tamanho={16} />
             Tentar de novo
@@ -175,9 +192,15 @@ export default function MeusLivrosPage() {
       )}
 
       {!loading && !error && livros.length === 0 && (
-        <EmptyState icone={<IconHeart tamanho={30} />} titulo="Nenhum livro por aqui ainda" descricao="Dê Amei nas recomendações e os livros aparecem aqui.">
+        <EmptyState
+          icone={<IconHeart tamanho={30} />}
+          titulo="Nenhum livro por aqui ainda"
+          descricao="Dê Amei nas recomendações e os livros aparecem aqui."
+        >
           <ButtonLink to="/home">Descobrir livros</ButtonLink>
-          <ButtonLink to="/adicionar-livro" $variante="secundario">Adicionar livro</ButtonLink>
+          <ButtonLink to="/adicionar-livro" $variante="secundario">
+            Adicionar livro
+          </ButtonLink>
         </EmptyState>
       )}
 
@@ -185,10 +208,21 @@ export default function MeusLivrosPage() {
         <>
           <StatGrid>
             <StatTile ordem={0} rotulo="Livros curtidos" valor={livros.length} />
-            <StatTile ordem={1} rotulo="Páginas no total" valor={totalPaginas.toLocaleString('pt-BR')} />
+            <StatTile
+              ordem={1}
+              rotulo="Páginas no total"
+              valor={totalPaginas.toLocaleString('pt-BR')}
+            />
             <StatTile ordem={2} rotulo="Gêneros diferentes" valor={generos.length} />
             {generoMaisLido && (
-              <StatTile ordem={3} rotulo="Gênero mais curtido" valor={generoMaisLido} fundo={coresMaisLido.fundo} cor={coresMaisLido.capa} texto />
+              <StatTile
+                ordem={3}
+                rotulo="Gênero mais curtido"
+                valor={generoMaisLido}
+                fundo={coresMaisLido.fundo}
+                cor={coresMaisLido.capa}
+                texto
+              />
             )}
           </StatGrid>
 
@@ -197,11 +231,18 @@ export default function MeusLivrosPage() {
               {['Todos', ...generos].map((genero) => {
                 const ativo = genero === filtro;
                 return (
-                  <FilterChip key={genero} $ativo={ativo} aria-pressed={ativo} onClick={() => setFiltroGenero(genero)}>
+                  <FilterChip
+                    key={genero}
+                    $ativo={ativo}
+                    aria-pressed={ativo}
+                    onClick={() => setFiltroGenero(genero)}
+                  >
                     {ativo && <FilterPill layoutId="filtroAtivo" transition={mola} />}
                     <FilterLabel>
                       {genero}
-                      <ChipCount $ativo={ativo}>{genero === 'Todos' ? livros.length : contagem[genero]}</ChipCount>
+                      <ChipCount $ativo={ativo}>
+                        {genero === 'Todos' ? livros.length : contagem[genero]}
+                      </ChipCount>
                     </FilterLabel>
                   </FilterChip>
                 );
@@ -222,21 +263,33 @@ export default function MeusLivrosPage() {
                   exit="sair"
                 >
                   <BookCardInner>
-                    <BookCover titulo={livro.titulo} genero={livro.genero} capaUrl={livro.capaUrl} tamanho="grade">
+                    <BookCover
+                      titulo={livro.titulo}
+                      genero={livro.genero}
+                      capaUrl={livro.capaUrl}
+                      tamanho="grade"
+                    >
                       <RemoveButton
                         aria-label={`Remover ${livro.titulo} dos favoritos`}
                         onClick={() => handleRemoverLivro(livro)}
                         disabled={removendo === livro.id}
                       >
                         <span>
-                          {removendo === livro.id ? <Spinner tamanho={16} /> : <IconTrash tamanho={17} />}
+                          {removendo === livro.id ? (
+                            <Spinner tamanho={16} />
+                          ) : (
+                            <IconTrash tamanho={17} />
+                          )}
                         </span>
                       </RemoveButton>
                     </BookCover>
                     <BookInfo>
                       <BookAuthor>{livro.autor}</BookAuthor>
                       <BookDetail>
-                        {[livro.numeroPaginas && `${livro.numeroPaginas} páginas`, livro.dataCurtida && `Curtido em ${formatarData(livro.dataCurtida)}`]
+                        {[
+                          livro.numeroPaginas && `${livro.numeroPaginas} páginas`,
+                          livro.dataCurtida && `Curtido em ${formatarData(livro.dataCurtida)}`,
+                        ]
                           .filter(Boolean)
                           .join(' · ')}
                       </BookDetail>
@@ -256,10 +309,16 @@ export default function MeusLivrosPage() {
             chave={aviso.chave}
             onFechar={fecharAviso}
             duracao={aviso.tipo === 'removido' ? 6000 : 4000}
-            acao={aviso.tipo === 'removido' ? { rotulo: 'Desfazer', onClick: desfazerRemocao } : undefined}
+            acao={
+              aviso.tipo === 'removido'
+                ? { rotulo: 'Desfazer', onClick: desfazerRemocao }
+                : undefined
+            }
           >
             {aviso.tipo === 'removido' ? (
-              <><strong>{aviso.livro.titulo}</strong> saiu dos seus livros.</>
+              <>
+                <strong>{aviso.livro.titulo}</strong> saiu dos seus livros.
+              </>
             ) : (
               aviso.mensagem
             )}

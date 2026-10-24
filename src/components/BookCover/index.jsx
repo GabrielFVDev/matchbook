@@ -29,7 +29,11 @@ const Moldura = styled.div`
       }
     `;
   }}
-  ${({ $tamanho }) => $tamanho === 'mini' && css`width: 104px;`}
+  ${({ $tamanho }) =>
+    $tamanho === 'mini' &&
+    css`
+      width: 104px;
+    `}
 `;
 
 const Gerada = styled.div`
@@ -93,7 +97,12 @@ export function BookCover({ titulo, genero, capaUrl, tamanho = 'grade', tituloVa
           onError={() => setUrlComErro(capaUrl)}
         />
       ) : (
-        <Gerada $tamanho={tamanho} $soTitulo={tamanho === 'mini' || !nomeGenero} role="img" aria-label={titulo ? `Capa de ${titulo}` : 'Capa do livro'}>
+        <Gerada
+          $tamanho={tamanho}
+          $soTitulo={tamanho === 'mini' || !nomeGenero}
+          role="img"
+          aria-label={titulo ? `Capa de ${titulo}` : 'Capa do livro'}
+        >
           {tamanho !== 'mini' && nomeGenero && (
             <Tag
               $pequena={tamanho === 'grade'}
@@ -103,7 +112,9 @@ export function BookCover({ titulo, genero, capaUrl, tamanho = 'grade', tituloVa
               {nomeGenero}
             </Tag>
           )}
-          <Titulo $tamanho={tamanho} $vazio={!titulo} aria-hidden="true">{textoTitulo}</Titulo>
+          <Titulo $tamanho={tamanho} $vazio={!titulo} aria-hidden="true">
+            {textoTitulo}
+          </Titulo>
         </Gerada>
       )}
       {children}

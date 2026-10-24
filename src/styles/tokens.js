@@ -20,36 +20,33 @@ export const cores = {
 // Cada gênero tem a cor da capa gerada e a cor de fundo da tela.
 // Texto branco sobre "capa" e "capa" sobre "fundo" passam no contraste AA.
 export const generos = {
-  'Romance': { capa: '#A13958', fundo: '#FFE4EA' },
+  Romance: { capa: '#A13958', fundo: '#FFE4EA' },
   'Ficção Científica': { capa: '#4B3FD6', fundo: '#E6E3FF' },
-  'Fantasia': { capa: '#17703F', fundo: '#DCF2E3' },
-  'Mistério': { capa: '#714CA6', fundo: '#F0E8FF' },
-  'Terror': { capa: '#A43A41', fundo: '#FFE4E3' },
-  'Aventura': { capa: '#9A4A00', fundo: '#FFE8D6' },
-  'Drama': { capa: '#8E4088', fundo: '#FBE5F8' },
-  'Comédia': { capa: '#875A00', fundo: '#F8ECD3' },
-  'História': { capa: '#945000', fundo: '#FDE9D4' },
-  'Biografia': { capa: '#00758D', fundo: '#D3F4FA' },
-  'Autoajuda': { capa: '#007A46', fundo: '#DAF5E5' },
-  'Técnico': { capa: '#006AAA', fundo: '#D9F1FF' },
-  'Acadêmico': { capa: '#2063B0', fundo: '#DEEFFF' },
-  'Infantil': { capa: '#696800', fundo: '#EEEFD5' },
+  Fantasia: { capa: '#17703F', fundo: '#DCF2E3' },
+  Mistério: { capa: '#714CA6', fundo: '#F0E8FF' },
+  Terror: { capa: '#A43A41', fundo: '#FFE4E3' },
+  Aventura: { capa: '#9A4A00', fundo: '#FFE8D6' },
+  Drama: { capa: '#8E4088', fundo: '#FBE5F8' },
+  Comédia: { capa: '#875A00', fundo: '#F8ECD3' },
+  História: { capa: '#945000', fundo: '#FDE9D4' },
+  Biografia: { capa: '#00758D', fundo: '#D3F4FA' },
+  Autoajuda: { capa: '#007A46', fundo: '#DAF5E5' },
+  Técnico: { capa: '#006AAA', fundo: '#D9F1FF' },
+  Acadêmico: { capa: '#2063B0', fundo: '#DEEFFF' },
+  Infantil: { capa: '#696800', fundo: '#EEEFD5' },
   'Jovem Adulto': { capa: '#983C75', fundo: '#FFE4F2' },
-  'Distopia': { capa: '#B13A0B', fundo: '#FFE3D6' },
-  'Thriller': { capa: '#5D53AE', fundo: '#EAEAFF' },
-  'Policial': { capa: '#00719E', fundo: '#D5F2FF' },
-  'Suspense': { capa: '#007779', fundo: '#D3F5F4' },
-  'Outros': { capa: '#4A4658', fundo: '#ECEAF1' },
+  Distopia: { capa: '#B13A0B', fundo: '#FFE3D6' },
+  Thriller: { capa: '#5D53AE', fundo: '#EAEAFF' },
+  Policial: { capa: '#00719E', fundo: '#D5F2FF' },
+  Suspense: { capa: '#007779', fundo: '#D3F5F4' },
+  Outros: { capa: '#4A4658', fundo: '#ECEAF1' },
 };
 
 export const listaGeneros = Object.keys(generos);
 
-const semAcento = (texto) =>
-  texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+const semAcento = (texto) => texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
-const generosPorChave = Object.fromEntries(
-  listaGeneros.map((nome) => [semAcento(nome), nome])
-);
+const generosPorChave = Object.fromEntries(listaGeneros.map((nome) => [semAcento(nome), nome]));
 
 // Aceita o gênero como vier da API ("ficção científica", "FICCAO CIENTIFICA"...)
 // e devolve o nome oficial da lista, ou null se não for nenhum deles.
@@ -58,8 +55,7 @@ export const nomeDoGenero = (genero) => {
   return generosPorChave[semAcento(genero)] || null;
 };
 
-export const coresDoGenero = (genero) =>
-  generos[nomeDoGenero(genero)] || generos['Outros'];
+export const coresDoGenero = (genero) => generos[nomeDoGenero(genero)] || generos['Outros'];
 
 export const fonte = "'Bricolage Grotesque', system-ui, sans-serif";
 

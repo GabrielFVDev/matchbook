@@ -58,10 +58,17 @@ const estiloBotao = css`
   text-decoration: none;
   line-height: 1.1;
   text-align: center;
-  transition: transform 0.18s ease, opacity 0.15s ease, background-color 0.2s ease;
+  transition:
+    transform 0.18s ease,
+    opacity 0.15s ease,
+    background-color 0.2s ease;
   ${({ $variante = 'primario' }) => variantes[$variante]}
   ${({ $tamanho = 'medio' }) => tamanhos[$tamanho]}
-  ${({ $total }) => $total && css`width: 100%;`}
+  ${({ $total }) =>
+    $total &&
+    css`
+      width: 100%;
+    `}
 
   @media (hover: hover) {
     &:hover:not(:disabled) {

@@ -13,7 +13,7 @@ export const useAuth = () => {
 
     try {
       const resultado = await authService.login(email, senha);
-      
+
       if (resultado.success) {
         // Salva os dados do usuário no localStorage
         localStorage.setItem('usuario', JSON.stringify(resultado.data));
@@ -54,7 +54,7 @@ export const useAuth = () => {
     getCurrentUser,
     loading,
     error,
-    setError
+    setError,
   };
 };
 
@@ -70,13 +70,13 @@ export const useRegister = () => {
     setError(null);
     setSuccess(false);
 
-    console.log("Hook: Iniciando cadastro com dados:", userData);
+    console.log('Hook: Iniciando cadastro com dados:', userData);
 
     try {
       const resultado = await authService.cadastrar(userData);
-      
-      console.log("Hook: Resultado do serviço:", resultado);
-      
+
+      console.log('Hook: Resultado do serviço:', resultado);
+
       if (resultado.success) {
         setSuccess(true);
         setLoading(false);
@@ -87,7 +87,7 @@ export const useRegister = () => {
         return { success: false, error: resultado.error };
       }
     } catch (err) {
-      console.error("Hook: Erro inesperado:", err);
+      console.error('Hook: Erro inesperado:', err);
       setError('Erro inesperado ao cadastrar usuário');
       setLoading(false);
       return { success: false, error: 'Erro inesperado ao cadastrar usuário' };
@@ -106,6 +106,6 @@ export const useRegister = () => {
     error,
     success,
     reset,
-    setError
+    setError,
   };
 };

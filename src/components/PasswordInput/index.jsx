@@ -35,7 +35,10 @@ export function PasswordInput(props) {
   return (
     <Caixa>
       <CampoSenha {...props} type={visivel ? 'text' : 'password'} />
-      <Mostrar aria-label={visivel ? 'Esconder senha' : 'Mostrar senha'} onClick={() => setVisivel(!visivel)}>
+      <Mostrar
+        aria-label={visivel ? 'Esconder senha' : 'Mostrar senha'}
+        onClick={() => setVisivel(!visivel)}
+      >
         {visivel ? <IconEyeOff /> : <IconEye />}
       </Mostrar>
     </Caixa>

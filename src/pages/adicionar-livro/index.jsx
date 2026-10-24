@@ -1,14 +1,14 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { AnimatePresence } from "motion/react";
-import { AppLayout } from "../../components/AppLayout";
-import { BookCover } from "../../components/BookCover";
-import { Tag } from "../../components/Chip";
-import { Field, FormAlert, Input, Select, TextArea } from "../../components/Field";
-import { Button, ButtonLink } from "../../components/Button";
-import { EmptyState } from "../../components/EmptyState";
-import { Spinner } from "../../components/Spinner";
-import { IconAlert, IconCheck, IconHeart } from "../../components/Icons";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AnimatePresence } from 'motion/react';
+import { AppLayout } from '../../components/AppLayout';
+import { BookCover } from '../../components/BookCover';
+import { Tag } from '../../components/Chip';
+import { Field, FormAlert, Input, Select, TextArea } from '../../components/Field';
+import { Button, ButtonLink } from '../../components/Button';
+import { EmptyState } from '../../components/EmptyState';
+import { Spinner } from '../../components/Spinner';
+import { IconAlert, IconCheck, IconHeart } from '../../components/Icons';
 import {
   PageHeading,
   PageTitle,
@@ -27,17 +27,26 @@ import {
   PreviewInfo,
   MobilePreview,
   MobilePreviewText,
-  SuccessWrapper
+  SuccessWrapper,
 } from './styles.module.jsx';
-import { useAuth } from "../../hooks/useAuth";
-import { useCurtidos } from "../../contexts/curtidos";
-import { livroService, recomendacaoService } from "../../apis/services";
-import { cores, listaGeneros } from "../../styles/tokens";
-import { curvaSaida, surgir } from "../../styles/movimento";
+import { useAuth } from '../../hooks/useAuth';
+import { useCurtidos } from '../../contexts/curtidos';
+import { livroService, recomendacaoService } from '../../apis/services';
+import { cores, listaGeneros } from '../../styles/tokens';
+import { curvaSaida, surgir } from '../../styles/movimento';
 
 const saidaRapida = { opacity: 0, y: -8, transition: { duration: 0.15, ease: curvaSaida } };
 
-const idiomas = ['Português', 'Inglês', 'Espanhol', 'Francês', 'Alemão', 'Italiano', 'Japonês', 'Outros'];
+const idiomas = [
+  'Português',
+  'Inglês',
+  'Espanhol',
+  'Francês',
+  'Alemão',
+  'Italiano',
+  'Japonês',
+  'Outros',
+];
 
 const formularioVazio = {
   titulo: '',
@@ -50,7 +59,7 @@ const formularioVazio = {
   isbn: '',
   sinopse: '',
   capaUrl: '',
-  disponivel: true
+  disponivel: true,
 };
 
 const isValidUrl = (texto) => {
@@ -76,8 +85,8 @@ export default function AdicionarLivroPage() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: null }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
     if (erroEnvio) setErroEnvio(null);
   };
 
@@ -94,7 +103,10 @@ export default function AdicionarLivroPage() {
       newErrors.sinopse = 'Escreva pelo menos 50 caracteres';
     }
 
-    if (formData.anoPublicacao && (formData.anoPublicacao < 1000 || formData.anoPublicacao > anoMaximo)) {
+    if (
+      formData.anoPublicacao &&
+      (formData.anoPublicacao < 1000 || formData.anoPublicacao > anoMaximo)
+    ) {
       newErrors.anoPublicacao = `Use um ano entre 1000 e ${anoMaximo}`;
     }
 
@@ -130,7 +142,7 @@ export default function AdicionarLivroPage() {
       ...formData,
       anoPublicacao: formData.anoPublicacao ? parseInt(formData.anoPublicacao) : null,
       numeroPaginas: formData.numeroPaginas ? parseInt(formData.numeroPaginas) : null,
-      capaUrl: formData.capaUrl || null
+      capaUrl: formData.capaUrl || null,
     };
 
     const response = await livroService.criar(dadosLivro);
@@ -181,16 +193,33 @@ export default function AdicionarLivroPage() {
               role="status"
             >
               <ButtonLink to="/meus-livros">Ver meus livros</ButtonLink>
-              <Button $variante="secundario" onClick={adicionarOutro}>Adicionar outro</Button>
+              <Button $variante="secundario" onClick={adicionarOutro}>
+                Adicionar outro
+              </Button>
             </EmptyState>
           </SuccessWrapper>
         ) : (
-          <Columns key="formulario" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={saidaRapida}>
+          <Columns
+            key="formulario"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={saidaRapida}
+          >
             <MobilePreview role="group" aria-label="Prévia da capa">
-              <BookCover tamanho="mini" titulo={formData.titulo} genero={formData.genero} capaUrl={formData.capaUrl} tituloVazio="Título do livro" />
+              <BookCover
+                tamanho="mini"
+                titulo={formData.titulo}
+                genero={formData.genero}
+                capaUrl={formData.capaUrl}
+                tituloVazio="Título do livro"
+              />
               <MobilePreviewText $vazio={!formData.autor}>
                 <p>Prévia</p>
-                {formData.genero && <Tag $fundo={cores.fundoApp} $pequena>{formData.genero}</Tag>}
+                {formData.genero && (
+                  <Tag $fundo={cores.fundoApp} $pequena>
+                    {formData.genero}
+                  </Tag>
+                )}
                 <p>{formData.autor || 'Autor'}</p>
               </MobilePreviewText>
             </MobilePreview>
@@ -200,37 +229,97 @@ export default function AdicionarLivroPage() {
                 <SectionTitle id="secaoSobre">Sobre o livro</SectionTitle>
                 <FieldsGrid>
                   <Field id="titulo" label="Título" tag="obrigatório" error={errors.titulo} span>
-                    <Input name="titulo" type="text" maxLength={255} placeholder="Como está na capa" value={formData.titulo} onChange={handleInputChange} />
+                    <Input
+                      name="titulo"
+                      type="text"
+                      maxLength={255}
+                      placeholder="Como está na capa"
+                      value={formData.titulo}
+                      onChange={handleInputChange}
+                    />
                   </Field>
                   <Field id="autor" label="Autor" tag="obrigatório" error={errors.autor}>
-                    <Input name="autor" type="text" maxLength={255} placeholder="Nome de quem escreveu" value={formData.autor} onChange={handleInputChange} />
+                    <Input
+                      name="autor"
+                      type="text"
+                      maxLength={255}
+                      placeholder="Nome de quem escreveu"
+                      value={formData.autor}
+                      onChange={handleInputChange}
+                    />
                   </Field>
                   <Field id="genero" label="Gênero" tag="obrigatório" error={errors.genero}>
                     <Select name="genero" value={formData.genero} onChange={handleInputChange}>
                       <option value="">Escolha um gênero</option>
-                      {listaGeneros.map(genero => (
-                        <option key={genero} value={genero}>{genero}</option>
+                      {listaGeneros.map((genero) => (
+                        <option key={genero} value={genero}>
+                          {genero}
+                        </option>
                       ))}
                     </Select>
                   </Field>
                   <Field id="editora" label="Editora">
-                    <Input name="editora" type="text" maxLength={255} placeholder="Ex.: Companhia das Letras" value={formData.editora} onChange={handleInputChange} />
+                    <Input
+                      name="editora"
+                      type="text"
+                      maxLength={255}
+                      placeholder="Ex.: Companhia das Letras"
+                      value={formData.editora}
+                      onChange={handleInputChange}
+                    />
                   </Field>
                   <Field id="idioma" label="Idioma">
                     <Select name="idioma" value={formData.idioma} onChange={handleInputChange}>
-                      {idiomas.map(idioma => (
-                        <option key={idioma} value={idioma}>{idioma}</option>
+                      {idiomas.map((idioma) => (
+                        <option key={idioma} value={idioma}>
+                          {idioma}
+                        </option>
                       ))}
                     </Select>
                   </Field>
-                  <Field id="anoPublicacao" label="Ano de publicação" error={errors.anoPublicacao} data-meia>
-                    <Input name="anoPublicacao" type="number" inputMode="numeric" min="1000" max={anoMaximo} placeholder="Ex.: 1951" value={formData.anoPublicacao} onChange={handleInputChange} />
+                  <Field
+                    id="anoPublicacao"
+                    label="Ano de publicação"
+                    error={errors.anoPublicacao}
+                    data-meia
+                  >
+                    <Input
+                      name="anoPublicacao"
+                      type="number"
+                      inputMode="numeric"
+                      min="1000"
+                      max={anoMaximo}
+                      placeholder="Ex.: 1951"
+                      value={formData.anoPublicacao}
+                      onChange={handleInputChange}
+                    />
                   </Field>
-                  <Field id="numeroPaginas" label="Número de páginas" error={errors.numeroPaginas} data-meia>
-                    <Input name="numeroPaginas" type="number" inputMode="numeric" min="1" max="10000" placeholder="Ex.: 320" value={formData.numeroPaginas} onChange={handleInputChange} />
+                  <Field
+                    id="numeroPaginas"
+                    label="Número de páginas"
+                    error={errors.numeroPaginas}
+                    data-meia
+                  >
+                    <Input
+                      name="numeroPaginas"
+                      type="number"
+                      inputMode="numeric"
+                      min="1"
+                      max="10000"
+                      placeholder="Ex.: 320"
+                      value={formData.numeroPaginas}
+                      onChange={handleInputChange}
+                    />
                   </Field>
                   <Field id="isbn" label="ISBN" span>
-                    <Input name="isbn" type="text" maxLength={20} placeholder="Os números do código de barras" value={formData.isbn} onChange={handleInputChange} />
+                    <Input
+                      name="isbn"
+                      type="text"
+                      maxLength={20}
+                      placeholder="Os números do código de barras"
+                      value={formData.isbn}
+                      onChange={handleInputChange}
+                    />
                   </Field>
                 </FieldsGrid>
               </FormSection>
@@ -240,15 +329,39 @@ export default function AdicionarLivroPage() {
                   <SectionTitle id="secaoSinopse">Sinopse</SectionTitle>
                   <CounterRow aria-live="polite">{contagemSinopse}</CounterRow>
                 </SectionHeading>
-                <Field id="sinopse" label="Do que o livro trata" tag="obrigatório" error={errors.sinopse} help="Mínimo de 50 caracteres">
-                  <TextArea name="sinopse" rows={5} maxLength={1000} placeholder="Em poucas linhas" value={formData.sinopse} onChange={handleInputChange} />
+                <Field
+                  id="sinopse"
+                  label="Do que o livro trata"
+                  tag="obrigatório"
+                  error={errors.sinopse}
+                  help="Mínimo de 50 caracteres"
+                >
+                  <TextArea
+                    name="sinopse"
+                    rows={5}
+                    maxLength={1000}
+                    placeholder="Em poucas linhas"
+                    value={formData.sinopse}
+                    onChange={handleInputChange}
+                  />
                 </Field>
               </FormSection>
 
               <FormSection aria-labelledby="secaoCapa" {...surgir(2)}>
                 <SectionTitle id="secaoCapa">Capa</SectionTitle>
-                <Field id="capaUrl" label="Link da imagem" error={errors.capaUrl} help="Sem link, o Matchbook monta uma capa com a cor do gênero.">
-                  <Input name="capaUrl" type="url" placeholder="https://" value={formData.capaUrl} onChange={handleInputChange} />
+                <Field
+                  id="capaUrl"
+                  label="Link da imagem"
+                  error={errors.capaUrl}
+                  help="Sem link, o Matchbook monta uma capa com a cor do gênero."
+                >
+                  <Input
+                    name="capaUrl"
+                    type="url"
+                    placeholder="https://"
+                    value={formData.capaUrl}
+                    onChange={handleInputChange}
+                  />
                 </Field>
               </FormSection>
 
@@ -264,7 +377,9 @@ export default function AdicionarLivroPage() {
                   {loading ? <Spinner /> : <IconHeart tamanho={18} />}
                   {loading ? 'Adicionando' : 'Adicionar aos meus livros'}
                 </Button>
-                <ButtonLink to="/home" $variante="branco" $tamanho="grande">Cancelar</ButtonLink>
+                <ButtonLink to="/home" $variante="branco" $tamanho="grande">
+                  Cancelar
+                </ButtonLink>
               </SubmitRow>
             </FormContainer>
 
@@ -275,7 +390,13 @@ export default function AdicionarLivroPage() {
             >
               <PreviewLabel>Prévia</PreviewLabel>
               <PreviewCard>
-                <BookCover tamanho="previa" titulo={formData.titulo} genero={formData.genero} capaUrl={formData.capaUrl} tituloVazio="Título do livro" />
+                <BookCover
+                  tamanho="previa"
+                  titulo={formData.titulo}
+                  genero={formData.genero}
+                  capaUrl={formData.capaUrl}
+                  tituloVazio="Título do livro"
+                />
                 <PreviewInfo $vazio={!formData.autor}>
                   <p>{formData.autor || 'Autor'}</p>
                   <p>Assim ele aparece nas recomendações.</p>

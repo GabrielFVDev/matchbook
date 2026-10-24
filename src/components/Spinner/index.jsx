@@ -12,7 +12,16 @@ const Svg = styled.svg`
 `;
 
 export const Spinner = ({ tamanho = 18, cor = 'currentColor' }) => (
-  <Svg width={tamanho} height={tamanho} viewBox="0 0 24 24" fill="none" stroke={cor} strokeWidth="2.6" strokeLinecap="round" aria-hidden="true">
+  <Svg
+    width={tamanho}
+    height={tamanho}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={cor}
+    strokeWidth="2.6"
+    strokeLinecap="round"
+    aria-hidden="true"
+  >
     <path d="M12 3a9 9 0 1 1 -9 9" />
   </Svg>
 );

@@ -32,6 +32,11 @@ export const entradaCartao = {
 // Avisos: entram com mola e saem rápido. Quem mostra o aviso envolve em AnimatePresence.
 export const animacaoAviso = {
   initial: { opacity: 0, y: 16, scale: 0.96 },
-  animate: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 420, damping: 30 } },
+  animate: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: 'spring', stiffness: 420, damping: 30 },
+  },
   exit: { opacity: 0, y: 8, scale: 0.98, transition: { duration: 0.15, ease: curvaSaida } },
 };
