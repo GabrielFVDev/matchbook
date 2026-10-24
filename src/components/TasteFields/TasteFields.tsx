@@ -57,7 +57,7 @@ export interface DadosGosto {
 
 interface TasteFieldsProps {
   dados: DadosGosto;
-  onChange: <K extends keyof DadosGosto>(campo: K, valor: DadosGosto[K]) => void;
+  onChange: (campo: keyof DadosGosto, valor: DadosGosto[keyof DadosGosto]) => void;
   prefixo: string;
 }
 

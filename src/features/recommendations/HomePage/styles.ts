@@ -32,7 +32,7 @@ export const Intro = styled.div`
   }
 `;
 
-export const Eyebrow = styled(motion.p)`
+export const Eyebrow = styled(motion.p)<{ $cor: string }>`
   font-size: 15px;
   font-weight: 700;
   color: ${({ $cor }) => $cor};
@@ -92,7 +92,7 @@ export const Stack = styled.div`
   }
 `;
 
-export const GhostCard = styled.div`
+export const GhostCard = styled.div<{ $opacidade: number; $transform: string }>`
   position: absolute;
   inset: 0;
   border-radius: ${raio.carta};
@@ -173,7 +173,7 @@ export const Synopsis = styled.p`
 `;
 
 // Selo que aparece no meio da capa enquanto a carta é arrastada.
-export const Stamp = styled(motion.span)`
+export const Stamp = styled(motion.span)<{ $cor?: string; $lado: 'esquerda' | 'direita' }>`
   position: absolute;
   top: 140px;
   left: 50%;
@@ -229,7 +229,9 @@ export const Actions = styled.div`
   gap: 40px;
 `;
 
-export const ActionButton = styled(motion.button).attrs({ type: 'button' })`
+export const ActionButton = styled(motion.button).attrs({ type: 'button' })<{
+  $principal?: boolean;
+}>`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -251,7 +253,7 @@ export const ActionButton = styled(motion.button).attrs({ type: 'button' })`
   }
 `;
 
-export const ActionCircle = styled.span`
+export const ActionCircle = styled.span<{ $principal?: boolean; $cor?: string }>`
   display: flex;
   align-items: center;
   justify-content: center;

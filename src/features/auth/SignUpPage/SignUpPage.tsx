@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence } from 'motion/react';
+import type { Variants } from 'motion/react';
 import {
   AuthLayout,
   AuthCard,
@@ -31,15 +33,17 @@ import {
   ButtonRow,
   EtapaConteudo,
 } from './styles';
+import type { EstadoEtapa } from './styles';
 import { useRegister } from '@/features/auth/useAuth';
+import { paths } from '@/app/paths';
 import { validarEmail, normalizarDadosUsuario } from '@/lib/formatters';
 import { curvaEntrada, curvaSaida, entradaCartao } from '@/styles/motion';
 
 // A etapa nova entra pelo lado do avanço: da direita ao continuar, da esquerda ao voltar.
-const variantesEtapa = {
-  entrar: (sentido) => ({ opacity: 0, x: sentido * 40 }),
+const variantesEtapa: Variants = {
+  entrar: (sentido: number) => ({ opacity: 0, x: sentido * 40 }),
   parado: { opacity: 1, x: 0, transition: { duration: 0.3, ease: curvaEntrada } },
-  sair: (sentido) => ({
+  sair: (sentido: number) => ({
     opacity: 0,
     x: sentido * -40,
     transition: { duration: 0.15, ease: curvaSaida },
@@ -51,17 +55,32 @@ const etapas = [
   { numero: 2, nome: 'Seu gosto', detalhe: 'Gênero, autor e ritmo de leitura' },
 ];
 
+// O formulário das duas etapas, com os nomes de campo da API.
+interface FormularioCadastro {
+  nome: string;
+  email: string;
+  senha: string;
+  confirmarSenha: string;
+  dataNascimento: string;
+  generoFavorito: string;
+  livrosLidos: number | string;
+  autorPreferido: string;
+  nivelLeitura: string;
+  receberRecomendacoes: boolean;
+  biografia: string;
+}
+
 export default function SignUpPage() {
   const navigate = useNavigate();
   const { register, loading } = useRegister();
 
   const [etapa, setEtapa] = useState(1);
   const [sentido, setSentido] = useState(1);
-  const [erros, setErros] = useState({});
-  const [erroCadastro, setErroCadastro] = useState(null);
+  const [erros, setErros] = useState<Record<string, string | null>>({});
+  const [erroCadastro, setErroCadastro] = useState<string | null>(null);
   const [contaCriada, setContaCriada] = useState(false);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormularioCadastro>({
     nome: '',
     email: '',
     senha: '',
@@ -78,23 +97,27 @@ export default function SignUpPage() {
   // Depois de criar a conta, leva para o login.
   useEffect(() => {
     if (!contaCriada) return undefined;
-    const timer = setTimeout(() => navigate('/'), 3000);
+    const timer = setTimeout(() => navigate(paths.login), 3000);
     return () => clearTimeout(timer);
   }, [contaCriada, navigate]);
 
-  const atualizar = (campo, valor) => {
+  const atualizar = <K extends keyof FormularioCadastro>(
+    campo: K,
+    valor: FormularioCadastro[K],
+  ) => {
     setFormData((prev) => ({ ...prev, [campo]: valor }));
     if (erros[campo]) setErros((prev) => ({ ...prev, [campo]: null }));
     if (erroCadastro) setErroCadastro(null);
   };
 
-  const handleInputChange = (e) => atualizar(e.target.name, e.target.value);
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) =>
+    atualizar(e.target.name as keyof FormularioCadastro, e.target.value);
 
   const senhaValida = formData.senha.length >= 6;
   const senhasConferem = formData.confirmarSenha && formData.senha === formData.confirmarSenha;
 
   const validarEtapa1 = () => {
-    const novosErros = {};
+    const novosErros: Record<string, string> = {};
     if (!formData.nome.trim()) novosErros.nome = 'Informe seu nome';
     if (!formData.email.trim()) novosErros.email = 'Informe seu email';
     else if (!validarEmail(formData.email)) novosErros.email = 'Esse email parece incompleto';
@@ -106,7 +129,7 @@ export default function SignUpPage() {
     return Object.keys(novosErros).length === 0;
   };
 
-  const continuar = (e) => {
+  const continuar = (e: FormEvent) => {
     e.preventDefault();
     if (validarEtapa1()) {
       setSentido(1);
@@ -114,7 +137,7 @@ export default function SignUpPage() {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     const { confirmarSenha: _confirmarSenha, ...dadosParaEnvio } = formData;
@@ -144,7 +167,7 @@ export default function SignUpPage() {
         : { error: 'As senhas não coincidem' }
       : {};
 
-  const estadoEtapa = (numero) =>
+  const estadoEtapa = (numero: number): EstadoEtapa =>
     numero === etapa ? 'atual' : numero < etapa ? 'feito' : 'proximo';
 
   return (
@@ -152,7 +175,7 @@ export default function SignUpPage() {
       alinhar="flex-start"
       linkTopo={
         <>
-          Já tem conta? <Link to="/">Entrar</Link>
+          Já tem conta? <Link to={paths.login}>Entrar</Link>
         </>
       }
     >
@@ -209,7 +232,7 @@ export default function SignUpPage() {
                 descricao={`Boas-vindas, ${formData.nome.trim().split(' ')[0]}! Em instantes você vai para o login.`}
                 role="status"
               >
-                <ButtonLink to="/" $variante="primario">
+                <ButtonLink to={paths.login} $variante="primario">
                   Entrar agora
                 </ButtonLink>
               </EmptyState>

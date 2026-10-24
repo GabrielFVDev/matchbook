@@ -47,7 +47,9 @@ export const StepItem = styled.li`
   gap: 16px;
 `;
 
-export const StepNumber = styled.span`
+export type EstadoEtapa = 'atual' | 'feito' | 'proximo';
+
+export const StepNumber = styled.span<{ $estado: EstadoEtapa }>`
   flex: 0 0 auto;
   display: flex;
   align-items: center;
@@ -65,7 +67,7 @@ export const StepNumber = styled.span`
     color 0.3s ease;
 `;
 
-export const StepText = styled.span`
+export const StepText = styled.span<{ $apagado?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -95,7 +97,7 @@ export const StepPills = styled.ol`
   }
 `;
 
-export const StepPill = styled.li`
+export const StepPill = styled.li<{ $atual?: boolean }>`
   display: flex;
   align-items: center;
   gap: 8px;
@@ -115,7 +117,7 @@ export const StepPill = styled.li`
   }
 `;
 
-export const PillNumber = styled.span`
+export const PillNumber = styled.span<{ $atual?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;

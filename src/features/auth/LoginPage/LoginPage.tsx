@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   AuthLayout,
@@ -18,11 +19,30 @@ import { IconAlert } from '@/components/Icons';
 import { BrandRow, CoverStack, StackCover, QuoteText } from './styles';
 import { useAuth } from '@/features/auth/useAuth';
 import { generos } from '@/styles/tokens';
+import type { NomeGenero } from '@/styles/tokens';
 import { curvaEntrada, entradaCartao, mola, molaSuave } from '@/styles/motion';
+import type { Variants } from 'motion/react';
+import { paths } from '@/app/paths';
+
+// Cada medida vem em par: [desktop, celular].
+type Par = [number, number];
+
+interface CapaPilha {
+  titulo: string;
+  genero: NomeGenero;
+  x: Par;
+  y: Par;
+  w: Par;
+  h: Par;
+  giro: number;
+  abrir: number;
+  fonte: Par;
+  tituloCelular: boolean;
+}
 
 // Pilha de capas da lateral: posição, tamanho e giro no desktop e no celular.
 // "abrir" é quanto cada capa se afasta quando o mouse passa por cima da pilha.
-const capasDaPilha = [
+const capasDaPilha: CapaPilha[] = [
   {
     titulo: 'O Hobbit',
     genero: 'Fantasia',
@@ -62,10 +82,16 @@ const capasDaPilha = [
 ];
 
 // As capas caem uma de cada vez e se abrem em leque no hover.
-const variantesCapa = {
+const variantesCapa: Variants = {
   escondida: { opacity: 0, y: -48, rotate: 0 },
-  visivel: (capa) => ({ opacity: 1, y: 0, x: 0, rotate: capa.giro, transition: molaSuave }),
-  aberta: (capa) => ({
+  visivel: (capa: CapaPilha) => ({
+    opacity: 1,
+    y: 0,
+    x: 0,
+    rotate: capa.giro,
+    transition: molaSuave,
+  }),
+  aberta: (capa: CapaPilha) => ({
     rotate: capa.giro * 1.8,
     x: capa.abrir,
     y: capa.abrir ? 0 : -10,
@@ -78,21 +104,21 @@ export default function LoginPage() {
   const { login, loading } = useAuth();
 
   const [formData, setFormData] = useState({ email: '', senha: '' });
-  const [erros, setErros] = useState({});
-  const [erroLogin, setErroLogin] = useState(null);
+  const [erros, setErros] = useState<Record<string, string | null>>({});
+  const [erroLogin, setErroLogin] = useState<string | null>(null);
   const [pilhaPronta, setPilhaPronta] = useState(false);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (erros[name]) setErros((prev) => ({ ...prev, [name]: null }));
     if (erroLogin) setErroLogin(null);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    const novosErros = {};
+    const novosErros: Record<string, string> = {};
     if (!formData.email) novosErros.email = 'Informe seu email';
     if (!formData.senha) novosErros.senha = 'Informe sua senha';
     setErros(novosErros);
@@ -101,7 +127,7 @@ export default function LoginPage() {
     const resultado = await login(formData.email, formData.senha);
 
     if (resultado.success) {
-      navigate('/home');
+      navigate(paths.home);
     } else {
       setErroLogin(resultado.error || 'Confira seu email e sua senha e tente de novo.');
     }
@@ -196,7 +222,7 @@ export default function LoginPage() {
         </AuthForm>
 
         <AuthFooter>
-          Ainda não tem conta? <Link to="/cadastro">Criar conta</Link>
+          Ainda não tem conta? <Link to={paths.signUp}>Criar conta</Link>
         </AuthFooter>
       </AuthCard>
     </AuthLayout>

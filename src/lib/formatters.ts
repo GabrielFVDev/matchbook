@@ -18,7 +18,8 @@ interface DadosUsuario {
   receberRecomendacoes?: boolean;
 }
 
-// Normaliza dados do usuário antes de enviar para a API
+// Normaliza dados do usuário antes de enviar para a API. O tipo de volta é o da entrada: aparar
+// texto mantém texto, e livrosLidos e receberRecomendacoes saem sempre como número e booleano.
 export const normalizarDadosUsuario = <T extends DadosUsuario>(dados: T) => {
   return {
     ...dados,
@@ -30,5 +31,5 @@ export const normalizarDadosUsuario = <T extends DadosUsuario>(dados: T) => {
     biografia: dados.biografia?.trim(),
     livrosLidos: parseInt(String(dados.livrosLidos)) || 0,
     receberRecomendacoes: Boolean(dados.receberRecomendacoes),
-  };
+  } as T & { livrosLidos: number; receberRecomendacoes: boolean };
 };

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence } from 'motion/react';
 import { AppLayout } from '@/layouts/AppLayout';
@@ -32,6 +33,7 @@ import {
 import { useCurtidos } from '@/lib/likedCount';
 import { livroService, recomendacaoService } from '@/lib/api/services';
 import { getSessionUser } from '@/lib/session';
+import { paths } from '@/app/paths';
 import { cores, listaGeneros } from '@/styles/tokens';
 import { curvaSaida, surgir } from '@/styles/motion';
 
@@ -62,7 +64,9 @@ const formularioVazio = {
   disponivel: true,
 };
 
-const isValidUrl = (texto) => {
+type FormularioLivro = typeof formularioVazio;
+
+const isValidUrl = (texto: string) => {
   try {
     new URL(texto);
     return true;
@@ -75,14 +79,18 @@ export default function AddBookPage() {
   const { somar } = useCurtidos();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState(formularioVazio);
-  const [errors, setErrors] = useState({});
-  const [erroEnvio, setErroEnvio] = useState(null);
-  const [resultado, setResultado] = useState(null);
+  const [formData, setFormData] = useState<FormularioLivro>(formularioVazio);
+  const [errors, setErrors] = useState<Record<string, string | null>>({});
+  const [erroEnvio, setErroEnvio] = useState<string | null>(null);
+  const [resultado, setResultado] = useState<{ titulo: string; nosFavoritos: boolean } | null>(
+    null,
+  );
 
   const anoMaximo = new Date().getFullYear() + 1;
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
@@ -90,7 +98,7 @@ export default function AddBookPage() {
   };
 
   const validateForm = () => {
-    const newErrors = {};
+    const newErrors: Record<string, string> = {};
 
     if (!formData.titulo.trim()) newErrors.titulo = 'Informe o título';
     if (!formData.autor.trim()) newErrors.autor = 'Informe o autor';
@@ -104,12 +112,15 @@ export default function AddBookPage() {
 
     if (
       formData.anoPublicacao &&
-      (formData.anoPublicacao < 1000 || formData.anoPublicacao > anoMaximo)
+      (Number(formData.anoPublicacao) < 1000 || Number(formData.anoPublicacao) > anoMaximo)
     ) {
       newErrors.anoPublicacao = `Use um ano entre 1000 e ${anoMaximo}`;
     }
 
-    if (formData.numeroPaginas && (formData.numeroPaginas < 1 || formData.numeroPaginas > 10000)) {
+    if (
+      formData.numeroPaginas &&
+      (Number(formData.numeroPaginas) < 1 || Number(formData.numeroPaginas) > 10000)
+    ) {
       newErrors.numeroPaginas = 'Use um número entre 1 e 10.000';
     }
 
@@ -121,7 +132,7 @@ export default function AddBookPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) {
@@ -131,7 +142,7 @@ export default function AddBookPage() {
 
     const usuario = getSessionUser();
     if (!usuario) {
-      navigate('/');
+      navigate(paths.login);
       return;
     }
 
@@ -191,7 +202,7 @@ export default function AddBookPage() {
               }
               role="status"
             >
-              <ButtonLink to="/meus-livros">Ver meus livros</ButtonLink>
+              <ButtonLink to={paths.myBooks}>Ver meus livros</ButtonLink>
               <Button $variante="secundario" onClick={adicionarOutro}>
                 Adicionar outro
               </Button>
@@ -376,7 +387,7 @@ export default function AddBookPage() {
                   {loading ? <Spinner /> : <IconHeart tamanho={18} />}
                   {loading ? 'Adicionando' : 'Adicionar aos meus livros'}
                 </Button>
-                <ButtonLink to="/home" $variante="branco" $tamanho="grande">
+                <ButtonLink to={paths.home} $variante="branco" $tamanho="grande">
                   Cancelar
                 </ButtonLink>
               </SubmitRow>

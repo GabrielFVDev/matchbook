@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import type { FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AnimatePresence } from 'motion/react';
 import { AppLayout } from '@/layouts/AppLayout';
@@ -49,7 +50,10 @@ import {
 import { useCurtidos } from '@/lib/likedCount';
 import { recomendacaoService, userService } from '@/lib/api/services';
 import { validarEmail } from '@/lib/formatters';
-import { clearSessionUser, getSessionUser } from '@/lib/session';
+import { clearSessionUser, getSessionUser, saveSessionUser } from '@/lib/session';
+import type { SessionUser } from '@/lib/session';
+import type { RecommendationStats } from '@/lib/api/types';
+import { paths } from '@/app/paths';
 import { cores, coresDoGenero, nomeDoGenero } from '@/styles/tokens';
 import { surgir } from '@/styles/motion';
 
@@ -79,10 +83,24 @@ const estrategias = [
   },
 ];
 
-const chaveEstrategia = (valor) =>
+const chaveEstrategia = (valor?: string | null) =>
   (valor || 'PADRAO').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase();
 
-const formularioDoUsuario = (usuario) => ({
+// O formulário de edição, com os nomes de campo da API (vai inteiro no PUT /usuario/update).
+interface FormularioPerfil {
+  id: number;
+  nome: string;
+  email: string;
+  dataNascimento: string;
+  generoFavorito: string;
+  livrosLidos: number;
+  autorPreferido: string;
+  nivelLeitura: string;
+  receberRecomendacoes: boolean;
+  biografia: string;
+}
+
+const formularioDoUsuario = (usuario: SessionUser): FormularioPerfil => ({
   id: usuario.id,
   nome: usuario.nome || '',
   email: usuario.email || '',
@@ -96,16 +114,16 @@ const formularioDoUsuario = (usuario) => ({
 });
 
 // "1995-05-15" vira "15/05/1995" sem passar por Date, para não mudar de dia com o fuso.
-const formatarNascimento = (data) => {
+const formatarNascimento = (data?: string | null) => {
   if (!data) return null;
   const partes = String(data).slice(0, 10).split('-');
   return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : data;
 };
 
-const formatarMembroDesde = (data) =>
+const formatarMembroDesde = (data?: string | null) =>
   data ? new Date(data).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : null;
 
-const iniciais = (nome) =>
+const iniciais = (nome?: string | null) =>
   (nome || '')
     .trim()
     .split(/\s+/)
@@ -120,14 +138,17 @@ export default function ProfilePage() {
   const { total } = useCurtidos();
   const [user, setUser] = useState(() => getSessionUser());
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState(() => (user ? formularioDoUsuario(user) : {}));
-  const [errosEdicao, setErrosEdicao] = useState({});
-  const [erroSalvar, setErroSalvar] = useState(null);
+  // Sem sessão a tela não aparece ("if (!user) return null"), então o formulário vazio nunca é lido.
+  const [editForm, setEditForm] = useState<FormularioPerfil>(() =>
+    user ? formularioDoUsuario(user) : ({} as FormularioPerfil),
+  );
+  const [errosEdicao, setErrosEdicao] = useState<Record<string, string | null>>({});
+  const [erroSalvar, setErroSalvar] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [aviso, setAviso] = useState(null);
+  const [aviso, setAviso] = useState<{ texto: string; chave: number } | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
-  const [estatisticas, setEstatisticas] = useState(null);
+  const [estatisticas, setEstatisticas] = useState<RecommendationStats | null>(null);
   const [resetando, setResetando] = useState(false);
 
   const carregarEstatisticas = useCallback(async () => {
@@ -143,7 +164,8 @@ export default function ProfilePage() {
   const fecharAviso = useCallback(() => setAviso(null), []);
 
   const abrirEdicao = useCallback(() => {
-    setEditForm(formularioDoUsuario(user));
+    // Só é chamada com a tela aberta, e a tela só abre com sessão.
+    setEditForm(formularioDoUsuario(user!));
     setErrosEdicao({});
     setErroSalvar(null);
     setIsEditing(true);
@@ -158,15 +180,18 @@ export default function ProfilePage() {
 
   const fecharEdicao = useCallback(() => setIsEditing(false), []);
 
-  const handleFormChange = (field, value) => {
+  const handleFormChange = (
+    field: keyof FormularioPerfil,
+    value: FormularioPerfil[keyof FormularioPerfil],
+  ) => {
     setEditForm((prev) => ({ ...prev, [field]: value }));
     if (errosEdicao[field]) setErrosEdicao((prev) => ({ ...prev, [field]: null }));
   };
 
-  const handleSave = async (e) => {
+  const handleSave = async (e: FormEvent) => {
     e.preventDefault();
 
-    const novosErros = {};
+    const novosErros: Record<string, string> = {};
     if (!editForm.nome.trim()) novosErros.nome = 'Informe seu nome';
     if (!editForm.email.trim()) novosErros.email = 'Informe seu email';
     else if (!validarEmail(editForm.email)) novosErros.email = 'Esse email parece incompleto';
@@ -178,7 +203,7 @@ export default function ProfilePage() {
 
     if (response.success) {
       setUser(response.data);
-      localStorage.setItem('usuario', JSON.stringify(response.data));
+      saveSessionUser(response.data);
       setIsEditing(false);
       setAviso({ texto: 'Perfil atualizado.', chave: Date.now() });
     } else {
@@ -189,7 +214,8 @@ export default function ProfilePage() {
 
   const confirmarReset = async () => {
     setResetando(true);
-    const response = await recomendacaoService.resetarAlgoritmo(user.id);
+    // A tela só abre com sessão (ProtectedRoute).
+    const response = await recomendacaoService.resetarAlgoritmo(user!.id);
     setResetando(false);
     setShowResetModal(false);
 
@@ -206,14 +232,14 @@ export default function ProfilePage() {
 
   const handleLogout = () => {
     clearSessionUser();
-    navigate('/');
+    navigate(paths.login);
   };
 
   const confirmDeleteAccount = () => {
     // A exclusão ainda não chama a API: limpa a sessão e volta para o login.
-    localStorage.removeItem('usuario');
+    clearSessionUser();
     localStorage.removeItem('token');
-    window.location.href = '/';
+    window.location.href = paths.login;
   };
 
   if (!user) return null;
