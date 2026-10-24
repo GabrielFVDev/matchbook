@@ -1,7 +1,7 @@
 import type { UserDto } from '@/lib/api/types';
 
-// A sessão de quem entrou é o usuário salvo no localStorage com a chave "usuario", sem a senha.
-// Este é o único lugar que lê e grava essa chave; mudar o nome dela deslogaria quem já entrou.
+// The session is the logged-in user, saved in localStorage under "usuario" without the password.
+// The only place that reads and writes that key; renaming it would log out everyone logged in.
 const SESSION_KEY = 'usuario';
 
 export type SessionUser = Omit<UserDto, 'senha'>;

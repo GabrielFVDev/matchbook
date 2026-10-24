@@ -47,47 +47,48 @@ import {
   EditForm,
   EditButtons,
 } from './styles';
-import { useCurtidos } from '@/lib/likedCount';
-import { recomendacaoService, userService } from '@/lib/api/services';
-import { validarEmail } from '@/lib/formatters';
+import { useLikedCount } from '@/lib/likedCount';
+import { recommendationsApi } from '@/lib/api/recommendations';
+import { usersApi } from '@/lib/api/users';
+import { isValidEmail } from '@/lib/formatters';
 import { clearSessionUser, getSessionUser, saveSessionUser } from '@/lib/session';
 import type { SessionUser } from '@/lib/session';
 import type { RecommendationStats } from '@/lib/api/types';
 import { paths } from '@/app/paths';
-import { cores, coresDoGenero, nomeDoGenero } from '@/styles/tokens';
-import { surgir } from '@/styles/motion';
+import { colors, genreColors, genreName } from '@/styles/tokens';
+import { appear } from '@/styles/motion';
 
-// Estratégias do algoritmo adaptativo, na ordem em que aparecem.
-const estrategias = [
+// Strategies of the adaptive algorithm, in the order they show up.
+const strategies = [
   {
-    chave: 'PADRAO',
-    nome: 'Padrão',
-    explicacao: 'Estou seguindo o gosto que você contou no seu perfil.',
+    key: 'PADRAO',
+    name: 'Padrão',
+    explanation: 'Estou seguindo o gosto que você contou no seu perfil.',
   },
   {
-    chave: 'DIVERSIFICADO',
-    nome: 'Diversificado',
-    explicacao:
+    key: 'DIVERSIFICADO',
+    name: 'Diversificado',
+    explanation:
       'Você pulou mais do que amou nos últimos livros, então estou misturando gêneros novos com os seus favoritos.',
   },
   {
-    chave: 'EXPLORATORIO',
-    nome: 'Exploratório',
-    explicacao:
+    key: 'EXPLORATORIO',
+    name: 'Exploratório',
+    explanation:
       'Foram muitos pulos seguidos, então estou testando livros bem diferentes para achar o que funciona.',
   },
   {
-    chave: 'REFINADO',
-    nome: 'Refinado',
-    explicacao: 'Você amou vários livros, então estou focando no que já sei que você gosta.',
+    key: 'REFINADO',
+    name: 'Refinado',
+    explanation: 'Você amou vários livros, então estou focando no que já sei que você gosta.',
   },
 ];
 
-const chaveEstrategia = (valor?: string | null) =>
-  (valor || 'PADRAO').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase();
+const strategyKey = (value?: string | null) =>
+  (value || 'PADRAO').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase();
 
-// O formulário de edição, com os nomes de campo da API (vai inteiro no PUT /usuario/update).
-interface FormularioPerfil {
+// The edit form, with the API field names (it goes whole in PUT /usuario/update).
+interface ProfileForm {
   id: number;
   nome: string;
   email: string;
@@ -100,133 +101,130 @@ interface FormularioPerfil {
   biografia: string;
 }
 
-const formularioDoUsuario = (usuario: SessionUser): FormularioPerfil => ({
-  id: usuario.id,
-  nome: usuario.nome || '',
-  email: usuario.email || '',
-  dataNascimento: usuario.dataNascimento || '',
-  generoFavorito: usuario.generoFavorito || '',
-  livrosLidos: usuario.livrosLidos || 0,
-  autorPreferido: usuario.autorPreferido || '',
-  nivelLeitura: usuario.nivelLeitura || '',
-  receberRecomendacoes: usuario.receberRecomendacoes ?? true,
-  biografia: usuario.biografia || '',
+const profileFormFromUser = (user: SessionUser): ProfileForm => ({
+  id: user.id,
+  nome: user.nome || '',
+  email: user.email || '',
+  dataNascimento: user.dataNascimento || '',
+  generoFavorito: user.generoFavorito || '',
+  livrosLidos: user.livrosLidos || 0,
+  autorPreferido: user.autorPreferido || '',
+  nivelLeitura: user.nivelLeitura || '',
+  receberRecomendacoes: user.receberRecomendacoes ?? true,
+  biografia: user.biografia || '',
 });
 
-// "1995-05-15" vira "15/05/1995" sem passar por Date, para não mudar de dia com o fuso.
-const formatarNascimento = (data?: string | null) => {
-  if (!data) return null;
-  const partes = String(data).slice(0, 10).split('-');
-  return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : data;
+// "1995-05-15" becomes "15/05/1995" without Date, so the timezone cannot shift the day.
+const formatBirthDate = (date?: string | null) => {
+  if (!date) return null;
+  const parts = String(date).slice(0, 10).split('-');
+  return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : date;
 };
 
-const formatarMembroDesde = (data?: string | null) =>
-  data ? new Date(data).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : null;
+const formatMemberSince = (date?: string | null) =>
+  date ? new Date(date).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : null;
 
-const iniciais = (nome?: string | null) =>
-  (nome || '')
+const initials = (name?: string | null) =>
+  (name || '')
     .trim()
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
-    .map((parte) => parte[0].toUpperCase())
+    .map((part) => part[0].toUpperCase())
     .join('');
 
 export default function ProfilePage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { total } = useCurtidos();
+  const { total } = useLikedCount();
   const [user, setUser] = useState(() => getSessionUser());
   const [isEditing, setIsEditing] = useState(false);
-  // Sem sessão a tela não aparece ("if (!user) return null"), então o formulário vazio nunca é lido.
-  const [editForm, setEditForm] = useState<FormularioPerfil>(() =>
-    user ? formularioDoUsuario(user) : ({} as FormularioPerfil),
+  // No session, no screen ("if (!user) return null"), so the empty form is never read.
+  const [editForm, setEditForm] = useState<ProfileForm>(() =>
+    user ? profileFormFromUser(user) : ({} as ProfileForm),
   );
-  const [errosEdicao, setErrosEdicao] = useState<Record<string, string | null>>({});
-  const [erroSalvar, setErroSalvar] = useState<string | null>(null);
+  const [editErrors, setEditErrors] = useState<Record<string, string | null>>({});
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [aviso, setAviso] = useState<{ texto: string; chave: number } | null>(null);
+  const [notice, setNotice] = useState<{ text: string; id: number } | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
-  const [estatisticas, setEstatisticas] = useState<RecommendationStats | null>(null);
-  const [resetando, setResetando] = useState(false);
+  const [stats, setStats] = useState<RecommendationStats | null>(null);
+  const [resetting, setResetting] = useState(false);
 
-  const carregarEstatisticas = useCallback(async () => {
+  const loadStats = useCallback(async () => {
     if (!user?.id) return;
-    const response = await recomendacaoService.obterEstatisticas(user.id);
-    setEstatisticas(response.success ? response.data : null);
+    const response = await recommendationsApi.getStats(user.id);
+    setStats(response.success ? response.data : null);
   }, [user?.id]);
 
   useEffect(() => {
-    carregarEstatisticas();
-  }, [carregarEstatisticas]);
+    loadStats();
+  }, [loadStats]);
 
-  const fecharAviso = useCallback(() => setAviso(null), []);
+  const closeNotice = useCallback(() => setNotice(null), []);
 
-  const abrirEdicao = useCallback(() => {
-    // Só é chamada com a tela aberta, e a tela só abre com sessão.
-    setEditForm(formularioDoUsuario(user!));
-    setErrosEdicao({});
-    setErroSalvar(null);
+  const openEdit = useCallback(() => {
+    // Only called with the screen open, and the screen only opens with a session.
+    setEditForm(profileFormFromUser(user!));
+    setEditErrors({});
+    setSaveError(null);
     setIsEditing(true);
   }, [user]);
 
-  // O lápis do cabeçalho no celular abre a edição com ?editar=1.
+  // The header pencil on mobile opens the edit dialog with ?editar=1.
   useEffect(() => {
     if (searchParams.get('editar') !== '1') return;
-    abrirEdicao();
+    openEdit();
     setSearchParams({}, { replace: true });
-  }, [searchParams, setSearchParams, abrirEdicao]);
+  }, [searchParams, setSearchParams, openEdit]);
 
-  const fecharEdicao = useCallback(() => setIsEditing(false), []);
+  const closeEdit = useCallback(() => setIsEditing(false), []);
 
-  const handleFormChange = (
-    field: keyof FormularioPerfil,
-    value: FormularioPerfil[keyof FormularioPerfil],
-  ) => {
+  const handleFormChange = (field: keyof ProfileForm, value: ProfileForm[keyof ProfileForm]) => {
     setEditForm((prev) => ({ ...prev, [field]: value }));
-    if (errosEdicao[field]) setErrosEdicao((prev) => ({ ...prev, [field]: null }));
+    if (editErrors[field]) setEditErrors((prev) => ({ ...prev, [field]: null }));
   };
 
   const handleSave = async (e: FormEvent) => {
     e.preventDefault();
 
-    const novosErros: Record<string, string> = {};
-    if (!editForm.nome.trim()) novosErros.nome = 'Informe seu nome';
-    if (!editForm.email.trim()) novosErros.email = 'Informe seu email';
-    else if (!validarEmail(editForm.email)) novosErros.email = 'Esse email parece incompleto';
-    setErrosEdicao(novosErros);
-    if (Object.keys(novosErros).length > 0) return;
+    const newErrors: Record<string, string> = {};
+    if (!editForm.nome.trim()) newErrors.nome = 'Informe seu nome';
+    if (!editForm.email.trim()) newErrors.email = 'Informe seu email';
+    else if (!isValidEmail(editForm.email)) newErrors.email = 'Esse email parece incompleto';
+    setEditErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
 
     setLoading(true);
-    const response = await userService.atualizar(editForm);
+    const response = await usersApi.update(editForm);
 
     if (response.success) {
       setUser(response.data);
       saveSessionUser(response.data);
       setIsEditing(false);
-      setAviso({ texto: 'Perfil atualizado.', chave: Date.now() });
+      setNotice({ text: 'Perfil atualizado.', id: Date.now() });
     } else {
-      setErroSalvar(`Não deu para salvar: ${response.error}`);
+      setSaveError(`Não deu para salvar: ${response.error}`);
     }
     setLoading(false);
   };
 
-  const confirmarReset = async () => {
-    setResetando(true);
-    // A tela só abre com sessão (ProtectedRoute).
-    const response = await recomendacaoService.resetarAlgoritmo(user!.id);
-    setResetando(false);
+  const confirmReset = async () => {
+    setResetting(true);
+    // The screen only opens with a session (ProtectedRoute).
+    const response = await recommendationsApi.resetAlgorithm(user!.id);
+    setResetting(false);
     setShowResetModal(false);
 
     if (response.success) {
-      await carregarEstatisticas();
-      setAviso({
-        texto: 'Histórico apagado. O Matchbook recomeça pelo seu perfil.',
-        chave: Date.now(),
+      await loadStats();
+      setNotice({
+        text: 'Histórico apagado. O Matchbook recomeça pelo seu perfil.',
+        id: Date.now(),
       });
     } else {
-      setAviso({ texto: 'Não deu para recomeçar agora.', chave: Date.now() });
+      setNotice({ text: 'Não deu para recomeçar agora.', id: Date.now() });
     }
   };
 
@@ -236,7 +234,7 @@ export default function ProfilePage() {
   };
 
   const confirmDeleteAccount = () => {
-    // A exclusão ainda não chama a API: limpa a sessão e volta para o login.
+    // Deleting does not call the API yet: it clears the session and goes back to the login.
     clearSessionUser();
     localStorage.removeItem('token');
     window.location.href = paths.login;
@@ -244,37 +242,36 @@ export default function ProfilePage() {
 
   if (!user) return null;
 
-  const generoFavorito = nomeDoGenero(user.generoFavorito) || user.generoFavorito;
-  const coresGenero = coresDoGenero(user.generoFavorito);
-  const estrategiaAtual =
-    estrategias.find((item) => item.chave === chaveEstrategia(estatisticas?.estrategiaAtual)) ||
-    estrategias[0];
-  const membroDesde = formatarMembroDesde(user.dataCadastro);
+  const favoriteGenre = genreName(user.generoFavorito) || user.generoFavorito;
+  const favoriteGenreColors = genreColors(user.generoFavorito);
+  const currentStrategy =
+    strategies.find((item) => item.key === strategyKey(stats?.estrategiaAtual)) || strategies[0];
+  const memberSince = formatMemberSince(user.dataCadastro);
 
   return (
-    <AppLayout espaco="20px">
-      <ProfileHeader aria-label="Seus dados" {...surgir(0)}>
+    <AppLayout gap="20px">
+      <ProfileHeader aria-label="Seus dados" {...appear(0)}>
         <Avatar aria-hidden="true">
-          {user.fotoUrl ? <img src={user.fotoUrl} alt="" /> : iniciais(user.nome)}
+          {user.fotoUrl ? <img src={user.fotoUrl} alt="" /> : initials(user.nome)}
         </Avatar>
         <ProfileInfo>
           <h1>{user.nome}</h1>
           <p>
-            {[user.email, membroDesde && `Membro desde ${membroDesde}`].filter(Boolean).join(' · ')}
+            {[user.email, memberSince && `Membro desde ${memberSince}`].filter(Boolean).join(' · ')}
           </p>
         </ProfileInfo>
         <HeaderStats>
-          <StatTile rotulo="Livros lidos" valor={user.livrosLidos || 0} />
-          <StatTile rotulo="Livros curtidos" valor={total ?? 0} />
+          <StatTile label="Livros lidos" value={user.livrosLidos || 0} />
+          <StatTile label="Livros curtidos" value={total ?? 0} />
         </HeaderStats>
       </ProfileHeader>
 
       <TwoColumns>
-        <Card aria-labelledby="secaoGosto" {...surgir(1)}>
+        <Card aria-labelledby="tasteSection" {...appear(1)}>
           <CardHeading>
-            <CardTitle id="secaoGosto">Seu gosto</CardTitle>
-            <Button $variante="secundario" onClick={abrirEdicao}>
-              <IconPencil tamanho={16} />
+            <CardTitle id="tasteSection">Seu gosto</CardTitle>
+            <Button $variant="secondary" onClick={openEdit}>
+              <IconPencil size={16} />
               Editar perfil
             </Button>
           </CardHeading>
@@ -282,9 +279,12 @@ export default function ProfilePage() {
             <InfoItem>
               <dt>Gênero favorito</dt>
               <dd>
-                {generoFavorito ? (
-                  <Tag $fundo={coresGenero.fundo} $cor={coresGenero.capa}>
-                    {generoFavorito}
+                {favoriteGenre ? (
+                  <Tag
+                    $background={favoriteGenreColors.background}
+                    $color={favoriteGenreColors.cover}
+                  >
+                    {favoriteGenre}
                   </Tag>
                 ) : (
                   'Não informado'
@@ -301,7 +301,7 @@ export default function ProfilePage() {
             </InfoItem>
             <InfoItem>
               <dt>Data de nascimento</dt>
-              <dd>{formatarNascimento(user.dataNascimento) || 'Não informada'}</dd>
+              <dd>{formatBirthDate(user.dataNascimento) || 'Não informada'}</dd>
             </InfoItem>
             {user.biografia && (
               <InfoItem $span>
@@ -309,57 +309,59 @@ export default function ProfilePage() {
                 <Biography>{user.biografia}</Biography>
               </InfoItem>
             )}
-            <StatusRow $ligado={user.receberRecomendacoes}>
+            <StatusRow $enabled={user.receberRecomendacoes}>
               <dt>Recomendações personalizadas</dt>
               <dd>
-                {user.receberRecomendacoes && <IconCheck tamanho={16} />}
+                {user.receberRecomendacoes && <IconCheck size={16} />}
                 {user.receberRecomendacoes ? 'Ativadas' : 'Desativadas'}
               </dd>
             </StatusRow>
           </InfoList>
         </Card>
 
-        <Card $fundo={cores.fundoMarca} aria-labelledby="secaoAlgoritmo" {...surgir(2)}>
+        <Card
+          $background={colors.brandBackground}
+          aria-labelledby="algorithmSection"
+          {...appear(2)}
+        >
           <CardIntro>
-            <CardTitle id="secaoAlgoritmo">Como o Matchbook lê seu gosto</CardTitle>
+            <CardTitle id="algorithmSection">Como o Matchbook lê seu gosto</CardTitle>
             <CardText>
-              {estatisticas
-                ? estrategiaAtual.explicacao
-                : 'Ainda não deu para carregar o seu histórico.'}
+              {stats ? currentStrategy.explanation : 'Ainda não deu para carregar o seu histórico.'}
             </CardText>
           </CardIntro>
-          {estatisticas && (
+          {stats && (
             <>
               <StrategyBlock>
                 <StrategyLabel>Estratégia atual</StrategyLabel>
                 <StrategyList aria-label="Estratégias">
-                  {estrategias.map((item) => {
-                    const atual = item.chave === estrategiaAtual.chave;
+                  {strategies.map((item) => {
+                    const isCurrent = item.key === currentStrategy.key;
                     return (
                       <StrategyItem
-                        key={item.chave}
-                        $atual={atual}
-                        aria-current={atual ? 'true' : undefined}
+                        key={item.key}
+                        $current={isCurrent}
+                        aria-current={isCurrent ? 'true' : undefined}
                       >
-                        {atual && <IconCheck tamanho={14} />}
-                        {item.nome}
+                        {isCurrent && <IconCheck size={14} />}
+                        {item.name}
                       </StrategyItem>
                     );
                   })}
                 </StrategyList>
               </StrategyBlock>
               <AlgorithmStats>
-                <StatTile rotulo="Amei" valor={estatisticas.totalAceites ?? 0} />
-                <StatTile rotulo="Próximo" valor={estatisticas.totalRecusas ?? 0} />
+                <StatTile label="Amei" value={stats.totalAceites ?? 0} />
+                <StatTile label="Próximo" value={stats.totalRecusas ?? 0} />
                 <StatTile
-                  rotulo="Aceitação"
-                  valor={`${Math.round(estatisticas.taxaAceitacao ?? 0)}%`}
-                  cor={cores.marca}
+                  label="Aceitação"
+                  value={`${Math.round(stats.taxaAceitacao ?? 0)}%`}
+                  color={colors.brand}
                 />
               </AlgorithmStats>
               <ResetRow>
-                <Button $variante="branco" onClick={() => setShowResetModal(true)}>
-                  <IconRefresh tamanho={16} />
+                <Button $variant="white" onClick={() => setShowResetModal(true)}>
+                  <IconRefresh size={16} />
                   Recomeçar do zero
                 </Button>
                 <span>Apaga o histórico de Amei e Próximo.</span>
@@ -369,28 +371,28 @@ export default function ProfilePage() {
         </Card>
       </TwoColumns>
 
-      <DangerCard aria-labelledby="secaoConta" {...surgir(3)}>
+      <DangerCard aria-labelledby="accountSection" {...appear(3)}>
         <DangerText>
-          <h2 id="secaoConta">Excluir conta</h2>
+          <h2 id="accountSection">Excluir conta</h2>
           <p>Remove seus dados, seus livros curtidos e suas preferências. Não dá para desfazer.</p>
         </DangerText>
         <DangerActions>
           <MobileOnly>
-            <Button $variante="secundario" onClick={handleLogout}>
-              <IconLogout tamanho={17} />
+            <Button $variant="secondary" onClick={handleLogout}>
+              <IconLogout size={17} />
               Sair
             </Button>
           </MobileOnly>
-          <Button $variante="perigo" onClick={() => setShowDeleteModal(true)}>
-            <IconTrash tamanho={16} />
+          <Button $variant="danger" onClick={() => setShowDeleteModal(true)}>
+            <IconTrash size={16} />
             Excluir conta
           </Button>
         </DangerActions>
       </DangerCard>
 
-      <Dialog aberto={isEditing} titulo="Editar perfil" onFechar={fecharEdicao} largura={600}>
+      <Dialog open={isEditing} title="Editar perfil" onClose={closeEdit} width={600}>
         <EditForm onSubmit={handleSave} noValidate>
-          <Field id="editarNome" label="Nome" error={errosEdicao.nome}>
+          <Field id="editName" label="Nome" error={editErrors.nome}>
             <Input
               type="text"
               autoComplete="name"
@@ -398,7 +400,7 @@ export default function ProfilePage() {
               onChange={(e) => handleFormChange('nome', e.target.value)}
             />
           </Field>
-          <Field id="editarEmail" label="Email" error={errosEdicao.email}>
+          <Field id="editEmail" label="Email" error={editErrors.email}>
             <Input
               type="email"
               autoComplete="email"
@@ -406,27 +408,27 @@ export default function ProfilePage() {
               onChange={(e) => handleFormChange('email', e.target.value)}
             />
           </Field>
-          <Field id="editarNascimento" label="Data de nascimento" tag="opcional">
+          <Field id="editBirthDate" label="Data de nascimento" tag="opcional">
             <Input
               type="date"
               value={editForm.dataNascimento}
               onChange={(e) => handleFormChange('dataNascimento', e.target.value)}
             />
           </Field>
-          <TasteFields dados={editForm} onChange={handleFormChange} prefixo="editar" />
+          <TasteFields values={editForm} onChange={handleFormChange} idPrefix="edit" />
 
-          {erroSalvar && (
+          {saveError && (
             <FormAlert role="alert">
-              <IconAlert tamanho={18} />
-              {erroSalvar}
+              <IconAlert size={18} />
+              {saveError}
             </FormAlert>
           )}
 
           <EditButtons>
-            <Button $variante="secundario" $tamanho="grande" onClick={fecharEdicao}>
+            <Button $variant="secondary" $size="large" onClick={closeEdit}>
               Cancelar
             </Button>
-            <Button type="submit" $tamanho="grande" disabled={loading}>
+            <Button type="submit" $size="large" disabled={loading}>
               {loading && <Spinner />}
               {loading ? 'Salvando' : 'Salvar'}
             </Button>
@@ -435,32 +437,32 @@ export default function ProfilePage() {
       </Dialog>
 
       <ConfirmDialog
-        aberto={showResetModal}
-        titulo="Recomeçar do zero?"
-        descricao="O Matchbook esquece seus Amei e Próximo e volta a recomendar pelo seu perfil. Seus livros curtidos continuam."
-        icone={<IconRefresh tamanho={24} />}
-        rotuloConfirmar="Sim, recomeçar"
-        rotuloCarregando="Recomeçando"
-        variante="primario"
-        carregando={resetando}
-        onConfirmar={confirmarReset}
-        onCancelar={() => setShowResetModal(false)}
+        open={showResetModal}
+        title="Recomeçar do zero?"
+        description="O Matchbook esquece seus Amei e Próximo e volta a recomendar pelo seu perfil. Seus livros curtidos continuam."
+        icon={<IconRefresh size={24} />}
+        confirmLabel="Sim, recomeçar"
+        loadingLabel="Recomeçando"
+        variant="primary"
+        loading={resetting}
+        onConfirm={confirmReset}
+        onCancel={() => setShowResetModal(false)}
       />
 
       <ConfirmDialog
-        aberto={showDeleteModal}
-        titulo="Excluir sua conta?"
-        descricao="Seus livros curtidos, preferências e histórico somem para sempre."
-        icone={<IconTrash tamanho={24} />}
-        rotuloConfirmar="Sim, excluir"
-        onConfirmar={confirmDeleteAccount}
-        onCancelar={() => setShowDeleteModal(false)}
+        open={showDeleteModal}
+        title="Excluir sua conta?"
+        description="Seus livros curtidos, preferências e histórico somem para sempre."
+        icon={<IconTrash size={24} />}
+        confirmLabel="Sim, excluir"
+        onConfirm={confirmDeleteAccount}
+        onCancel={() => setShowDeleteModal(false)}
       />
 
       <AnimatePresence>
-        {aviso && (
-          <Toast key={aviso.chave} chave={aviso.chave} onFechar={fecharAviso}>
-            {aviso.texto}
+        {notice && (
+          <Toast key={notice.id} resetKey={notice.id} onClose={closeNotice}>
+            {notice.text}
           </Toast>
         )}
       </AnimatePresence>

@@ -1,31 +1,46 @@
 import { render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import App from '@/app/App';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { AppProviders } from '@/app/AppProviders';
+import { routes } from '@/app/router';
 import { sessionUser } from '@/mocks/data';
 import { server } from '@/mocks/server';
 
 interface RenderAppOptions {
-  // Grava a usuária de exemplo no localStorage, como se ela já tivesse entrado.
+  // Stores the sample user in localStorage, as if she had already logged in.
   loggedIn?: boolean;
 }
 
-// Abre o app inteiro num endereço, como quem digita a URL na barra.
+let router: ReturnType<typeof createBrowserRouter> | null = null;
+
+// Opens the whole app at an address, like typing the URL in the bar. Each test gets a new router,
+// which reads the address that was just put in the bar. The first screen arrives on demand:
+// look for its first element with findBy, not getBy.
 export function renderApp(url: string, { loggedIn = false }: RenderAppOptions = {}) {
   if (loggedIn) localStorage.setItem('usuario', JSON.stringify(sessionUser));
   window.history.pushState({}, '', url);
+  router?.dispose();
+  router = createBrowserRouter(routes);
   const user = userEvent.setup();
-  return { user, ...render(<App />) };
+  return {
+    user,
+    ...render(
+      <AppProviders>
+        <RouterProvider router={router} />
+      </AppProviders>,
+    ),
+  };
 }
 
 export interface ApiCall {
   method: string;
-  // Sem o "/api" do começo: "/livros-curtidos/curtir".
+  // Without the leading "/api": "/livros-curtidos/curtir".
   path: string;
   search: string;
   body?: unknown;
 }
 
-// Anota, na ordem em que chegam, os pedidos feitos à API falsa.
+// Records the requests made to the fake API, in the order they arrive.
 export function trackApiCalls() {
   const calls: ApiCall[] = [];
   server.events.on('request:start', ({ request }) => {
@@ -46,7 +61,7 @@ export function trackApiCalls() {
   return calls;
 }
 
-// Os pedidos que mudam algo no servidor, como "POST /livro/create".
+// The requests that change something on the server, like "POST /livro/create".
 export const changes = (calls: ApiCall[]) =>
   calls
     .filter((call) => call.method !== 'GET')

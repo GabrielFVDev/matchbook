@@ -1,9 +1,9 @@
 import api, { errorMessage } from './client';
 import type { ApiResult, UpdateUserRequest, UserDto } from './types';
 
-// Serviços de usuário
+// User services
 export const usersApi = {
-  // Atualizar usuário
+  // Update a user
   async update(userData: UpdateUserRequest): Promise<ApiResult<UserDto>> {
     try {
       const response = await api.put<UserDto>('/usuario/update', userData);

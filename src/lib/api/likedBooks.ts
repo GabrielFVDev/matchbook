@@ -2,14 +2,14 @@ import { isAxiosError } from 'axios';
 import api, { errorMessage } from './client';
 import type { ApiResult, LikedBookItem, LikedCount, LikeResult } from './types';
 
-// Serviços dos livros curtidos (os favoritos de "Meus livros")
+// Liked book services (the favorites of "Meus livros")
 export const likedBooksApi = {
-  // Obter livros curtidos pelo usuário
-  async list(idUsuario: number): Promise<ApiResult<LikedBookItem[]>> {
+  // Get the books the user liked
+  async list(userId: number): Promise<ApiResult<LikedBookItem[]>> {
     try {
-      const response = await api.get<LikedBookItem[]>(`/livros-curtidos/usuario/${idUsuario}`);
+      const response = await api.get<LikedBookItem[]>(`/livros-curtidos/usuario/${userId}`);
 
-      // Se retornar 204 (No Content), significa que não há livros curtidos
+      // A 204 (No Content) means there are no liked books
       if (response.status === 204) {
         return {
           success: true,
@@ -24,7 +24,7 @@ export const likedBooksApi = {
         message: 'Livros curtidos obtidos com sucesso!',
       };
     } catch (error) {
-      // Se erro 404 ou 204, retorna lista vazia ao invés de erro
+      // On a 404 or 204, return an empty list instead of an error
       const status = isAxiosError(error) ? error.response?.status : undefined;
       if (status === 404 || status === 204) {
         return {
@@ -42,11 +42,11 @@ export const likedBooksApi = {
     }
   },
 
-  // Curtir um livro
-  async like(idUsuario: number, idLivro: number): Promise<ApiResult<LikeResult>> {
+  // Like a book
+  async like(userId: number, bookId: number): Promise<ApiResult<LikeResult>> {
     try {
       const response = await api.post<LikeResult>(
-        `/livros-curtidos/curtir?usuarioId=${idUsuario}&livroId=${idLivro}`,
+        `/livros-curtidos/curtir?usuarioId=${userId}&livroId=${bookId}`,
       );
       return {
         success: true,
@@ -62,11 +62,11 @@ export const likedBooksApi = {
     }
   },
 
-  // Descurtir um livro
-  async unlike(idUsuario: number, idLivro: number): Promise<ApiResult<unknown>> {
+  // Unlike a book
+  async unlike(userId: number, bookId: number): Promise<ApiResult<unknown>> {
     try {
       const response = await api.delete(
-        `/livros-curtidos/descurtir?usuarioId=${idUsuario}&livroId=${idLivro}`,
+        `/livros-curtidos/descurtir?usuarioId=${userId}&livroId=${bookId}`,
       );
       return {
         success: true,
@@ -82,10 +82,10 @@ export const likedBooksApi = {
     }
   },
 
-  // Contar livros curtidos
-  async count(idUsuario: number): Promise<ApiResult<LikedCount, LikedCount>> {
+  // Count liked books
+  async count(userId: number): Promise<ApiResult<LikedCount, LikedCount>> {
     try {
-      const response = await api.get<LikedCount>(`/livros-curtidos/usuario/${idUsuario}/contador`);
+      const response = await api.get<LikedCount>(`/livros-curtidos/usuario/${userId}/contador`);
       return {
         success: true,
         data: response.data,

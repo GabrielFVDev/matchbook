@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { motion } from 'motion/react';
-import { cores, celular, raio, sombra } from '@/styles/tokens';
+import { colors, mobile, radius, shadow } from '@/styles/tokens';
 
 export const PageHeading = styled.div`
   display: flex;
@@ -13,16 +13,16 @@ export const PageTitle = styled.h1`
   font-weight: 800;
   letter-spacing: -0.03em;
 
-  ${celular} {
+  ${mobile} {
     font-size: 30px;
   }
 `;
 
 export const PageSubtitle = styled.p`
   font-size: 17px;
-  color: ${cores.tintaSuave};
+  color: ${colors.inkSoft};
 
-  ${celular} {
+  ${mobile} {
     font-size: 15px;
   }
 `;
@@ -33,7 +33,7 @@ export const Columns = styled(motion.div)`
   align-items: flex-start;
   gap: 32px;
 
-  ${celular} {
+  ${mobile} {
     gap: 16px;
   }
 `;
@@ -45,7 +45,7 @@ export const FormContainer = styled.form`
   flex-direction: column;
   gap: 20px;
 
-  ${celular} {
+  ${mobile} {
     gap: 16px;
   }
 `;
@@ -55,10 +55,10 @@ export const FormSection = styled(motion.section)`
   flex-direction: column;
   gap: 20px;
   padding: 28px;
-  border-radius: ${raio.cartao};
-  background: ${cores.branco};
+  border-radius: ${radius.card};
+  background: ${colors.white};
 
-  ${celular} {
+  ${mobile} {
     gap: 16px;
     padding: 22px 18px;
     border-radius: 22px;
@@ -77,7 +77,7 @@ export const SectionTitle = styled.h2`
   font-weight: 800;
   letter-spacing: -0.01em;
 
-  ${celular} {
+  ${mobile} {
     font-size: 19px;
   }
 `;
@@ -87,7 +87,7 @@ export const FieldsGrid = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
   gap: 18px;
 
-  ${celular} {
+  ${mobile} {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px 12px;
 
@@ -95,7 +95,7 @@ export const FieldsGrid = styled.div`
       grid-column: 1 / -1;
     }
 
-    > [data-meia] {
+    > [data-half] {
       grid-column: auto;
     }
   }
@@ -105,7 +105,7 @@ export const CounterRow = styled.div`
   display: flex;
   justify-content: flex-end;
   font-size: 14px;
-  color: ${cores.tintaSuave};
+  color: ${colors.inkSoft};
 `;
 
 export const SubmitRow = styled.div`
@@ -113,7 +113,7 @@ export const SubmitRow = styled.div`
   flex-wrap: wrap;
   gap: 12px;
 
-  ${celular} {
+  ${mobile} {
     > * {
       flex: 1 1 100%;
     }
@@ -129,7 +129,7 @@ export const PreviewAside = styled(motion.aside)`
   flex-direction: column;
   gap: 14px;
 
-  ${celular} {
+  ${mobile} {
     display: none;
   }
 `;
@@ -137,7 +137,7 @@ export const PreviewAside = styled(motion.aside)`
 export const PreviewLabel = styled.p`
   font-size: 14px;
   font-weight: 700;
-  color: ${cores.tintaSuave};
+  color: ${colors.inkSoft};
 `;
 
 export const PreviewCard = styled.div`
@@ -146,11 +146,11 @@ export const PreviewCard = styled.div`
   gap: 12px;
   padding: 12px;
   border-radius: 26px;
-  background: ${cores.branco};
+  background: ${colors.white};
   box-shadow: 0 18px 44px rgba(26, 23, 38, 0.1);
 `;
 
-export const PreviewInfo = styled.div<{ $vazio?: boolean }>`
+export const PreviewInfo = styled.div<{ $empty?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -159,31 +159,31 @@ export const PreviewInfo = styled.div<{ $vazio?: boolean }>`
   p:first-child {
     font-size: 18px;
     font-weight: 700;
-    opacity: ${({ $vazio }) => ($vazio ? 0.6 : 1)};
+    opacity: ${({ $empty }) => ($empty ? 0.6 : 1)};
   }
 
   p:last-child {
     font-size: 13px;
-    color: ${cores.tintaSuave};
+    color: ${colors.inkSoft};
   }
 `;
 
 export const MobilePreview = styled.div`
   display: none;
 
-  ${celular} {
+  ${mobile} {
     display: flex;
     align-items: center;
     gap: 14px;
     width: 100%;
     padding: 10px;
     border-radius: 22px;
-    background: ${cores.branco};
-    box-shadow: ${sombra.leve};
+    background: ${colors.white};
+    box-shadow: ${shadow.soft};
   }
 `;
 
-export const MobilePreviewText = styled.div<{ $vazio?: boolean }>`
+export const MobilePreviewText = styled.div<{ $empty?: boolean }>`
   flex: 1;
   min-width: 0;
   display: flex;
@@ -194,13 +194,13 @@ export const MobilePreviewText = styled.div<{ $vazio?: boolean }>`
   p:first-child {
     font-size: 13px;
     font-weight: 700;
-    color: ${cores.tintaSuave};
+    color: ${colors.inkSoft};
   }
 
   p:last-child {
     font-size: 16px;
     font-weight: 700;
-    opacity: ${({ $vazio }) => ($vazio ? 0.6 : 1)};
+    opacity: ${({ $empty }) => ($empty ? 0.6 : 1)};
   }
 `;
 

@@ -3,14 +3,14 @@ import { Navigate } from 'react-router-dom';
 import { paths } from '@/app/paths';
 import { useAuth } from './useAuth';
 
-// Componente para proteger rotas que necessitam de autenticação
+// Protects routes that require authentication
 export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { isLoggedIn } = useAuth();
 
   return isLoggedIn() ? children : <Navigate to={paths.login} replace />;
 };
 
-// Componente para redirecionar usuários já logados
+// Redirects users who are already logged in
 export const PublicRoute = ({ children }: { children: ReactNode }) => {
   const { isLoggedIn } = useAuth();
 

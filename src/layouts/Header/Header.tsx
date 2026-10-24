@@ -19,11 +19,11 @@ import {
 } from './styles';
 import { Logo } from '@/components/Logo';
 import { IconHeart, IconPencil, IconPlus } from '@/components/Icons';
-import { useCurtidos } from '@/lib/likedCount';
+import { useLikedCount } from '@/lib/likedCount';
 import { clearSessionUser } from '@/lib/session';
 import { paths } from '@/app/paths';
-import { cores } from '@/styles/tokens';
-import { mola } from '@/styles/motion';
+import { colors } from '@/styles/tokens';
+import { spring } from '@/styles/motion';
 
 const links = [
   { to: paths.home, label: 'Início' },
@@ -32,30 +32,30 @@ const links = [
   { to: paths.profile, label: 'Perfil' },
 ];
 
-// Botão do canto direito no celular, que muda conforme a tela.
-const acoesCelular: Record<string, { to: string; label: string; icone: ReactNode }> = {
-  [paths.myBooks]: { to: paths.addBook, label: 'Adicionar livro', icone: <IconPlus /> },
+// Button in the right corner on mobile, which changes with the screen.
+const mobileActions: Record<string, { to: string; label: string; icon: ReactNode }> = {
+  [paths.myBooks]: { to: paths.addBook, label: 'Adicionar livro', icon: <IconPlus /> },
   [paths.profile]: {
     to: `${paths.profile}?editar=1`,
     label: 'Editar perfil',
-    icone: <IconPencil tamanho={18} />,
+    icon: <IconPencil size={18} />,
   },
 };
 
-export default function Header({ corDestaque = cores.marca }: { corDestaque?: string }) {
+export default function Header({ accentColor = colors.brand }: { accentColor?: string }) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const { total, carregar } = useCurtidos();
-  const totalAnterior = useRef(total);
+  const { total, load } = useLikedCount();
+  const previousTotal = useRef(total);
 
   useEffect(() => {
-    carregar();
-  }, [carregar]);
+    load();
+  }, [load]);
 
-  // Só pulsa quando o número muda depois de carregado, não na primeira vez.
-  const pulsar = totalAnterior.current !== null && totalAnterior.current !== total;
+  // Only pulses when the number changes after loading, not the first time.
+  const pulse = previousTotal.current !== null && previousTotal.current !== total;
   useEffect(() => {
-    totalAnterior.current = total;
+    previousTotal.current = total;
   }, [total]);
 
   const handleLogout = () => {
@@ -63,18 +63,18 @@ export default function Header({ corDestaque = cores.marca }: { corDestaque?: st
     navigate(paths.login);
   };
 
-  const acao = acoesCelular[pathname];
+  const action = mobileActions[pathname];
 
   return (
     <HeaderContainer>
       <HeaderContent>
-        <Logo para={paths.home} />
+        <Logo to={paths.home} />
         <NavigationContainer aria-label="Principal">
           {links.map((link) => (
             <NavItem key={link.to} to={link.to}>
               {({ isActive }) => (
                 <>
-                  {isActive && <ActivePill layoutId="navAtivo" transition={mola} />}
+                  {isActive && <ActivePill layoutId="activeNav" transition={spring} />}
                   <NavLabel>{link.label}</NavLabel>
                 </>
               )}
@@ -84,36 +84,36 @@ export default function Header({ corDestaque = cores.marca }: { corDestaque?: st
         </NavigationContainer>
         <RightSide>
           <AnimatePresence mode="popLayout" initial={false}>
-            {acao && (
+            {action && (
               <MobileAction
                 key={pathname}
                 initial={{ opacity: 0, scale: 0.6 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.6 }}
-                transition={mola}
+                transition={spring}
               >
-                <MobileIconLink to={acao.to} aria-label={acao.label}>
-                  {acao.icone}
+                <MobileIconLink to={action.to} aria-label={action.label}>
+                  {action.icon}
                 </MobileIconLink>
               </MobileAction>
             )}
           </AnimatePresence>
           {total !== null && (
-            <Counter $cor={corDestaque}>
+            <Counter $color={accentColor}>
               <CounterHeart
-                key={`coracao${total}`}
-                initial={pulsar ? { scale: 1.5 } : false}
+                key={`heart${total}`}
+                initial={pulse ? { scale: 1.5 } : false}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 14 }}
               >
-                <IconHeart tamanho={15} />
+                <IconHeart size={15} />
               </CounterHeart>
               <span>
                 <CounterNumber
                   key={total}
-                  initial={pulsar ? { y: -8, opacity: 0 } : false}
+                  initial={pulse ? { y: -8, opacity: 0 } : false}
                   animate={{ y: 0, opacity: 1 }}
-                  transition={mola}
+                  transition={spring}
                 >
                   {total}
                 </CounterNumber>{' '}

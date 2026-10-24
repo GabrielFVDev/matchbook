@@ -1,30 +1,30 @@
 import { useState } from 'react';
-import { authService } from '@/lib/api/services';
+import { authApi } from '@/lib/api/auth';
 import type { SignUpRequest } from '@/lib/api/types';
 import { hasSession, saveSessionUser } from '@/lib/session';
 
-// Hook do login e das rotas protegidas. Quem só precisa ler ou apagar a sessão usa @/lib/session.
+// Hook for login and protected routes. To only read or clear the session, use @/lib/session.
 export const useAuth = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Função para fazer login
-  const login = async (email: string, senha: string) => {
+  // Logs in
+  const login = async (email: string, password: string) => {
     setLoading(true);
     setError(null);
 
     try {
-      const resultado = await authService.login(email, senha);
+      const result = await authApi.login(email, password);
 
-      if (resultado.success) {
-        // Salva os dados do usuário no localStorage
-        saveSessionUser(resultado.data);
+      if (result.success) {
+        // Stores the user data in localStorage
+        saveSessionUser(result.data);
         setLoading(false);
-        return { success: true as const, usuario: resultado.data };
+        return { success: true as const, user: result.data };
       } else {
-        setError(resultado.error);
+        setError(result.error);
         setLoading(false);
-        return { success: false as const, error: resultado.error };
+        return { success: false as const, error: result.error };
       }
     } catch {
       setError('Erro inesperado ao fazer login');
@@ -33,7 +33,7 @@ export const useAuth = () => {
     }
   };
 
-  // Função para verificar se está logado
+  // Checks whether someone is logged in
   const isLoggedIn = () => {
     return hasSession();
   };
@@ -47,46 +47,46 @@ export const useAuth = () => {
   };
 };
 
-// Hook para cadastro de usuários
-export const useRegister = () => {
+// Hook for signing up users
+export const useSignUp = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Função para cadastrar usuário
-  const register = async (userData: SignUpRequest) => {
+  // Signs up a user
+  const signUp = async (userData: SignUpRequest) => {
     setLoading(true);
     setError(null);
     setSuccess(false);
 
     try {
-      const resultado = await authService.cadastrar(userData);
+      const result = await authApi.signUp(userData);
 
-      if (resultado.success) {
+      if (result.success) {
         setSuccess(true);
         setLoading(false);
-        return { success: true as const, data: resultado.data };
+        return { success: true as const, data: result.data };
       } else {
-        setError(resultado.error);
+        setError(result.error);
         setLoading(false);
-        return { success: false as const, error: resultado.error };
+        return { success: false as const, error: result.error };
       }
     } catch (err) {
-      console.error('Hook: Erro inesperado:', err);
+      console.error('Hook: unexpected error:', err);
       setError('Erro inesperado ao cadastrar usuário');
       setLoading(false);
       return { success: false as const, error: 'Erro inesperado ao cadastrar usuário' };
     }
   };
 
-  // Função para resetar estados
+  // Resets the states
   const reset = () => {
     setError(null);
     setSuccess(false);
   };
 
   return {
-    register,
+    signUp,
     loading,
     error,
     success,

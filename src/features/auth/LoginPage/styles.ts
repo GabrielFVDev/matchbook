@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { motion } from 'motion/react';
-import { cores, celular } from '@/styles/tokens';
+import { colors, mobile } from '@/styles/tokens';
 
 export const CoverStack = styled(motion.div)`
   position: relative;
@@ -8,25 +8,25 @@ export const CoverStack = styled(motion.div)`
   max-width: 100%;
   height: 360px;
 
-  ${celular} {
+  ${mobile} {
     width: 150px;
     height: 170px;
     flex: 0 0 auto;
   }
 `;
 
-// Cada medida vem em par: [desktop, celular].
-type Par = readonly [number, number];
+// Each measure comes in a pair: [desktop, mobile].
+type Pair = readonly [number, number];
 
 export const StackCover = styled(motion.div)<{
-  $cor: string;
-  $x: Par;
-  $y: Par;
-  $w: Par;
-  $h: Par;
-  $giro: number;
-  $fonte: Par;
-  $tituloCelular: boolean;
+  $color: string;
+  $x: Pair;
+  $y: Pair;
+  $w: Pair;
+  $h: Pair;
+  $tilt: number;
+  $fontSize: Pair;
+  $mobileTitle: boolean;
 }>`
   position: absolute;
   left: ${({ $x }) => $x[0]}px;
@@ -35,8 +35,8 @@ export const StackCover = styled(motion.div)<{
   height: ${({ $h }) => $h[0]}px;
   padding: 18px;
   border-radius: 20px;
-  background: ${({ $cor }) => $cor};
-  color: ${cores.branco};
+  background: ${({ $color }) => $color};
+  color: ${colors.white};
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -46,20 +46,20 @@ export const StackCover = styled(motion.div)<{
     align-self: flex-start;
     padding: 4px 10px;
     border-radius: 999px;
-    background: ${cores.branco};
-    color: ${cores.tinta};
+    background: ${colors.white};
+    color: ${colors.ink};
     font-size: 12px;
     font-weight: 700;
   }
 
   span:last-child {
-    font-size: ${({ $fonte }) => $fonte[0]}px;
+    font-size: ${({ $fontSize }) => $fontSize[0]}px;
     font-weight: 800;
     line-height: 0.95;
     letter-spacing: -0.03em;
   }
 
-  ${celular} {
+  ${mobile} {
     left: ${({ $x }) => $x[1]}px;
     top: ${({ $y }) => $y[1]}px;
     width: ${({ $w }) => $w[1]}px;
@@ -73,8 +73,8 @@ export const StackCover = styled(motion.div)<{
     }
 
     span:last-child {
-      display: ${({ $tituloCelular }) => ($tituloCelular ? 'block' : 'none')};
-      font-size: ${({ $fonte }) => $fonte[1]}px;
+      display: ${({ $mobileTitle }) => ($mobileTitle ? 'block' : 'none')};
+      font-size: ${({ $fontSize }) => $fontSize[1]}px;
     }
   }
 `;
@@ -84,7 +84,7 @@ export const BrandRow = styled.div`
   flex-direction: column;
   gap: 40px;
 
-  ${celular} {
+  ${mobile} {
     flex-direction: row;
     align-items: center;
     gap: 16px;
@@ -99,7 +99,7 @@ export const QuoteText = styled(motion.p)`
   letter-spacing: -0.015em;
   text-wrap: balance;
 
-  ${celular} {
+  ${mobile} {
     font-size: 19px;
     letter-spacing: -0.01em;
   }

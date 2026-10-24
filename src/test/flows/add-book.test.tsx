@@ -5,8 +5,8 @@ import { changes, renderApp, trackApiCalls } from '@/test/renderApp';
 const synopsis =
   'Paul Atreides chega ao planeta deserto Arrakis, onde a especiaria mais valiosa do universo decide o destino de impérios.';
 
-describe('Adicionar livro', () => {
-  it('cria o livro com o corpo de hoje e já o leva para os favoritos', async () => {
+describe('Add book', () => {
+  it('creates the book with the current body and adds it to the favorites', async () => {
     const calls = trackApiCalls();
     const { user } = renderApp('/adicionar-livro', { loggedIn: true });
 
@@ -25,8 +25,8 @@ describe('Adicionar livro', () => {
     await user.click(screen.getByRole('button', { name: 'Adicionar aos meus livros' }));
 
     expect(await screen.findByText('Livro adicionado')).toBeInTheDocument();
-    // Comportamento atual: a capa vai como "capaUrl", que o backend ignora (o campo dele é
-    // "capa"). Muda quando o backend for refeito.
+    // Current behavior: the cover goes as "capaUrl", which the backend ignores (its field is
+    // "capa"). Changes when the backend is rebuilt.
     await waitFor(() =>
       expect(calls.find((call) => call.path === '/livro/create')?.body).toEqual({
         titulo: 'Duna',

@@ -1,32 +1,29 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { recomendacaoService } from '@/lib/api/services';
+import { likedBooksApi } from '@/lib/api/likedBooks';
 import { getSessionUser } from '@/lib/session';
-import { CurtidosContext } from './likedCount';
+import { LikedCountContext } from './likedCount';
 
-export function CurtidosProvider({ children }: { children: ReactNode }) {
+export function LikedCountProvider({ children }: { children: ReactNode }) {
   const [total, setTotal] = useState<number | null>(null);
-  const usuarioCarregado = useRef<number | null>(null);
+  const loadedUserId = useRef<number | null>(null);
 
-  // Busca o contador uma vez por usuário; trocar de conta busca de novo.
-  const carregar = useCallback(async () => {
-    const usuario = getSessionUser();
-    if (!usuario?.id || usuarioCarregado.current === usuario.id) return;
-    usuarioCarregado.current = usuario.id;
-    const resposta = await recomendacaoService.contarLivrosCurtidos(usuario.id);
-    setTotal(resposta.success ? (resposta.data?.total ?? 0) : 0);
+  // Fetches the counter once per user; switching accounts fetches again.
+  const load = useCallback(async () => {
+    const user = getSessionUser();
+    if (!user?.id || loadedUserId.current === user.id) return;
+    loadedUserId.current = user.id;
+    const response = await likedBooksApi.count(user.id);
+    setTotal(response.success ? (response.data?.total ?? 0) : 0);
   }, []);
 
-  const somar = useCallback((quantidade: number) => {
-    setTotal((atual) => Math.max(0, (atual ?? 0) + quantidade));
+  const add = useCallback((amount: number) => {
+    setTotal((current) => Math.max(0, (current ?? 0) + amount));
   }, []);
 
-  const definir = useCallback((valor: number | null) => setTotal(valor), []);
+  const set = useCallback((value: number | null) => setTotal(value), []);
 
-  const valor = useMemo(
-    () => ({ total, carregar, somar, definir }),
-    [total, carregar, somar, definir],
-  );
+  const value = useMemo(() => ({ total, load, add, set }), [total, load, add, set]);
 
-  return <CurtidosContext.Provider value={valor}>{children}</CurtidosContext.Provider>;
+  return <LikedCountContext.Provider value={value}>{children}</LikedCountContext.Provider>;
 }

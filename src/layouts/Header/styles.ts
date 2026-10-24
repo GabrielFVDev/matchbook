@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { Link, NavLink } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { cores, celular, raio, sombra } from '@/styles/tokens';
+import { colors, mobile, radius, shadow } from '@/styles/tokens';
 
 export const HeaderContainer = styled.header`
   width: 100%;
@@ -17,7 +17,7 @@ export const HeaderContent = styled.div`
   justify-content: space-between;
   gap: 16px;
 
-  ${celular} {
+  ${mobile} {
     padding: 12px 20px;
     gap: 12px;
   }
@@ -29,21 +29,21 @@ export const NavigationContainer = styled.nav`
   align-items: center;
   gap: 4px;
 
-  ${celular} {
+  ${mobile} {
     display: none;
   }
 `;
 
-const estiloItem = `
+const itemStyle = `
   position: relative;
   display: flex;
   align-items: center;
   min-height: 44px;
   padding: 0 17px;
   border: 0;
-  border-radius: ${raio.pilula};
+  border-radius: ${radius.pill};
   background: transparent;
-  color: ${cores.tintaSuave};
+  color: ${colors.inkSoft};
   font-size: 15px;
   font-weight: 500;
   text-decoration: none;
@@ -51,25 +51,25 @@ const estiloItem = `
 `;
 
 export const NavItem = styled(NavLink)`
-  ${estiloItem}
+  ${itemStyle}
 
   &:hover {
-    color: ${cores.tinta};
+    color: ${colors.ink};
   }
 
   &[aria-current='page'] {
-    color: ${cores.tinta};
+    color: ${colors.ink};
     font-weight: 700;
   }
 `;
 
-// Fundo branco do item ativo. Desliza entre os itens ao trocar de tela.
+// White background of the active item. Slides between items when the screen changes.
 export const ActivePill = styled(motion.span)`
   position: absolute;
   inset: 0;
-  border-radius: ${raio.pilula};
-  background: ${cores.branco};
-  box-shadow: ${sombra.ativo};
+  border-radius: ${radius.pill};
+  background: ${colors.white};
+  box-shadow: ${shadow.active};
 `;
 
 export const NavLabel = styled.span`
@@ -77,10 +77,10 @@ export const NavLabel = styled.span`
 `;
 
 export const LogoutButton = styled.button.attrs({ type: 'button' })`
-  ${estiloItem}
+  ${itemStyle}
 
   &:hover {
-    color: ${cores.tinta};
+    color: ${colors.ink};
   }
 `;
 
@@ -93,7 +93,7 @@ export const RightSide = styled.div`
 export const MobileAction = styled(motion.div)`
   display: none;
 
-  ${celular} {
+  ${mobile} {
     display: flex;
   }
 `;
@@ -104,19 +104,19 @@ export const MobileIconLink = styled(Link)`
   justify-content: center;
   width: 44px;
   height: 44px;
-  border-radius: ${raio.pilula};
-  background: ${cores.branco};
-  color: ${cores.tinta};
+  border-radius: ${radius.pill};
+  background: ${colors.white};
+  color: ${colors.ink};
 `;
 
-export const Counter = styled.p<{ $cor: string }>`
+export const Counter = styled.p<{ $color: string }>`
   display: flex;
   align-items: center;
   gap: 8px;
   min-height: 40px;
   padding: 0 16px;
-  border-radius: ${raio.pilula};
-  background: ${cores.branco};
+  border-radius: ${radius.pill};
+  background: ${colors.white};
   font-size: 14px;
 
   strong {
@@ -125,11 +125,11 @@ export const Counter = styled.p<{ $cor: string }>`
   }
 
   svg {
-    color: ${({ $cor }) => $cor};
+    color: ${({ $color }) => $color};
     transition: color 0.4s ease;
   }
 
-  ${celular} {
+  ${mobile} {
     min-height: 36px;
     padding: 0 14px;
     font-size: 13px;

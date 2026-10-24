@@ -1,5 +1,5 @@
 import { createGlobalStyle } from 'styled-components';
-import { cores, fonte } from './tokens';
+import { colors, font } from './tokens';
 
 export const GlobalStyle = createGlobalStyle`
   *,
@@ -17,9 +17,9 @@ export const GlobalStyle = createGlobalStyle`
     min-width: 320px;
     min-height: 100vh;
     overflow-x: hidden;
-    background: ${cores.fundoApp};
-    color: ${cores.tinta};
-    font-family: ${fonte};
+    background: ${colors.appBackground};
+    color: ${colors.ink};
+    font-family: ${font};
     font-size: 16px;
     line-height: 1.4;
     font-synthesis: none;
@@ -53,19 +53,19 @@ export const GlobalStyle = createGlobalStyle`
   }
 
   a {
-    color: ${cores.marca};
+    color: ${colors.brand};
     font-weight: 700;
     text-decoration: none;
   }
 
   input::placeholder,
   textarea::placeholder {
-    color: ${cores.tintaSuave};
+    color: ${colors.inkSoft};
     opacity: 1;
   }
 
   :focus-visible {
-    outline: 3px solid ${cores.marca};
+    outline: 3px solid ${colors.brand};
     outline-offset: 2px;
   }
 

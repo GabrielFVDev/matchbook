@@ -7,7 +7,7 @@ import { Spinner } from '@/components/Spinner';
 import { ToastPill, ToastDetail } from '@/components/Toast';
 import { IconAlert, IconArrowRight, IconBook, IconHeart, IconRefresh } from '@/components/Icons';
 import { SwipeCard } from './SwipeCard';
-import type { Escolha, LivroCarta } from './SwipeCard';
+import type { SwipeChoice, CardBook } from './SwipeCard';
 import {
   MatchArea,
   Intro,
@@ -25,120 +25,121 @@ import {
   FeedbackArea,
   Hint,
 } from './styles';
-import { useCurtidos } from '@/lib/likedCount';
-import { recomendacaoService } from '@/lib/api/services';
+import { useLikedCount } from '@/lib/likedCount';
+import { likedBooksApi } from '@/lib/api/likedBooks';
+import { recommendationsApi } from '@/lib/api/recommendations';
 import { getSessionUser } from '@/lib/session';
-import { cores, coresDoGenero } from '@/styles/tokens';
-import { animacaoAviso, surgir } from '@/styles/motion';
+import { colors, genreColors } from '@/styles/tokens';
+import { toastAnimation, appear } from '@/styles/motion';
 import { paths } from '@/app/paths';
 
-const TEMPO_AVISO = 3500;
+const NOTICE_DURATION = 3500;
 
-interface Aviso {
-  tipo: Escolha | 'erro';
-  titulo: string;
-  texto: string;
-  chave: number;
+interface Notice {
+  type: SwipeChoice | 'error';
+  title: string;
+  text: string;
+  id: number;
 }
 
 export default function HomePage() {
-  const { somar } = useCurtidos();
-  const [usuario] = useState(() => getSessionUser());
-  const [currentBook, setCurrentBook] = useState<LivroCarta | null>(null);
+  const { add } = useLikedCount();
+  const [user] = useState(() => getSessionUser());
+  const [currentBook, setCurrentBook] = useState<CardBook | null>(null);
   const [loading, setLoading] = useState(true);
-  const [erro, setErro] = useState<'vazio' | 'falha' | null>(null);
+  const [loadError, setLoadError] = useState<'empty' | 'failed' | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [aviso, setAviso] = useState<Aviso | null>(null);
-  // Lado para onde a carta sai: 1 é direita (Amei), -1 é esquerda (Próximo).
-  const [direcao, setDirecao] = useState(1);
-  const [batidas, setBatidas] = useState(0);
-  const [decisoes, setDecisoes] = useState(0);
+  const [notice, setNotice] = useState<Notice | null>(null);
+  // Side the card leaves through: 1 is right (Amei), -1 is left (Próximo).
+  const [direction, setDirection] = useState(1);
+  const [beats, setBeats] = useState(0);
+  const [decisions, setDecisions] = useState(0);
 
-  const carregarProximaRecomendacao = useCallback(async () => {
-    if (!usuario?.id) return;
+  const loadNextRecommendation = useCallback(async () => {
+    if (!user?.id) return;
 
     setLoading(true);
-    setErro(null);
+    setLoadError(null);
 
-    const response = await recomendacaoService.obterRecomendacaoAdaptativa(usuario.id);
+    const response = await recommendationsApi.getAdaptive(user.id);
 
     if (response.success && response.data?.length > 0) {
-      // A API devolve uma lista; mostramos o primeiro livro dela.
+      // The API returns a list; we show its first book.
       setCurrentBook(response.data[0]);
     } else {
       setCurrentBook(null);
-      setErro(response.success ? 'vazio' : 'falha');
+      setLoadError(response.success ? 'empty' : 'failed');
     }
     setLoading(false);
-  }, [usuario?.id]);
+  }, [user?.id]);
 
   useEffect(() => {
-    carregarProximaRecomendacao();
-  }, [carregarProximaRecomendacao]);
+    loadNextRecommendation();
+  }, [loadNextRecommendation]);
 
-  // O aviso some sozinho; um aviso novo reinicia a contagem.
+  // The notice goes away by itself; a new notice restarts the countdown.
   useEffect(() => {
-    if (!aviso) return undefined;
-    const timer = setTimeout(() => setAviso(null), TEMPO_AVISO);
+    if (!notice) return undefined;
+    const timer = setTimeout(() => setNotice(null), NOTICE_DURATION);
     return () => clearTimeout(timer);
-  }, [aviso]);
+  }, [notice]);
 
-  // A carta sai na hora; se a API falhar, ela volta para a pilha.
-  const decidir = async (escolha: Escolha) => {
-    if (!currentBook || !usuario?.id || isProcessing) return;
-    const livro = currentBook;
-    const amei = escolha === 'amei';
+  // The card leaves right away; if the API fails, it comes back to the stack.
+  const decide = async (choice: SwipeChoice) => {
+    if (!currentBook || !user?.id || isProcessing) return;
+    const book = currentBook;
+    const loved = choice === 'love';
 
-    setDirecao(amei ? 1 : -1);
-    setDecisoes((n) => n + 1);
-    if (amei) setBatidas((n) => n + 1);
+    setDirection(loved ? 1 : -1);
+    setDecisions((n) => n + 1);
+    if (loved) setBeats((n) => n + 1);
     setIsProcessing(true);
     setCurrentBook(null);
 
-    if (amei) {
-      const responseAceitar = await recomendacaoService.aceitarLivro(usuario.id, livro.id);
-      if (responseAceitar.success) {
-        // Aceitar ensina o algoritmo; curtir guarda o livro em "Meus livros".
-        const responseCurtir = await recomendacaoService.curtirLivro(usuario.id, livro.id);
-        if (responseCurtir.success) {
-          somar(1);
+    if (loved) {
+      const acceptResponse = await recommendationsApi.accept(user.id, book.id);
+      if (acceptResponse.success) {
+        // Accepting teaches the algorithm; liking stores the book in "Meus livros".
+        const likeResponse = await likedBooksApi.like(user.id, book.id);
+        if (likeResponse.success) {
+          add(1);
         } else {
-          console.warn('Livro aceito, mas não foi salvo como curtido:', responseCurtir.error);
+          console.warn('Book accepted, but not saved as liked:', likeResponse.error);
         }
-        setAviso({
-          tipo: 'amei',
-          titulo: 'Foi pros seus livros.',
-          texto: `“${livro.titulo}” está nos favoritos.`,
-          chave: Date.now(),
+        setNotice({
+          type: 'love',
+          title: 'Foi pros seus livros.',
+          text: `“${book.titulo}” está nos favoritos.`,
+          id: Date.now(),
         });
-        await carregarProximaRecomendacao();
+        await loadNextRecommendation();
       } else {
-        setCurrentBook(livro);
-        setAviso({
-          tipo: 'erro',
-          titulo: 'Não deu para salvar.',
-          texto: 'Tente de novo.',
-          chave: Date.now(),
+        setCurrentBook(book);
+        setNotice({
+          type: 'error',
+          title: 'Não deu para salvar.',
+          text: 'Tente de novo.',
+          id: Date.now(),
         });
       }
     } else {
-      const response = await recomendacaoService.recusarLivro(usuario.id, livro.id);
+      const response = await recommendationsApi.reject(user.id, book.id);
       if (response.success) {
         const { algoritmoAlterado, sugestao } = response.data || {};
-        setAviso({
-          tipo: 'proximo',
-          titulo: 'Anotado.',
-          texto: algoritmoAlterado && sugestao ? sugestao : 'Bora tentar outro.',
-          chave: Date.now(),
+        setNotice({
+          type: 'next',
+          title: 'Anotado.',
+          text: algoritmoAlterado && sugestao ? sugestao : 'Bora tentar outro.',
+          id: Date.now(),
         });
-        await carregarProximaRecomendacao();
+        await loadNextRecommendation();
       } else {
-        setCurrentBook(livro);
-        setAviso({
-          tipo: 'erro',
-          titulo: 'Não deu para registrar.',
-          texto: 'Tente de novo.',
-          chave: Date.now(),
+        setCurrentBook(book);
+        setNotice({
+          type: 'error',
+          title: 'Não deu para registrar.',
+          text: 'Tente de novo.',
+          id: Date.now(),
         });
       }
     }
@@ -146,108 +147,108 @@ export default function HomePage() {
     setIsProcessing(false);
   };
 
-  // Setas do teclado: direita é Amei, esquerda é Próximo.
-  const decidirRef = useRef(decidir);
+  // Arrow keys: right is Amei, left is Próximo.
+  const decideRef = useRef(decide);
   useEffect(() => {
-    decidirRef.current = decidir;
+    decideRef.current = decide;
   });
 
   useEffect(() => {
-    const aoTeclar = (evento: KeyboardEvent) => {
-      if (evento.altKey || evento.ctrlKey || evento.metaKey || evento.shiftKey) return;
-      if ((evento.target as Element).closest?.('input, textarea, select, [role="dialog"]')) return;
-      if (evento.key === 'ArrowRight') {
-        evento.preventDefault();
-        decidirRef.current('amei');
-      } else if (evento.key === 'ArrowLeft') {
-        evento.preventDefault();
-        decidirRef.current('proximo');
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+      if ((event.target as Element).closest?.('input, textarea, select, [role="dialog"]')) return;
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        decideRef.current('love');
+      } else if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        decideRef.current('next');
       }
     };
-    window.addEventListener('keydown', aoTeclar);
-    return () => window.removeEventListener('keydown', aoTeclar);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const coresLivro = currentBook ? coresDoGenero(currentBook.genero) : null;
-  const fundo = coresLivro ? coresLivro.fundo : cores.fundoMarca;
-  const destaque = coresLivro ? coresLivro.capa : cores.marca;
-  const primeiroNome = usuario?.nome?.trim().split(' ')[0];
-  const semCarta = !currentBook || loading;
+  const bookColors = currentBook ? genreColors(currentBook.genero) : null;
+  const background = bookColors ? bookColors.background : colors.brandBackground;
+  const accent = bookColors ? bookColors.cover : colors.brand;
+  const firstName = user?.nome?.trim().split(' ')[0];
+  const noCard = !currentBook || loading;
 
   return (
-    <AppLayout fundo={fundo} corDestaque={destaque}>
+    <AppLayout background={background} accentColor={accent}>
       <MatchArea>
         <Intro>
-          <Eyebrow $cor={destaque} {...surgir(0)}>
-            {primeiroNome ? `Para você, ${primeiroNome}` : 'Para você'}
+          <Eyebrow $color={accent} {...appear(0)}>
+            {firstName ? `Para você, ${firstName}` : 'Para você'}
           </Eyebrow>
-          <Headline {...surgir(1)}>Achei um pra você.</Headline>
-          <Helper {...surgir(2)}>
+          <Headline {...appear(1)}>Achei um pra você.</Headline>
+          <Helper {...appear(2)}>
             Amei guarda o livro nos seus favoritos. Próximo ensina ao Matchbook o que não é a sua.
           </Helper>
         </Intro>
 
         <Recommendation aria-label="Recomendação">
-          {erro === 'vazio' && (
+          {loadError === 'empty' && (
             <EmptyState
-              icone={<IconBook tamanho={28} />}
-              titulo="Você viu tudo por enquanto"
-              descricao="Adicione um livro ao catálogo ou volte mais tarde."
+              icon={<IconBook size={28} />}
+              title="Você viu tudo por enquanto"
+              description="Adicione um livro ao catálogo ou volte mais tarde."
             >
               <ButtonLink to={paths.addBook}>Adicionar livro</ButtonLink>
-              <ButtonLink to={paths.myBooks} $variante="secundario">
+              <ButtonLink to={paths.myBooks} $variant="secondary">
                 Ver meus livros
               </ButtonLink>
             </EmptyState>
           )}
 
-          {erro === 'falha' && (
+          {loadError === 'failed' && (
             <EmptyState
-              icone={<IconAlert tamanho={28} />}
-              tom="erro"
-              titulo="Não deu para buscar um livro"
-              descricao="Confira sua conexão e tente de novo."
+              icon={<IconAlert size={28} />}
+              tone="error"
+              title="Não deu para buscar um livro"
+              description="Confira sua conexão e tente de novo."
             >
-              <Button onClick={carregarProximaRecomendacao}>
-                <IconRefresh tamanho={16} />
+              <Button onClick={loadNextRecommendation}>
+                <IconRefresh size={16} />
                 Tentar de novo
               </Button>
             </EmptyState>
           )}
 
-          {!erro && (
+          {!loadError && (
             <>
               <Stack>
                 <GhostCard
                   aria-hidden="true"
-                  $opacidade={0.5}
+                  $opacity={0.5}
                   $transform="rotate(-5deg) translate(-18px, 14px)"
                 />
                 <GhostCard
                   aria-hidden="true"
-                  $opacidade={0.75}
+                  $opacity={0.75}
                   $transform="rotate(3.5deg) translate(16px, 6px)"
                 />
-                <AnimatePresence mode="wait" custom={direcao} initial={false}>
-                  {semCarta ? (
+                <AnimatePresence mode="wait" custom={direction} initial={false}>
+                  {noCard ? (
                     <LoadingCard
-                      key="carregando"
+                      key="loading"
                       role="status"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1, transition: { duration: 0.2 } }}
                       exit={{ opacity: 0, transition: { duration: 0.12 } }}
                     >
-                      <Spinner tamanho={40} cor={destaque} />
+                      <Spinner size={40} color={accent} />
                       Buscando um livro pra você
                     </LoadingCard>
                   ) : (
                     <SwipeCard
                       key={currentBook.id}
-                      livro={currentBook}
-                      // Com a carta na tela há livro, e com livro há cores.
-                      coresLivro={coresLivro!}
-                      desabilitado={isProcessing}
-                      onDecidir={decidir}
+                      book={currentBook}
+                      // With the card on screen there is a book, and with a book there are colors.
+                      bookColors={bookColors!}
+                      disabled={isProcessing}
+                      onDecide={decide}
                     />
                   )}
                 </AnimatePresence>
@@ -255,31 +256,31 @@ export default function HomePage() {
 
               <Actions>
                 <ActionButton
-                  onClick={() => decidir('proximo')}
-                  disabled={isProcessing || semCarta}
+                  onClick={() => decide('next')}
+                  disabled={isProcessing || noCard}
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.92 }}
                 >
-                  <ActionCircle $cor={cores.branco}>
-                    <IconArrowRight tamanho={24} />
+                  <ActionCircle $color={colors.white}>
+                    <IconArrowRight size={24} />
                   </ActionCircle>
                   Próximo
                 </ActionButton>
                 <ActionButton
-                  $principal
-                  onClick={() => decidir('amei')}
-                  disabled={isProcessing || semCarta}
+                  $primary
+                  onClick={() => decide('love')}
+                  disabled={isProcessing || noCard}
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.92 }}
                 >
-                  <ActionCircle $principal $cor={destaque}>
+                  <ActionCircle $primary $color={accent}>
                     <HeartBeat
-                      key={batidas}
-                      initial={batidas ? { scale: 1.5 } : false}
+                      key={beats}
+                      initial={beats ? { scale: 1.5 } : false}
                       animate={{ scale: 1 }}
                       transition={{ type: 'spring', stiffness: 500, damping: 12 }}
                     >
-                      <IconHeart tamanho={36} />
+                      <IconHeart size={36} />
                     </HeartBeat>
                   </ActionCircle>
                   Amei
@@ -290,22 +291,22 @@ export default function HomePage() {
 
           <FeedbackArea aria-live="polite">
             <AnimatePresence mode="wait" initial={false}>
-              {aviso ? (
-                <ToastPill key={aviso.chave} $tom="claro" {...animacaoAviso}>
-                  {aviso.tipo === 'amei' && <IconHeart tamanho={18} style={{ color: destaque }} />}
-                  {aviso.tipo === 'proximo' && <IconArrowRight tamanho={18} />}
-                  {aviso.tipo === 'erro' && (
-                    <IconAlert tamanho={18} style={{ color: cores.erro }} />
+              {notice ? (
+                <ToastPill key={notice.id} $tone="light" {...toastAnimation}>
+                  {notice.type === 'love' && <IconHeart size={18} style={{ color: accent }} />}
+                  {notice.type === 'next' && <IconArrowRight size={18} />}
+                  {notice.type === 'error' && (
+                    <IconAlert size={18} style={{ color: colors.error }} />
                   )}
                   <span>
-                    <strong>{aviso.titulo}</strong> <ToastDetail>{aviso.texto}</ToastDetail>
+                    <strong>{notice.title}</strong> <ToastDetail>{notice.text}</ToastDetail>
                   </span>
                 </ToastPill>
               ) : (
-                !erro &&
-                decisoes === 0 && (
+                !loadError &&
+                decisions === 0 && (
                   <Hint
-                    key="dica"
+                    key="hint"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}

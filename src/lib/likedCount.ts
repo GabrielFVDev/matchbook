@@ -1,19 +1,19 @@
 import { createContext, useContext } from 'react';
 
-export interface CurtidosValor {
-  // null enquanto o contador ainda não chegou da API.
+export interface LikedCountValue {
+  // null while the counter has not arrived from the API yet.
   total: number | null;
-  carregar: () => void;
-  somar: (quantidade: number) => void;
-  definir: (valor: number | null) => void;
+  load: () => void;
+  add: (amount: number) => void;
+  set: (value: number | null) => void;
 }
 
-// Contador de livros curtidos mostrado no cabeçalho de todas as telas.
-export const CurtidosContext = createContext<CurtidosValor>({
+// Counter of liked books shown in the header of every screen.
+export const LikedCountContext = createContext<LikedCountValue>({
   total: null,
-  carregar: () => {},
-  somar: () => {},
-  definir: () => {},
+  load: () => {},
+  add: () => {},
+  set: () => {},
 });
 
-export const useCurtidos = () => useContext(CurtidosContext);
+export const useLikedCount = () => useContext(LikedCountContext);

@@ -2,9 +2,9 @@ import { isAxiosError } from 'axios';
 import api, { errorMessage } from './client';
 import type { ApiResult, SignUpRequest, UserDto } from './types';
 
-// Serviços de autenticação
+// Authentication services
 export const authApi = {
-  // Criar novo usuário
+  // Create a new user
   async signUp(userData: SignUpRequest): Promise<ApiResult<UserDto>> {
     try {
       const response = await api.post<UserDto>('/usuario/create', userData);
@@ -15,9 +15,9 @@ export const authApi = {
       };
     } catch (error) {
       const response = isAxiosError(error) ? error.response : undefined;
-      console.error('Service: Erro na API:', error);
-      console.error('Service: Erro response:', response?.data);
-      console.error('Service: Erro status:', response?.status);
+      console.error('Service: API error:', error);
+      console.error('Service: error response:', response?.data);
+      console.error('Service: error status:', response?.status);
 
       let errorText = 'Erro ao cadastrar usuário';
 
@@ -38,25 +38,23 @@ export const authApi = {
     }
   },
 
-  // Fazer login (simulação, pois não há endpoint específico de login na API)
-  async login(email: string, senha: string): Promise<ApiResult<Omit<UserDto, 'senha'>>> {
+  // Log in (simulated, since the API has no specific login endpoint)
+  async login(email: string, password: string): Promise<ApiResult<Omit<UserDto, 'senha'>>> {
     try {
-      // Como não temos endpoint de login específico, vamos buscar todos os usuários
-      // e verificar se existe um com o email/senha fornecidos
+      // Since there is no specific login endpoint, fetch all the users
+      // and check whether one matches the given email/password
       const response = await api.get<UserDto[]>('/usuario/all');
-      const usuarios = response.data;
+      const users = response.data;
 
-      const usuarioEncontrado = usuarios.find(
-        (usuario) => usuario.email === email && usuario.senha === senha,
-      );
+      const foundUser = users.find((user) => user.email === email && user.senha === password);
 
-      if (usuarioEncontrado) {
-        // Remove a senha do objeto retornado por segurança
-        const { senha: _, ...usuarioSemSenha } = usuarioEncontrado;
+      if (foundUser) {
+        // Remove the password from the returned object, for safety
+        const { senha: _, ...userWithoutPassword } = foundUser;
 
         return {
           success: true,
-          data: usuarioSemSenha,
+          data: userWithoutPassword,
           message: 'Login realizado com sucesso!',
         };
       } else {

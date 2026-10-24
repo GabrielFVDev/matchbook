@@ -1,12 +1,12 @@
 import styled from 'styled-components';
 import { motion } from 'motion/react';
-import { cores, celular, raio } from '@/styles/tokens';
+import { colors, mobile, radius } from '@/styles/tokens';
 import { AuthSide } from '@/layouts/AuthLayout';
 
-export const CadastroSide = styled(AuthSide)`
+export const SignUpSide = styled(AuthSide)`
   padding-top: 24px;
 
-  ${celular} {
+  ${mobile} {
     padding-top: 0;
   }
 `;
@@ -16,7 +16,7 @@ export const SideTitle = styled.div`
   flex-direction: column;
   gap: 12px;
 
-  ${celular} {
+  ${mobile} {
     display: none;
   }
 `;
@@ -36,7 +36,7 @@ export const StepList = styled.ol`
   flex-direction: column;
   gap: 20px;
 
-  ${celular} {
+  ${mobile} {
     display: none;
   }
 `;
@@ -47,19 +47,19 @@ export const StepItem = styled.li`
   gap: 16px;
 `;
 
-export type EstadoEtapa = 'atual' | 'feito' | 'proximo';
+export type StepState = 'current' | 'done' | 'next';
 
-export const StepNumber = styled.span<{ $estado: EstadoEtapa }>`
+export const StepNumber = styled.span<{ $state: StepState }>`
   flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 44px;
   height: 44px;
-  border-radius: ${raio.pilula};
-  background: ${({ $estado }) =>
-    $estado === 'atual' ? cores.tinta : $estado === 'feito' ? cores.sucesso : cores.branco};
-  color: ${({ $estado }) => ($estado === 'proximo' ? cores.tintaSuave : cores.branco)};
+  border-radius: ${radius.pill};
+  background: ${({ $state }) =>
+    $state === 'current' ? colors.ink : $state === 'done' ? colors.success : colors.white};
+  color: ${({ $state }) => ($state === 'next' ? colors.inkSoft : colors.white)};
   font-size: 17px;
   font-weight: 800;
   transition:
@@ -67,7 +67,7 @@ export const StepNumber = styled.span<{ $estado: EstadoEtapa }>`
     color 0.3s ease;
 `;
 
-export const StepText = styled.span<{ $apagado?: boolean }>`
+export const StepText = styled.span<{ $dimmed?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -75,19 +75,19 @@ export const StepText = styled.span<{ $apagado?: boolean }>`
   strong {
     font-size: 18px;
     font-weight: 700;
-    color: ${({ $apagado }) => ($apagado ? cores.tintaSuave : cores.tinta)};
+    color: ${({ $dimmed }) => ($dimmed ? colors.inkSoft : colors.ink)};
   }
 
   span {
     font-size: 15px;
-    color: ${cores.tintaSuave};
+    color: ${colors.inkSoft};
   }
 `;
 
 export const StepPills = styled.ol`
   display: none;
 
-  ${celular} {
+  ${mobile} {
     list-style: none;
     padding: 0;
     display: grid;
@@ -97,35 +97,35 @@ export const StepPills = styled.ol`
   }
 `;
 
-export const StepPill = styled.li<{ $atual?: boolean }>`
+export const StepPill = styled.li<{ $current?: boolean }>`
   display: flex;
   align-items: center;
   gap: 8px;
   min-height: 44px;
   padding: 0 14px;
-  border-radius: ${raio.pilula};
-  background: ${({ $atual }) => ($atual ? cores.tinta : cores.branco)};
-  color: ${({ $atual }) => ($atual ? cores.branco : cores.tintaSuave)};
+  border-radius: ${radius.pill};
+  background: ${({ $current }) => ($current ? colors.ink : colors.white)};
+  color: ${({ $current }) => ($current ? colors.white : colors.inkSoft)};
   font-size: 14px;
-  font-weight: ${({ $atual }) => ($atual ? 700 : 600)};
+  font-weight: ${({ $current }) => ($current ? 700 : 600)};
   transition:
     background-color 0.3s ease,
     color 0.3s ease;
 
   svg {
-    color: ${cores.sucesso};
+    color: ${colors.success};
   }
 `;
 
-export const PillNumber = styled.span<{ $atual?: boolean }>`
+export const PillNumber = styled.span<{ $current?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
   width: 20px;
   height: 20px;
-  border-radius: ${raio.pilula};
-  background: ${({ $atual }) => ($atual ? cores.branco : cores.fundoApp)};
-  color: ${cores.tinta};
+  border-radius: ${radius.pill};
+  background: ${({ $current }) => ($current ? colors.white : colors.appBackground)};
+  color: ${colors.ink};
   font-size: 12px;
   font-weight: 800;
 `;
@@ -139,17 +139,17 @@ export const ButtonRow = styled.div`
     flex: 1;
   }
 
-  ${celular} {
+  ${mobile} {
     flex-direction: column-reverse;
   }
 `;
 
-export const EtapaConteudo = styled(motion.div)`
+export const StepContent = styled(motion.div)`
   display: flex;
   flex-direction: column;
   gap: 28px;
 
-  ${celular} {
+  ${mobile} {
     gap: 22px;
   }
 `;

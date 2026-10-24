@@ -1,7 +1,7 @@
 import { Children, cloneElement, isValidElement } from 'react';
 import type { ComponentProps, HTMLAttributes, ReactNode } from 'react';
 import styled, { css } from 'styled-components';
-import { cores, raio } from '@/styles/tokens';
+import { colors, radius } from '@/styles/tokens';
 import { IconAlert, IconCheck, IconChevronDown } from '@/components/Icons';
 
 export const Label = styled.label`
@@ -15,20 +15,20 @@ export const Label = styled.label`
 export const LabelTag = styled.span`
   font-size: 12px;
   font-weight: 600;
-  color: ${cores.tintaSuave};
+  color: ${colors.inkSoft};
 `;
 
-interface EntradaProps {
-  $erro?: boolean;
+interface InputStyleProps {
+  $invalid?: boolean;
 }
 
-const estiloEntrada = css<EntradaProps>`
+const inputStyle = css<InputStyleProps>`
   width: 100%;
   min-width: 0;
   border: 0;
-  border-radius: ${raio.campo};
-  background: ${({ $erro }) => ($erro ? cores.erroFundo : cores.fundoApp)};
-  color: ${cores.tinta};
+  border-radius: ${radius.field};
+  background: ${({ $invalid }) => ($invalid ? colors.errorBackground : colors.appBackground)};
+  color: ${colors.ink};
   font-size: 16px;
   transition:
     background-color 0.15s ease,
@@ -36,24 +36,24 @@ const estiloEntrada = css<EntradaProps>`
 
   &:focus-visible {
     outline: none;
-    background: ${cores.branco};
-    box-shadow: 0 0 0 3px ${cores.marca};
+    background: ${colors.white};
+    box-shadow: 0 0 0 3px ${colors.brand};
   }
 
   &:disabled {
-    color: ${cores.tintaSuave};
+    color: ${colors.inkSoft};
     opacity: 0.7;
   }
 `;
 
-export const Input = styled.input<EntradaProps>`
-  ${estiloEntrada}
+export const Input = styled.input<InputStyleProps>`
+  ${inputStyle}
   height: 52px;
   padding: 0 16px;
 `;
 
-export const TextArea = styled.textarea<EntradaProps>`
-  ${estiloEntrada}
+export const TextArea = styled.textarea<InputStyleProps>`
+  ${inputStyle}
   min-height: 112px;
   padding: 14px 16px;
   line-height: 1.5;
@@ -73,8 +73,8 @@ const SelectWrap = styled.div`
   }
 `;
 
-const SelectBase = styled.select<EntradaProps>`
-  ${estiloEntrada}
+const SelectBase = styled.select<InputStyleProps>`
+  ${inputStyle}
   height: 52px;
   padding: 0 44px 0 16px;
   appearance: none;
@@ -84,26 +84,26 @@ const SelectBase = styled.select<EntradaProps>`
 export const Select = ({ children, ...props }: ComponentProps<typeof SelectBase>) => (
   <SelectWrap>
     <SelectBase {...props}>{children}</SelectBase>
-    <IconChevronDown tamanho={18} />
+    <IconChevronDown size={18} />
   </SelectWrap>
 );
 
-const Mensagem = styled.p<{ $tom: 'erro' | 'sucesso' | 'ajuda' }>`
+const Message = styled.p<{ $tone: 'error' | 'success' | 'help' }>`
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 14px;
-  font-weight: ${({ $tom }) => ($tom === 'ajuda' ? 400 : 600)};
+  font-weight: ${({ $tone }) => ($tone === 'help' ? 400 : 600)};
   line-height: 1.4;
-  color: ${({ $tom }) =>
-    $tom === 'erro' ? cores.erro : $tom === 'sucesso' ? cores.sucesso : cores.tintaSuave};
+  color: ${({ $tone }) =>
+    $tone === 'error' ? colors.error : $tone === 'success' ? colors.success : colors.inkSoft};
 
   svg {
     flex: 0 0 auto;
   }
 `;
 
-const Grupo = styled.div<{ $span?: boolean }>`
+const Group = styled.div<{ $span?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -115,10 +115,10 @@ const Grupo = styled.div<{ $span?: boolean }>`
     `}
 `;
 
-// O que o Field põe no controle filho (Input, Select, TextArea, PasswordInput).
-interface ControleInjetado {
+// What Field puts on the child control (Input, Select, TextArea, PasswordInput).
+interface InjectedControlProps {
   id?: string;
-  $erro?: boolean;
+  $invalid?: boolean;
   'aria-invalid'?: boolean;
   'aria-describedby'?: string;
 }
@@ -134,8 +134,8 @@ interface FieldProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
   children: ReactNode;
 }
 
-// Campo com rótulo, marcação de opcional ou obrigatório e uma mensagem embaixo.
-// Liga sozinho aria-describedby e aria-invalid no controle filho.
+// Field with a label, an optional or required tag and a message below.
+// Wires aria-describedby and aria-invalid on the child control by itself.
 export function Field({
   id,
   label,
@@ -145,57 +145,57 @@ export function Field({
   success,
   span,
   children,
-  ...resto
+  ...rest
 }: FieldProps) {
-  const mensagemId = `${id}Mensagem`;
-  const temMensagem = Boolean(error || success || help);
+  const messageId = `${id}Message`;
+  const hasMessage = Boolean(error || success || help);
 
-  const controle = Children.map(children, (filho) =>
-    isValidElement<ControleInjetado>(filho)
-      ? cloneElement(filho, {
+  const control = Children.map(children, (child) =>
+    isValidElement<InjectedControlProps>(child)
+      ? cloneElement(child, {
           id,
-          $erro: Boolean(error),
+          $invalid: Boolean(error),
           'aria-invalid': error ? true : undefined,
-          'aria-describedby': temMensagem ? mensagemId : undefined,
+          'aria-describedby': hasMessage ? messageId : undefined,
         })
-      : filho,
+      : child,
   );
 
   return (
-    <Grupo $span={span} {...resto}>
+    <Group $span={span} {...rest}>
       <Label htmlFor={id}>
         {label}
         {tag && <LabelTag>{tag}</LabelTag>}
       </Label>
-      {controle}
+      {control}
       {error ? (
-        <Mensagem id={mensagemId} $tom="erro">
-          <IconAlert tamanho={16} />
+        <Message id={messageId} $tone="error">
+          <IconAlert size={16} />
           {error}
-        </Mensagem>
+        </Message>
       ) : success ? (
-        <Mensagem id={mensagemId} $tom="sucesso">
-          <IconCheck tamanho={16} />
+        <Message id={messageId} $tone="success">
+          <IconCheck size={16} />
           {success}
-        </Mensagem>
+        </Message>
       ) : help ? (
-        <Mensagem id={mensagemId} $tom="ajuda">
+        <Message id={messageId} $tone="help">
           {help}
-        </Mensagem>
+        </Message>
       ) : null}
-    </Grupo>
+    </Group>
   );
 }
 
-// Erro do formulário inteiro, mostrado perto do botão de enviar.
+// Error of the whole form, shown near the submit button.
 export const FormAlert = styled.p`
   display: flex;
   align-items: flex-start;
   gap: 8px;
   padding: 12px 16px;
-  border-radius: ${raio.campo};
-  background: ${cores.erroFundo};
-  color: ${cores.erro};
+  border-radius: ${radius.field};
+  background: ${colors.errorBackground};
+  color: ${colors.error};
   font-size: 15px;
   font-weight: 600;
   line-height: 1.4;

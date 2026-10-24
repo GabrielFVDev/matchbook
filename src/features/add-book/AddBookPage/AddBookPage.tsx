@@ -30,16 +30,17 @@ import {
   MobilePreviewText,
   SuccessWrapper,
 } from './styles';
-import { useCurtidos } from '@/lib/likedCount';
-import { livroService, recomendacaoService } from '@/lib/api/services';
+import { useLikedCount } from '@/lib/likedCount';
+import { booksApi } from '@/lib/api/books';
+import { likedBooksApi } from '@/lib/api/likedBooks';
 import { getSessionUser } from '@/lib/session';
 import { paths } from '@/app/paths';
-import { cores, listaGeneros } from '@/styles/tokens';
-import { curvaSaida, surgir } from '@/styles/motion';
+import { colors, genreList } from '@/styles/tokens';
+import { exitEase, appear } from '@/styles/motion';
 
-const saidaRapida = { opacity: 0, y: -8, transition: { duration: 0.15, ease: curvaSaida } };
+const quickExit = { opacity: 0, y: -8, transition: { duration: 0.15, ease: exitEase } };
 
-const idiomas = [
+const languages = [
   'Português',
   'Inglês',
   'Espanhol',
@@ -50,7 +51,7 @@ const idiomas = [
   'Outros',
 ];
 
-const formularioVazio = {
+const emptyForm = {
   titulo: '',
   autor: '',
   editora: '',
@@ -64,11 +65,11 @@ const formularioVazio = {
   disponivel: true,
 };
 
-type FormularioLivro = typeof formularioVazio;
+type BookForm = typeof emptyForm;
 
-const isValidUrl = (texto: string) => {
+const isValidUrl = (text: string) => {
   try {
-    new URL(texto);
+    new URL(text);
     return true;
   } catch {
     return false;
@@ -76,17 +77,15 @@ const isValidUrl = (texto: string) => {
 };
 
 export default function AddBookPage() {
-  const { somar } = useCurtidos();
+  const { add } = useLikedCount();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState<FormularioLivro>(formularioVazio);
+  const [formData, setFormData] = useState<BookForm>(emptyForm);
   const [errors, setErrors] = useState<Record<string, string | null>>({});
-  const [erroEnvio, setErroEnvio] = useState<string | null>(null);
-  const [resultado, setResultado] = useState<{ titulo: string; nosFavoritos: boolean } | null>(
-    null,
-  );
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [result, setResult] = useState<{ title: string; inFavorites: boolean } | null>(null);
 
-  const anoMaximo = new Date().getFullYear() + 1;
+  const maxYear = new Date().getFullYear() + 1;
 
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
@@ -94,7 +93,7 @@ export default function AddBookPage() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
-    if (erroEnvio) setErroEnvio(null);
+    if (submitError) setSubmitError(null);
   };
 
   const validateForm = () => {
@@ -112,9 +111,9 @@ export default function AddBookPage() {
 
     if (
       formData.anoPublicacao &&
-      (Number(formData.anoPublicacao) < 1000 || Number(formData.anoPublicacao) > anoMaximo)
+      (Number(formData.anoPublicacao) < 1000 || Number(formData.anoPublicacao) > maxYear)
     ) {
-      newErrors.anoPublicacao = `Use um ano entre 1000 e ${anoMaximo}`;
+      newErrors.anoPublicacao = `Use um ano entre 1000 e ${maxYear}`;
     }
 
     if (
@@ -136,50 +135,50 @@ export default function AddBookPage() {
     e.preventDefault();
 
     if (!validateForm()) {
-      setErroEnvio('Confira os campos marcados e tente de novo.');
+      setSubmitError('Confira os campos marcados e tente de novo.');
       return;
     }
 
-    const usuario = getSessionUser();
-    if (!usuario) {
+    const user = getSessionUser();
+    if (!user) {
       navigate(paths.login);
       return;
     }
 
     setLoading(true);
 
-    const dadosLivro = {
+    const bookData = {
       ...formData,
       anoPublicacao: formData.anoPublicacao ? parseInt(formData.anoPublicacao) : null,
       numeroPaginas: formData.numeroPaginas ? parseInt(formData.numeroPaginas) : null,
       capaUrl: formData.capaUrl || null,
     };
 
-    const response = await livroService.criar(dadosLivro);
+    const response = await booksApi.create(bookData);
 
     if (response.success) {
-      // Quem adiciona um livro ao catálogo já o leva para os seus favoritos.
-      const favoritoResponse = await recomendacaoService.curtirLivro(usuario.id, response.data.id);
-      if (favoritoResponse.success) {
-        somar(1);
+      // Whoever adds a book to the catalog also takes it to their favorites.
+      const likeResponse = await likedBooksApi.like(user.id, response.data.id);
+      if (likeResponse.success) {
+        add(1);
       } else {
-        console.warn('Erro ao adicionar aos favoritos:', favoritoResponse.error);
+        console.warn('Error adding to favorites:', likeResponse.error);
       }
-      setResultado({ titulo: formData.titulo, nosFavoritos: favoritoResponse.success });
-      setFormData(formularioVazio);
+      setResult({ title: formData.titulo, inFavorites: likeResponse.success });
+      setFormData(emptyForm);
     } else {
-      setErroEnvio(response.error || 'Não deu para adicionar o livro. Tente de novo.');
+      setSubmitError(response.error || 'Não deu para adicionar o livro. Tente de novo.');
     }
 
     setLoading(false);
   };
 
-  const adicionarOutro = () => {
-    setResultado(null);
+  const addAnother = () => {
+    setResult(null);
     window.scrollTo({ top: 0 });
   };
 
-  const contagemSinopse = `${formData.sinopse.length} de 1000`;
+  const synopsisCount = `${formData.sinopse.length} de 1000`;
 
   return (
     <AppLayout>
@@ -189,44 +188,39 @@ export default function AddBookPage() {
       </PageHeading>
 
       <AnimatePresence mode="wait" initial={false}>
-        {resultado ? (
-          <SuccessWrapper key="sucesso" exit={saidaRapida}>
+        {result ? (
+          <SuccessWrapper key="success" exit={quickExit}>
             <EmptyState
-              icone={<IconCheck tamanho={30} />}
-              tom="sucesso"
-              titulo="Livro adicionado"
-              descricao={
-                resultado.nosFavoritos
-                  ? `${resultado.titulo} já está nos seus livros e no catálogo.`
-                  : `${resultado.titulo} entrou no catálogo, mas não foi para os seus livros. Dê Amei nele quando aparecer no Início.`
+              icon={<IconCheck size={30} />}
+              tone="success"
+              title="Livro adicionado"
+              description={
+                result.inFavorites
+                  ? `${result.title} já está nos seus livros e no catálogo.`
+                  : `${result.title} entrou no catálogo, mas não foi para os seus livros. Dê Amei nele quando aparecer no Início.`
               }
               role="status"
             >
               <ButtonLink to={paths.myBooks}>Ver meus livros</ButtonLink>
-              <Button $variante="secundario" onClick={adicionarOutro}>
+              <Button $variant="secondary" onClick={addAnother}>
                 Adicionar outro
               </Button>
             </EmptyState>
           </SuccessWrapper>
         ) : (
-          <Columns
-            key="formulario"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={saidaRapida}
-          >
+          <Columns key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={quickExit}>
             <MobilePreview role="group" aria-label="Prévia da capa">
               <BookCover
-                tamanho="mini"
-                titulo={formData.titulo}
-                genero={formData.genero}
-                capaUrl={formData.capaUrl}
-                tituloVazio="Título do livro"
+                size="mini"
+                title={formData.titulo}
+                genre={formData.genero}
+                coverUrl={formData.capaUrl}
+                placeholderTitle="Título do livro"
               />
-              <MobilePreviewText $vazio={!formData.autor}>
+              <MobilePreviewText $empty={!formData.autor}>
                 <p>Prévia</p>
                 {formData.genero && (
-                  <Tag $fundo={cores.fundoApp} $pequena>
+                  <Tag $background={colors.appBackground} $small>
                     {formData.genero}
                   </Tag>
                 )}
@@ -235,8 +229,8 @@ export default function AddBookPage() {
             </MobilePreview>
 
             <FormContainer onSubmit={handleSubmit} noValidate>
-              <FormSection aria-labelledby="secaoSobre" {...surgir(0)}>
-                <SectionTitle id="secaoSobre">Sobre o livro</SectionTitle>
+              <FormSection aria-labelledby="aboutSection" {...appear(0)}>
+                <SectionTitle id="aboutSection">Sobre o livro</SectionTitle>
                 <FieldsGrid>
                   <Field id="titulo" label="Título" tag="obrigatório" error={errors.titulo} span>
                     <Input
@@ -261,9 +255,9 @@ export default function AddBookPage() {
                   <Field id="genero" label="Gênero" tag="obrigatório" error={errors.genero}>
                     <Select name="genero" value={formData.genero} onChange={handleInputChange}>
                       <option value="">Escolha um gênero</option>
-                      {listaGeneros.map((genero) => (
-                        <option key={genero} value={genero}>
-                          {genero}
+                      {genreList.map((genre) => (
+                        <option key={genre} value={genre}>
+                          {genre}
                         </option>
                       ))}
                     </Select>
@@ -280,9 +274,9 @@ export default function AddBookPage() {
                   </Field>
                   <Field id="idioma" label="Idioma">
                     <Select name="idioma" value={formData.idioma} onChange={handleInputChange}>
-                      {idiomas.map((idioma) => (
-                        <option key={idioma} value={idioma}>
-                          {idioma}
+                      {languages.map((language) => (
+                        <option key={language} value={language}>
+                          {language}
                         </option>
                       ))}
                     </Select>
@@ -291,14 +285,14 @@ export default function AddBookPage() {
                     id="anoPublicacao"
                     label="Ano de publicação"
                     error={errors.anoPublicacao}
-                    data-meia
+                    data-half
                   >
                     <Input
                       name="anoPublicacao"
                       type="number"
                       inputMode="numeric"
                       min="1000"
-                      max={anoMaximo}
+                      max={maxYear}
                       placeholder="Ex.: 1951"
                       value={formData.anoPublicacao}
                       onChange={handleInputChange}
@@ -308,7 +302,7 @@ export default function AddBookPage() {
                     id="numeroPaginas"
                     label="Número de páginas"
                     error={errors.numeroPaginas}
-                    data-meia
+                    data-half
                   >
                     <Input
                       name="numeroPaginas"
@@ -334,10 +328,10 @@ export default function AddBookPage() {
                 </FieldsGrid>
               </FormSection>
 
-              <FormSection aria-labelledby="secaoSinopse" {...surgir(1)}>
+              <FormSection aria-labelledby="synopsisSection" {...appear(1)}>
                 <SectionHeading>
-                  <SectionTitle id="secaoSinopse">Sinopse</SectionTitle>
-                  <CounterRow aria-live="polite">{contagemSinopse}</CounterRow>
+                  <SectionTitle id="synopsisSection">Sinopse</SectionTitle>
+                  <CounterRow aria-live="polite">{synopsisCount}</CounterRow>
                 </SectionHeading>
                 <Field
                   id="sinopse"
@@ -357,8 +351,8 @@ export default function AddBookPage() {
                 </Field>
               </FormSection>
 
-              <FormSection aria-labelledby="secaoCapa" {...surgir(2)}>
-                <SectionTitle id="secaoCapa">Capa</SectionTitle>
+              <FormSection aria-labelledby="coverSection" {...appear(2)}>
+                <SectionTitle id="coverSection">Capa</SectionTitle>
                 <Field
                   id="capaUrl"
                   label="Link da imagem"
@@ -375,19 +369,19 @@ export default function AddBookPage() {
                 </Field>
               </FormSection>
 
-              {erroEnvio && (
+              {submitError && (
                 <FormAlert role="alert">
-                  <IconAlert tamanho={18} />
-                  {erroEnvio}
+                  <IconAlert size={18} />
+                  {submitError}
                 </FormAlert>
               )}
 
               <SubmitRow>
-                <Button type="submit" $tamanho="grande" disabled={loading}>
-                  {loading ? <Spinner /> : <IconHeart tamanho={18} />}
+                <Button type="submit" $size="large" disabled={loading}>
+                  {loading ? <Spinner /> : <IconHeart size={18} />}
                   {loading ? 'Adicionando' : 'Adicionar aos meus livros'}
                 </Button>
-                <ButtonLink to={paths.home} $variante="branco" $tamanho="grande">
+                <ButtonLink to={paths.home} $variant="white" $size="large">
                   Cancelar
                 </ButtonLink>
               </SubmitRow>
@@ -401,13 +395,13 @@ export default function AddBookPage() {
               <PreviewLabel>Prévia</PreviewLabel>
               <PreviewCard>
                 <BookCover
-                  tamanho="previa"
-                  titulo={formData.titulo}
-                  genero={formData.genero}
-                  capaUrl={formData.capaUrl}
-                  tituloVazio="Título do livro"
+                  size="preview"
+                  title={formData.titulo}
+                  genre={formData.genero}
+                  coverUrl={formData.capaUrl}
+                  placeholderTitle="Título do livro"
                 />
-                <PreviewInfo $vazio={!formData.autor}>
+                <PreviewInfo $empty={!formData.autor}>
                   <p>{formData.autor || 'Autor'}</p>
                   <p>Assim ele aparece nas recomendações.</p>
                 </PreviewInfo>

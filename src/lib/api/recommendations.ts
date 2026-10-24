@@ -1,13 +1,13 @@
 import api, { errorMessage } from './client';
 import type { ApiResult, BookDto, RecommendationStats, RejectResult } from './types';
 
-// Serviços de recomendação
+// Recommendation services
 export const recommendationsApi = {
-  // Obter recomendação adaptativa
-  async getAdaptive(idUsuario: number): Promise<ApiResult<BookDto[]>> {
+  // Get the adaptive recommendation
+  async getAdaptive(userId: number): Promise<ApiResult<BookDto[]>> {
     try {
       const response = await api.get<BookDto[]>(
-        `/recomendacao/getRecomendacaoAdaptativa/${idUsuario}`,
+        `/recomendacao/getRecomendacaoAdaptativa/${userId}`,
       );
       return {
         success: true,
@@ -23,11 +23,11 @@ export const recommendationsApi = {
     }
   },
 
-  // Registrar aceitação de livro
-  async accept(idUsuario: number, idLivro: number): Promise<ApiResult<unknown>> {
+  // Record that a book was accepted
+  async accept(userId: number, bookId: number): Promise<ApiResult<unknown>> {
     try {
       const response = await api.post(
-        `/recomendacao/aceitar?idUsuario=${idUsuario}&idLivro=${idLivro}`,
+        `/recomendacao/aceitar?idUsuario=${userId}&idLivro=${bookId}`,
       );
       return {
         success: true,
@@ -43,11 +43,11 @@ export const recommendationsApi = {
     }
   },
 
-  // Registrar recusa de livro
-  async reject(idUsuario: number, idLivro: number): Promise<ApiResult<RejectResult>> {
+  // Record that a book was rejected
+  async reject(userId: number, bookId: number): Promise<ApiResult<RejectResult>> {
     try {
       const response = await api.post<RejectResult>(
-        `/recomendacao/recusar?idUsuario=${idUsuario}&idLivro=${idLivro}`,
+        `/recomendacao/recusar?idUsuario=${userId}&idLivro=${bookId}`,
       );
       return {
         success: true,
@@ -63,12 +63,10 @@ export const recommendationsApi = {
     }
   },
 
-  // Obter estatísticas do usuário
-  async getStats(idUsuario: number): Promise<ApiResult<RecommendationStats>> {
+  // Get the user's statistics
+  async getStats(userId: number): Promise<ApiResult<RecommendationStats>> {
     try {
-      const response = await api.get<RecommendationStats>(
-        `/recomendacao/estatisticas/${idUsuario}`,
-      );
+      const response = await api.get<RecommendationStats>(`/recomendacao/estatisticas/${userId}`);
       return {
         success: true,
         data: response.data,
@@ -83,10 +81,10 @@ export const recommendationsApi = {
     }
   },
 
-  // Resetar algoritmo
-  async resetAlgorithm(idUsuario: number): Promise<ApiResult<unknown>> {
+  // Reset the algorithm
+  async resetAlgorithm(userId: number): Promise<ApiResult<unknown>> {
     try {
-      const response = await api.post(`/recomendacao/resetarAlgoritmo/${idUsuario}`);
+      const response = await api.post(`/recomendacao/resetarAlgoritmo/${userId}`);
       return {
         success: true,
         data: response.data,

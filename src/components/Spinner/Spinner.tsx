@@ -1,6 +1,6 @@
 import styled, { keyframes } from 'styled-components';
 
-const girar = keyframes`
+const spin = keyframes`
   to {
     transform: rotate(360deg);
   }
@@ -8,21 +8,21 @@ const girar = keyframes`
 
 const Svg = styled.svg`
   flex: 0 0 auto;
-  animation: ${girar} 0.9s linear infinite;
+  animation: ${spin} 0.9s linear infinite;
 `;
 
 interface SpinnerProps {
-  tamanho?: number;
-  cor?: string;
+  size?: number;
+  color?: string;
 }
 
-export const Spinner = ({ tamanho = 18, cor = 'currentColor' }: SpinnerProps) => (
+export const Spinner = ({ size = 18, color = 'currentColor' }: SpinnerProps) => (
   <Svg
-    width={tamanho}
-    height={tamanho}
+    width={size}
+    height={size}
     viewBox="0 0 24 24"
     fill="none"
-    stroke={cor}
+    stroke={color}
     strokeWidth="2.6"
     strokeLinecap="round"
     aria-hidden="true"

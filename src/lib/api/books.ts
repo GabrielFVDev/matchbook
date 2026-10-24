@@ -1,12 +1,12 @@
 import api, { errorMessage } from './client';
 import type { ApiResult, BookDto, CreateBookRequest } from './types';
 
-// Serviços de livros
+// Book services
 export const booksApi = {
-  // Criar novo livro
-  async create(livroData: CreateBookRequest): Promise<ApiResult<BookDto>> {
+  // Create a new book
+  async create(bookData: CreateBookRequest): Promise<ApiResult<BookDto>> {
     try {
-      const response = await api.post<BookDto>('/livro/create', livroData);
+      const response = await api.post<BookDto>('/livro/create', bookData);
       return {
         success: true,
         data: response.data,

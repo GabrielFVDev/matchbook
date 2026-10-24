@@ -1,69 +1,69 @@
 import styled, { css } from 'styled-components';
 import { Link } from 'react-router-dom';
-import { cores, raio } from '@/styles/tokens';
+import { colors, radius } from '@/styles/tokens';
 
-const variantes = {
-  primario: css`
-    background: ${cores.tinta};
-    color: ${cores.branco};
+const variants = {
+  primary: css`
+    background: ${colors.ink};
+    color: ${colors.white};
     font-weight: 700;
   `,
-  secundario: css`
-    background: ${cores.fundoApp};
-    color: ${cores.tinta};
+  secondary: css`
+    background: ${colors.appBackground};
+    color: ${colors.ink};
     font-weight: 600;
   `,
-  branco: css`
-    background: ${cores.branco};
-    color: ${cores.tinta};
+  white: css`
+    background: ${colors.white};
+    color: ${colors.ink};
     font-weight: 600;
   `,
-  discreto: css`
+  subtle: css`
     background: transparent;
-    color: ${cores.marca};
+    color: ${colors.brand};
     font-weight: 700;
   `,
-  perigo: css`
-    background: ${cores.erroFundo};
-    color: ${cores.erro};
+  danger: css`
+    background: ${colors.errorBackground};
+    color: ${colors.error};
     font-weight: 700;
   `,
-  perigoForte: css`
-    background: ${cores.erro};
-    color: ${cores.branco};
+  dangerStrong: css`
+    background: ${colors.error};
+    color: ${colors.white};
     font-weight: 700;
   `,
 };
 
-const tamanhos = {
-  grande: css`
+const sizes = {
+  large: css`
     min-height: 56px;
     padding: 0 28px;
     font-size: 17px;
   `,
-  medio: css`
+  medium: css`
     min-height: 48px;
     padding: 0 20px;
     font-size: 15px;
   `,
 };
 
-export type ButtonVariante = keyof typeof variantes;
-export type ButtonTamanho = keyof typeof tamanhos;
+export type ButtonVariant = keyof typeof variants;
+export type ButtonSize = keyof typeof sizes;
 
-interface EstiloBotaoProps {
-  $variante?: ButtonVariante;
-  $tamanho?: ButtonTamanho;
-  $total?: boolean;
+interface ButtonStyleProps {
+  $variant?: ButtonVariant;
+  $size?: ButtonSize;
+  $fullWidth?: boolean;
 }
 
-const estiloBotao = css<EstiloBotaoProps>`
+const buttonStyle = css<ButtonStyleProps>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   border: 0;
-  border-radius: ${raio.pilula};
+  border-radius: ${radius.pill};
   text-decoration: none;
   line-height: 1.1;
   text-align: center;
@@ -71,10 +71,10 @@ const estiloBotao = css<EstiloBotaoProps>`
     transform 0.18s ease,
     opacity 0.15s ease,
     background-color 0.2s ease;
-  ${({ $variante = 'primario' }) => variantes[$variante]}
-  ${({ $tamanho = 'medio' }) => tamanhos[$tamanho]}
-  ${({ $total }) =>
-    $total &&
+  ${({ $variant = 'primary' }) => variants[$variant]}
+  ${({ $size = 'medium' }) => sizes[$size]}
+  ${({ $fullWidth }) =>
+    $fullWidth &&
     css`
       width: 100%;
     `}
@@ -95,12 +95,12 @@ const estiloBotao = css<EstiloBotaoProps>`
   }
 `;
 
-export const Button = styled.button.attrs<EstiloBotaoProps>(({ type }) => ({
+export const Button = styled.button.attrs<ButtonStyleProps>(({ type }) => ({
   type: type || 'button',
-}))<EstiloBotaoProps>`
-  ${estiloBotao}
+}))<ButtonStyleProps>`
+  ${buttonStyle}
 `;
 
-export const ButtonLink = styled(Link)<EstiloBotaoProps>`
-  ${estiloBotao}
+export const ButtonLink = styled(Link)<ButtonStyleProps>`
+  ${buttonStyle}
 `;

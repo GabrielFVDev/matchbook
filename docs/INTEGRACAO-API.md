@@ -1,3 +1,5 @@
+> Este documento descreve a estrutura anterior à reestruturação do front (outubro de 2026). A estrutura atual está no [README](../README.md).
+
 # 🔌 Integração com API - MatchBook
 
 ## 📁 Estrutura dos Arquivos de Integração

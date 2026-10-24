@@ -1,3 +1,5 @@
+> Este documento descreve a estrutura anterior à reestruturação do front (outubro de 2026). A estrutura atual está no [README](../README.md).
+
 # 📚 Matchbook - Sistema de Recomendação Adaptativa de Livros
 
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.6-brightgreen)

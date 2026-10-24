@@ -1,18 +1,18 @@
 import type { ReactNode } from 'react';
 import styled from 'styled-components';
 import { motion } from 'motion/react';
-import { cores, celular, sombra } from '@/styles/tokens';
+import { colors, mobile, shadow } from '@/styles/tokens';
 import { Logo } from '@/components/Logo';
 import { paths } from '@/app/paths';
 
-const Pagina = styled.div`
+const Page = styled.div`
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: ${cores.fundoMarca};
+  background: ${colors.brandBackground};
 `;
 
-const Topo = styled.header`
+const TopBar = styled.header`
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
@@ -23,17 +23,17 @@ const Topo = styled.header`
   justify-content: space-between;
   gap: 16px;
 
-  ${celular} {
+  ${mobile} {
     padding: 12px 20px;
   }
 `;
 
-const LinkTopo = styled.p`
+const TopLinkText = styled.p`
   font-size: 15px;
-  color: ${cores.tintaSuave};
+  color: ${colors.inkSoft};
 `;
 
-const Principal = styled.main<{ $alinhar: string }>`
+const Main = styled.main<{ $align: string }>`
   flex: 1;
   width: 100%;
   max-width: 1200px;
@@ -41,33 +41,33 @@ const Principal = styled.main<{ $alinhar: string }>`
   padding: 16px 40px 64px;
   display: flex;
   flex-wrap: wrap;
-  align-items: ${({ $alinhar }) => $alinhar};
+  align-items: ${({ $align }) => $align};
   justify-content: center;
   gap: 96px;
 
-  ${celular} {
+  ${mobile} {
     align-content: flex-start;
     padding: 4px 20px 32px;
     gap: 20px;
   }
 `;
 
-// Estrutura de login e cadastro: fundo da marca, logo no topo e duas colunas.
+// Login and sign-up frame: brand background, logo at the top and two columns.
 interface AuthLayoutProps {
-  linkTopo?: ReactNode;
-  alinhar?: string;
+  topLink?: ReactNode;
+  align?: string;
   children: ReactNode;
 }
 
-export function AuthLayout({ linkTopo, alinhar = 'center', children }: AuthLayoutProps) {
+export function AuthLayout({ topLink, align = 'center', children }: AuthLayoutProps) {
   return (
-    <Pagina>
-      <Topo>
-        <Logo para={paths.login} />
-        {linkTopo && <LinkTopo>{linkTopo}</LinkTopo>}
-      </Topo>
-      <Principal $alinhar={alinhar}>{children}</Principal>
-    </Pagina>
+    <Page>
+      <TopBar>
+        <Logo to={paths.login} />
+        {topLink && <TopLinkText>{topLink}</TopLinkText>}
+      </TopBar>
+      <Main $align={align}>{children}</Main>
+    </Page>
   );
 }
 
@@ -78,24 +78,24 @@ export const AuthSide = styled(motion.div)`
   flex-direction: column;
   gap: 36px;
 
-  ${celular} {
+  ${mobile} {
     flex-basis: auto;
     gap: 16px;
   }
 `;
 
-export const AuthCard = styled(motion.section)<{ $largura?: number }>`
-  flex: 0 1 ${({ $largura = 440 }) => $largura}px;
+export const AuthCard = styled(motion.section)<{ $width?: number }>`
+  flex: 0 1 ${({ $width = 440 }) => $width}px;
   min-width: 0;
   padding: 40px;
   border-radius: 28px;
-  background: ${cores.branco};
-  box-shadow: ${sombra.cartao};
+  background: ${colors.white};
+  box-shadow: ${shadow.card};
   display: flex;
   flex-direction: column;
   gap: 28px;
 
-  ${celular} {
+  ${mobile} {
     flex-basis: 100%;
     padding: 28px 22px;
     border-radius: 26px;
@@ -109,10 +109,10 @@ export const AuthHeading = styled.div`
   gap: 6px;
 `;
 
-export const AuthEyebrow = styled.p<{ $marca?: boolean }>`
+export const AuthEyebrow = styled.p<{ $brand?: boolean }>`
   font-size: 14px;
   font-weight: 700;
-  color: ${({ $marca }) => ($marca ? cores.marca : cores.tintaSuave)};
+  color: ${({ $brand }) => ($brand ? colors.brand : colors.inkSoft)};
 `;
 
 export const AuthTitle = styled.h1`
@@ -120,7 +120,7 @@ export const AuthTitle = styled.h1`
   font-weight: 800;
   letter-spacing: -0.02em;
 
-  ${celular} {
+  ${mobile} {
     font-size: 28px;
   }
 `;
@@ -128,9 +128,9 @@ export const AuthTitle = styled.h1`
 export const AuthText = styled.p`
   font-size: 16px;
   line-height: 1.45;
-  color: ${cores.tintaSuave};
+  color: ${colors.inkSoft};
 
-  ${celular} {
+  ${mobile} {
     font-size: 15px;
   }
 `;
@@ -143,6 +143,6 @@ export const AuthForm = styled.form`
 
 export const AuthFooter = styled.p`
   font-size: 15px;
-  color: ${cores.tintaSuave};
+  color: ${colors.inkSoft};
   text-align: center;
 `;

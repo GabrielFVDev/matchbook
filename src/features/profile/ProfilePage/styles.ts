@@ -1,16 +1,16 @@
 import styled from 'styled-components';
 import { motion } from 'motion/react';
-import { cores, celular, raio } from '@/styles/tokens';
+import { colors, mobile, radius } from '@/styles/tokens';
 
-export const Card = styled(motion.section)<{ $fundo?: string }>`
+export const Card = styled(motion.section)<{ $background?: string }>`
   display: flex;
   flex-direction: column;
   gap: 22px;
   padding: 32px;
   border-radius: 28px;
-  background: ${({ $fundo }) => $fundo || cores.branco};
+  background: ${({ $background }) => $background || colors.white};
 
-  ${celular} {
+  ${mobile} {
     gap: 18px;
     padding: 24px 20px;
     border-radius: 26px;
@@ -23,7 +23,7 @@ export const ProfileHeader = styled(Card)`
   align-items: center;
   gap: 28px;
 
-  ${celular} {
+  ${mobile} {
     flex-direction: column;
     gap: 14px;
     text-align: center;
@@ -38,9 +38,9 @@ export const Avatar = styled.span`
   width: 104px;
   height: 104px;
   overflow: hidden;
-  border-radius: ${raio.pilula};
-  background: ${cores.marca};
-  color: ${cores.branco};
+  border-radius: ${radius.pill};
+  background: ${colors.brand};
+  color: ${colors.white};
   font-size: 38px;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -51,7 +51,7 @@ export const Avatar = styled.span`
     object-fit: cover;
   }
 
-  ${celular} {
+  ${mobile} {
     width: 88px;
     height: 88px;
     font-size: 32px;
@@ -72,10 +72,10 @@ export const ProfileInfo = styled.div`
 
   p {
     font-size: 16px;
-    color: ${cores.tintaSuave};
+    color: ${colors.inkSoft};
   }
 
-  ${celular} {
+  ${mobile} {
     flex-basis: auto;
 
     h1 {
@@ -95,10 +95,10 @@ export const HeaderStats = styled.dl`
 
   > div {
     min-width: 120px;
-    background: ${cores.fundoApp};
+    background: ${colors.appBackground};
   }
 
-  ${celular} {
+  ${mobile} {
     width: 100%;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -112,7 +112,7 @@ export const TwoColumns = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr));
   gap: 20px;
 
-  ${celular} {
+  ${mobile} {
     gap: 14px;
   }
 `;
@@ -130,7 +130,7 @@ export const CardTitle = styled.h2`
   letter-spacing: -0.015em;
   line-height: 1.15;
 
-  ${celular} {
+  ${mobile} {
     font-size: 20px;
   }
 `;
@@ -138,9 +138,9 @@ export const CardTitle = styled.h2`
 export const CardText = styled.p`
   font-size: 16px;
   line-height: 1.5;
-  color: ${cores.tintaSuave};
+  color: ${colors.inkSoft};
 
-  ${celular} {
+  ${mobile} {
     font-size: 15px;
   }
 `;
@@ -162,7 +162,7 @@ export const AlgorithmStats = styled.dl`
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 
-  ${celular} {
+  ${mobile} {
     gap: 8px;
 
     > div {
@@ -176,7 +176,7 @@ export const InfoList = styled.dl`
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 22px 24px;
 
-  ${celular} {
+  ${mobile} {
     gap: 16px;
   }
 `;
@@ -190,7 +190,7 @@ export const InfoItem = styled.div<{ $span?: boolean }>`
 
   dt {
     font-size: 14px;
-    color: ${cores.tintaSuave};
+    color: ${colors.inkSoft};
   }
 
   dd {
@@ -199,7 +199,7 @@ export const InfoItem = styled.div<{ $span?: boolean }>`
     overflow-wrap: anywhere;
   }
 
-  ${celular} {
+  ${mobile} {
     dt {
       font-size: 13px;
     }
@@ -216,7 +216,7 @@ export const Biography = styled.dd`
   line-height: 1.5;
 `;
 
-export const StatusRow = styled.div<{ $ligado?: boolean | null }>`
+export const StatusRow = styled.div<{ $enabled?: boolean | null }>`
   grid-column: 1 / -1;
   display: flex;
   align-items: center;
@@ -224,7 +224,7 @@ export const StatusRow = styled.div<{ $ligado?: boolean | null }>`
   gap: 12px;
   padding: 14px 16px;
   border-radius: 16px;
-  background: ${cores.fundoApp};
+  background: ${colors.appBackground};
 
   dt {
     font-size: 15px;
@@ -237,13 +237,13 @@ export const StatusRow = styled.div<{ $ligado?: boolean | null }>`
     gap: 6px;
     font-size: 15px;
     font-weight: 700;
-    color: ${({ $ligado }) => ($ligado ? cores.sucesso : cores.tintaSuave)};
+    color: ${({ $enabled }) => ($enabled ? colors.success : colors.inkSoft)};
   }
 `;
 
 export const StrategyLabel = styled.p`
   font-size: 14px;
-  color: ${cores.tintaSuave};
+  color: ${colors.inkSoft};
 `;
 
 export const StrategyList = styled.ul`
@@ -254,19 +254,19 @@ export const StrategyList = styled.ul`
   gap: 8px;
 `;
 
-export const StrategyItem = styled.li<{ $atual?: boolean }>`
+export const StrategyItem = styled.li<{ $current?: boolean }>`
   display: flex;
   align-items: center;
   gap: 6px;
   min-height: 40px;
-  padding: 0 ${({ $atual }) => ($atual ? 16 : 14)}px;
-  border-radius: ${raio.pilula};
-  background: ${({ $atual }) => ($atual ? cores.tinta : cores.branco)};
-  color: ${({ $atual }) => ($atual ? cores.branco : cores.tintaSuave)};
+  padding: 0 ${({ $current }) => ($current ? 16 : 14)}px;
+  border-radius: ${radius.pill};
+  background: ${({ $current }) => ($current ? colors.ink : colors.white)};
+  color: ${({ $current }) => ($current ? colors.white : colors.inkSoft)};
   font-size: 14px;
-  font-weight: ${({ $atual }) => ($atual ? 700 : 600)};
+  font-weight: ${({ $current }) => ($current ? 700 : 600)};
 
-  ${celular} {
+  ${mobile} {
     min-height: 36px;
     font-size: 13px;
   }
@@ -280,10 +280,10 @@ export const ResetRow = styled.div`
 
   span {
     font-size: 14px;
-    color: ${cores.tintaSuave};
+    color: ${colors.inkSoft};
   }
 
-  ${celular} {
+  ${mobile} {
     flex-direction: column;
     align-items: stretch;
     gap: 8px;
@@ -299,7 +299,7 @@ export const DangerCard = styled(Card)`
   gap: 16px;
   padding: 24px 32px;
 
-  ${celular} {
+  ${mobile} {
     flex-direction: column;
     align-items: stretch;
     padding: 20px;
@@ -318,7 +318,7 @@ export const DangerText = styled.div`
 
   p {
     font-size: 15px;
-    color: ${cores.tintaSuave};
+    color: ${colors.inkSoft};
   }
 `;
 
@@ -327,7 +327,7 @@ export const DangerActions = styled.div`
   flex-wrap: wrap;
   gap: 10px;
 
-  ${celular} {
+  ${mobile} {
     flex-direction: column;
   }
 `;
@@ -335,7 +335,7 @@ export const DangerActions = styled.div`
 export const MobileOnly = styled.div`
   display: none;
 
-  ${celular} {
+  ${mobile} {
     display: contents;
   }
 `;

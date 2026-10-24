@@ -1,20 +1,20 @@
 import { useState } from 'react';
 import type { ComponentProps } from 'react';
 import styled from 'styled-components';
-import { cores, raio } from '@/styles/tokens';
+import { colors, radius } from '@/styles/tokens';
 import { Input } from '@/components/Field';
 import { IconEye, IconEyeOff } from '@/components/Icons';
 
-const Caixa = styled.div`
+const Wrapper = styled.div`
   position: relative;
   display: flex;
 `;
 
-const CampoSenha = styled(Input)`
+const PasswordField = styled(Input)`
   padding-right: 56px;
 `;
 
-const Mostrar = styled.button.attrs({ type: 'button' })`
+const VisibilityToggle = styled.button.attrs({ type: 'button' })`
   position: absolute;
   top: 4px;
   right: 4px;
@@ -24,24 +24,24 @@ const Mostrar = styled.button.attrs({ type: 'button' })`
   align-items: center;
   justify-content: center;
   border: 0;
-  border-radius: ${raio.campo};
+  border-radius: ${radius.field};
   background: transparent;
-  color: ${cores.tintaSuave};
+  color: ${colors.inkSoft};
 `;
 
-// Campo de senha com o botão de mostrar e esconder.
+// Password field with the show and hide button.
 export function PasswordInput(props: Omit<ComponentProps<typeof Input>, 'type'>) {
-  const [visivel, setVisivel] = useState(false);
+  const [visible, setVisible] = useState(false);
 
   return (
-    <Caixa>
-      <CampoSenha {...props} type={visivel ? 'text' : 'password'} />
-      <Mostrar
-        aria-label={visivel ? 'Esconder senha' : 'Mostrar senha'}
-        onClick={() => setVisivel(!visivel)}
+    <Wrapper>
+      <PasswordField {...props} type={visible ? 'text' : 'password'} />
+      <VisibilityToggle
+        aria-label={visible ? 'Esconder senha' : 'Mostrar senha'}
+        onClick={() => setVisible(!visible)}
       >
-        {visivel ? <IconEyeOff /> : <IconEye />}
-      </Mostrar>
-    </Caixa>
+        {visible ? <IconEyeOff /> : <IconEye />}
+      </VisibilityToggle>
+    </Wrapper>
   );
 }

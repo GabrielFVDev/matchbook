@@ -3,13 +3,13 @@ import type { ReactNode } from 'react';
 import styled from 'styled-components';
 import { AnimatePresence, motion } from 'motion/react';
 import type { MotionProps } from 'motion/react';
-import { cores, celular, raio } from '@/styles/tokens';
-import { curvaSaida } from '@/styles/motion';
+import { colors, mobile, radius } from '@/styles/tokens';
+import { exitEase } from '@/styles/motion';
 import { Button } from '@/components/Button';
-import type { ButtonVariante } from '@/components/Button';
+import type { ButtonVariant } from '@/components/Button';
 import { IconX } from '@/components/Icons';
 
-const Fundo = styled(motion.div)`
+const Backdrop = styled(motion.div)`
   position: fixed;
   inset: 0;
   z-index: 50;
@@ -20,45 +20,45 @@ const Fundo = styled(motion.div)`
   background: rgba(26, 23, 38, 0.55);
   overflow-y: auto;
 
-  ${celular} {
+  ${mobile} {
     align-items: flex-end;
     padding: 12px;
   }
 `;
 
-const Caixa = styled(motion.div)<{ $largura: number }>`
+const Panel = styled(motion.div)<{ $width: number }>`
   width: 100%;
-  max-width: ${({ $largura }) => $largura}px;
+  max-width: ${({ $width }) => $width}px;
   max-height: calc(100vh - 48px);
   overflow-y: auto;
   padding: 28px;
-  border-radius: ${raio.cartao};
-  background: ${cores.branco};
+  border-radius: ${radius.card};
+  background: ${colors.white};
   box-shadow: 0 24px 60px rgba(26, 23, 38, 0.35);
   display: flex;
   flex-direction: column;
   gap: 16px;
 
-  ${celular} {
+  ${mobile} {
     max-height: calc(100vh - 24px);
     padding: 24px 20px;
   }
 `;
 
-const Topo = styled.div`
+const DialogHeader = styled.div`
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
 `;
 
-const Titulo = styled.h2`
+const Title = styled.h2`
   font-size: 24px;
   font-weight: 800;
   letter-spacing: -0.015em;
 `;
 
-const Fechar = styled.button.attrs({ type: 'button' })`
+const CloseButton = styled.button.attrs({ type: 'button' })`
   flex: 0 0 auto;
   display: flex;
   align-items: center;
@@ -67,20 +67,20 @@ const Fechar = styled.button.attrs({ type: 'button' })`
   height: 44px;
   margin: -8px -8px 0 0;
   border: 0;
-  border-radius: ${raio.pilula};
-  background: ${cores.fundoApp};
-  color: ${cores.tinta};
+  border-radius: ${radius.pill};
+  background: ${colors.appBackground};
+  color: ${colors.ink};
 `;
 
-type Animacao = Pick<MotionProps, 'initial' | 'animate' | 'exit'>;
+type MotionAnimation = Pick<MotionProps, 'initial' | 'animate' | 'exit'>;
 
-const animacaoFundo = {
+const backdropAnimation = {
   initial: { opacity: 0 },
   animate: { opacity: 1, transition: { duration: 0.2 } },
   exit: { opacity: 0, transition: { duration: 0.18, delay: 0.04 } },
-} satisfies Animacao;
+} satisfies MotionAnimation;
 
-const animacaoCaixa = {
+const panelAnimation = {
   initial: { opacity: 0, y: 28, scale: 0.98 },
   animate: {
     opacity: 1,
@@ -88,79 +88,79 @@ const animacaoCaixa = {
     scale: 1,
     transition: { type: 'spring', stiffness: 380, damping: 32 },
   },
-  exit: { opacity: 0, y: 16, scale: 0.98, transition: { duration: 0.15, ease: curvaSaida } },
-} satisfies Animacao;
+  exit: { opacity: 0, y: 16, scale: 0.98, transition: { duration: 0.15, ease: exitEase } },
+} satisfies MotionAnimation;
 
-// Janela sobre a tela. Fecha com Esc, clique fora ou no botão de fechar.
+// Window over the screen. Closes with Esc, a click outside or the close button.
 interface DialogProps {
-  aberto: boolean;
-  titulo: ReactNode;
-  onFechar: () => void;
-  largura?: number;
+  open: boolean;
+  title: ReactNode;
+  onClose: () => void;
+  width?: number;
   children: ReactNode;
 }
 
-export function Dialog({ aberto, titulo, onFechar, largura = 560, children }: DialogProps) {
-  const tituloId = useId();
+export function Dialog({ open, title, onClose, width = 560, children }: DialogProps) {
+  const titleId = useId();
 
   useEffect(() => {
-    if (!aberto) return undefined;
-    const aoTeclar = (evento: KeyboardEvent) => {
-      if (evento.key === 'Escape') onFechar();
+    if (!open) return undefined;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
     };
-    document.addEventListener('keydown', aoTeclar);
-    const overflowAnterior = document.body.style.overflow;
+    document.addEventListener('keydown', handleKeyDown);
+    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
-      document.removeEventListener('keydown', aoTeclar);
-      document.body.style.overflow = overflowAnterior;
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
     };
-  }, [aberto, onFechar]);
+  }, [open, onClose]);
 
   return (
     <AnimatePresence>
-      {aberto && (
-        <Fundo onClick={onFechar} {...animacaoFundo}>
-          <Caixa
+      {open && (
+        <Backdrop onClick={onClose} {...backdropAnimation}>
+          <Panel
             role="dialog"
             aria-modal="true"
-            aria-labelledby={tituloId}
-            $largura={largura}
+            aria-labelledby={titleId}
+            $width={width}
             onClick={(e) => e.stopPropagation()}
-            {...animacaoCaixa}
+            {...panelAnimation}
           >
-            <Topo>
-              <Titulo id={tituloId}>{titulo}</Titulo>
-              <Fechar aria-label="Fechar" onClick={onFechar}>
-                <IconX tamanho={18} />
-              </Fechar>
-            </Topo>
+            <DialogHeader>
+              <Title id={titleId}>{title}</Title>
+              <CloseButton aria-label="Fechar" onClick={onClose}>
+                <IconX size={18} />
+              </CloseButton>
+            </DialogHeader>
             {children}
-          </Caixa>
-        </Fundo>
+          </Panel>
+        </Backdrop>
       )}
     </AnimatePresence>
   );
 }
 
-const IconeAlerta = styled.span<{ $perigo?: boolean }>`
+const AlertIcon = styled.span<{ $danger?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
   width: 52px;
   height: 52px;
-  border-radius: ${raio.pilula};
-  background: ${({ $perigo }) => ($perigo ? cores.erroFundo : cores.fundoMarca)};
-  color: ${({ $perigo }) => ($perigo ? cores.erro : cores.marca)};
+  border-radius: ${radius.pill};
+  background: ${({ $danger }) => ($danger ? colors.errorBackground : colors.brandBackground)};
+  color: ${({ $danger }) => ($danger ? colors.error : colors.brand)};
 `;
 
-const Texto = styled.p`
+const Description = styled.p`
   font-size: 15px;
   line-height: 1.5;
-  color: ${cores.tintaSuave};
+  color: ${colors.inkSoft};
 `;
 
-const Botoes = styled.div`
+const Buttons = styled.div`
   display: flex;
   gap: 8px;
   margin-top: 4px;
@@ -171,43 +171,43 @@ const Botoes = styled.div`
 `;
 
 interface ConfirmDialogProps {
-  aberto: boolean;
-  titulo: ReactNode;
-  descricao: ReactNode;
-  icone?: ReactNode;
-  rotuloConfirmar: ReactNode;
-  rotuloCarregando?: ReactNode;
-  variante?: ButtonVariante;
-  carregando?: boolean;
-  onConfirmar: () => void;
-  onCancelar: () => void;
+  open: boolean;
+  title: ReactNode;
+  description: ReactNode;
+  icon?: ReactNode;
+  confirmLabel: ReactNode;
+  loadingLabel?: ReactNode;
+  variant?: ButtonVariant;
+  loading?: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
 }
 
-// Confirmação de ação sem volta, como excluir a conta.
+// Confirmation of an action with no way back, like deleting the account.
 export function ConfirmDialog({
-  aberto,
-  titulo,
-  descricao,
-  icone,
-  rotuloConfirmar,
-  rotuloCarregando = 'Excluindo',
-  variante = 'perigoForte',
-  carregando,
-  onConfirmar,
-  onCancelar,
+  open,
+  title,
+  description,
+  icon,
+  confirmLabel,
+  loadingLabel = 'Excluindo',
+  variant = 'dangerStrong',
+  loading,
+  onConfirm,
+  onCancel,
 }: ConfirmDialogProps) {
   return (
-    <Dialog aberto={aberto} titulo={titulo} onFechar={onCancelar} largura={400}>
-      {icone && <IconeAlerta $perigo={variante === 'perigoForte'}>{icone}</IconeAlerta>}
-      <Texto>{descricao}</Texto>
-      <Botoes>
-        <Button $variante="secundario" onClick={onCancelar} autoFocus>
+    <Dialog open={open} title={title} onClose={onCancel} width={400}>
+      {icon && <AlertIcon $danger={variant === 'dangerStrong'}>{icon}</AlertIcon>}
+      <Description>{description}</Description>
+      <Buttons>
+        <Button $variant="secondary" onClick={onCancel} autoFocus>
           Cancelar
         </Button>
-        <Button $variante={variante} onClick={onConfirmar} disabled={carregando}>
-          {carregando ? rotuloCarregando : rotuloConfirmar}
+        <Button $variant={variant} onClick={onConfirm} disabled={loading}>
+          {loading ? loadingLabel : confirmLabel}
         </Button>
-      </Botoes>
+      </Buttons>
     </Dialog>
   );
 }
