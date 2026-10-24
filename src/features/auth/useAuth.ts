@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { authService } from '@/lib/api/services';
+import { authApi } from '@/lib/api/auth';
 import type { SignUpRequest } from '@/lib/api/types';
 import { hasSession, saveSessionUser } from '@/lib/session';
 
@@ -9,22 +9,22 @@ export const useAuth = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Função para fazer login
-  const login = async (email: string, senha: string) => {
+  const login = async (email: string, password: string) => {
     setLoading(true);
     setError(null);
 
     try {
-      const resultado = await authService.login(email, senha);
+      const result = await authApi.login(email, password);
 
-      if (resultado.success) {
+      if (result.success) {
         // Salva os dados do usuário no localStorage
-        saveSessionUser(resultado.data);
+        saveSessionUser(result.data);
         setLoading(false);
-        return { success: true as const, usuario: resultado.data };
+        return { success: true as const, user: result.data };
       } else {
-        setError(resultado.error);
+        setError(result.error);
         setLoading(false);
-        return { success: false as const, error: resultado.error };
+        return { success: false as const, error: result.error };
       }
     } catch {
       setError('Erro inesperado ao fazer login');
@@ -48,28 +48,28 @@ export const useAuth = () => {
 };
 
 // Hook para cadastro de usuários
-export const useRegister = () => {
+export const useSignUp = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
   // Função para cadastrar usuário
-  const register = async (userData: SignUpRequest) => {
+  const signUp = async (userData: SignUpRequest) => {
     setLoading(true);
     setError(null);
     setSuccess(false);
 
     try {
-      const resultado = await authService.cadastrar(userData);
+      const result = await authApi.signUp(userData);
 
-      if (resultado.success) {
+      if (result.success) {
         setSuccess(true);
         setLoading(false);
-        return { success: true as const, data: resultado.data };
+        return { success: true as const, data: result.data };
       } else {
-        setError(resultado.error);
+        setError(result.error);
         setLoading(false);
-        return { success: false as const, error: resultado.error };
+        return { success: false as const, error: result.error };
       }
     } catch (err) {
       console.error('Hook: Erro inesperado:', err);
@@ -86,7 +86,7 @@ export const useRegister = () => {
   };
 
   return {
-    register,
+    signUp,
     loading,
     error,
     success,

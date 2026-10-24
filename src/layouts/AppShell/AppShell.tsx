@@ -5,19 +5,19 @@ import styled from 'styled-components';
 import Header from '@/layouts/Header';
 import { MobileNav } from '@/layouts/MobileNav';
 import { ShellContext } from './shellContext';
-import type { AparenciaShell } from './shellContext';
-import { cores } from '@/styles/tokens';
-import { transicaoTela } from '@/styles/motion';
+import type { ShellAppearance } from './shellContext';
+import { colors } from '@/styles/tokens';
+import { screenTransition } from '@/styles/motion';
 
-const Pagina = styled.div<{ $fundo: string }>`
+const Page = styled.div<{ $background: string }>`
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: ${({ $fundo }) => $fundo};
+  background: ${({ $background }) => $background};
   transition: background-color 0.5s ease;
 `;
 
-const Conteudo = styled(motion.div)`
+const Content = styled(motion.div)`
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -27,23 +27,23 @@ const Conteudo = styled(motion.div)`
 // ficam montados; só o conteúdo da rota troca, com animação de entrada e saída.
 export function AppShell() {
   const location = useLocation();
-  const rota = useOutlet();
-  const [aparencia, setAparencia] = useState<AparenciaShell>({
-    fundo: cores.fundoApp,
-    corDestaque: cores.marca,
+  const outlet = useOutlet();
+  const [appearance, setAppearance] = useState<ShellAppearance>({
+    background: colors.appBackground,
+    accentColor: colors.brand,
   });
 
   return (
-    <ShellContext.Provider value={setAparencia}>
-      <Pagina $fundo={aparencia.fundo}>
-        <Header corDestaque={aparencia.corDestaque} />
+    <ShellContext.Provider value={setAppearance}>
+      <Page $background={appearance.background}>
+        <Header accentColor={appearance.accentColor} />
         <AnimatePresence mode="wait" initial={false} onExitComplete={() => window.scrollTo(0, 0)}>
-          <Conteudo key={location.pathname} {...transicaoTela}>
-            {rota}
-          </Conteudo>
+          <Content key={location.pathname} {...screenTransition}>
+            {outlet}
+          </Content>
         </AnimatePresence>
         <MobileNav />
-      </Pagina>
+      </Page>
     </ShellContext.Provider>
   );
 }

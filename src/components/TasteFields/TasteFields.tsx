@@ -1,20 +1,20 @@
 import styled from 'styled-components';
-import { celular, cores, listaGeneros, nomeDoGenero } from '@/styles/tokens';
+import { mobile, colors, genreList, genreName } from '@/styles/tokens';
 import { Chip } from '@/components/Chip';
 import { ChoiceLabel, Segmented, Stepper, Switch } from '@/components/Choice';
 import { Field, Input, TextArea } from '@/components/Field';
 
-const Lista = styled.div`
+const List = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
 
-  ${celular} {
+  ${mobile} {
     gap: 22px;
   }
 `;
 
-const Grupo = styled.div`
+const Group = styled.div`
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -32,7 +32,7 @@ const Chips = styled.div`
   }
 `;
 
-const Linha = styled.div`
+const Row = styled.div`
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
@@ -43,10 +43,10 @@ const Linha = styled.div`
   }
 `;
 
-const niveisLeitura = ['Iniciante', 'Intermediário', 'Avançado'];
+const readingLevels = ['Iniciante', 'Intermediário', 'Avançado'];
 
 // Os campos do gosto, com os nomes de campo da API.
-export interface DadosGosto {
+export interface TasteValues {
   generoFavorito: string;
   autorPreferido: string;
   nivelLeitura: string;
@@ -56,74 +56,74 @@ export interface DadosGosto {
 }
 
 interface TasteFieldsProps {
-  dados: DadosGosto;
-  onChange: (campo: keyof DadosGosto, valor: DadosGosto[keyof DadosGosto]) => void;
-  prefixo: string;
+  values: TasteValues;
+  onChange: (field: keyof TasteValues, value: TasteValues[keyof TasteValues]) => void;
+  idPrefix: string;
 }
 
 // Campos do gosto literário, usados na etapa 2 do cadastro e na edição do perfil.
-// "dados" tem os nomes de campo da API; "onChange(campo, valor)" atualiza um deles.
-export function TasteFields({ dados, onChange, prefixo }: TasteFieldsProps) {
-  const generoAtual = nomeDoGenero(dados.generoFavorito);
+// "values" tem os nomes de campo da API; "onChange(field, value)" atualiza um deles.
+export function TasteFields({ values, onChange, idPrefix }: TasteFieldsProps) {
+  const currentGenre = genreName(values.generoFavorito);
 
   return (
-    <Lista>
-      <Grupo role="group" aria-labelledby={`${prefixo}Genero`}>
-        <ChoiceLabel id={`${prefixo}Genero`}>Gênero favorito</ChoiceLabel>
+    <List>
+      <Group role="group" aria-labelledby={`${idPrefix}Genre`}>
+        <ChoiceLabel id={`${idPrefix}Genre`}>Gênero favorito</ChoiceLabel>
         <Chips>
-          {listaGeneros.map((genero) => (
+          {genreList.map((genre) => (
             <Chip
-              key={genero}
-              $ativo={genero === generoAtual}
-              $fundo={cores.fundoApp}
-              onClick={() => onChange('generoFavorito', genero === generoAtual ? '' : genero)}
+              key={genre}
+              $active={genre === currentGenre}
+              $background={colors.appBackground}
+              onClick={() => onChange('generoFavorito', genre === currentGenre ? '' : genre)}
             >
-              {genero}
+              {genre}
             </Chip>
           ))}
         </Chips>
-      </Grupo>
+      </Group>
 
-      <Field id={`${prefixo}Autor`} label="Autor preferido">
+      <Field id={`${idPrefix}Author`} label="Autor preferido">
         <Input
           type="text"
           placeholder="Ex.: Machado de Assis"
-          value={dados.autorPreferido}
+          value={values.autorPreferido}
           onChange={(e) => onChange('autorPreferido', e.target.value)}
         />
       </Field>
 
-      <Linha>
+      <Row>
         <Segmented
-          id={`${prefixo}Nivel`}
+          id={`${idPrefix}Level`}
           label="Nível de leitura"
-          opcoes={niveisLeitura}
-          valor={dados.nivelLeitura}
-          onChange={(nivel) => onChange('nivelLeitura', nivel)}
+          options={readingLevels}
+          value={values.nivelLeitura}
+          onChange={(level) => onChange('nivelLeitura', level)}
         />
         <Stepper
-          id={`${prefixo}Lidos`}
+          id={`${idPrefix}BooksRead`}
           label="Livros já lidos"
-          valor={Number(dados.livrosLidos) || 0}
-          onChange={(valor) => onChange('livrosLidos', valor)}
+          value={Number(values.livrosLidos) || 0}
+          onChange={(value) => onChange('livrosLidos', value)}
         />
-      </Linha>
+      </Row>
 
-      <Field id={`${prefixo}Bio`} label="Biografia">
+      <Field id={`${idPrefix}Bio`} label="Biografia">
         <TextArea
           rows={3}
           placeholder="Conte um pouco sobre seus gostos literários"
-          value={dados.biografia}
+          value={values.biografia}
           onChange={(e) => onChange('biografia', e.target.value)}
         />
       </Field>
 
       <Switch
-        id={`${prefixo}Recomendacoes`}
+        id={`${idPrefix}Recommendations`}
         label="Quero receber recomendações personalizadas"
-        ligado={Boolean(dados.receberRecomendacoes)}
-        onChange={(ligado) => onChange('receberRecomendacoes', ligado)}
+        checked={Boolean(values.receberRecomendacoes)}
+        onChange={(checked) => onChange('receberRecomendacoes', checked)}
       />
-    </Lista>
+    </List>
   );
 }

@@ -1,15 +1,15 @@
 import styled from 'styled-components';
 import { NavLink } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { cores, celular, raio, sombra } from '@/styles/tokens';
-import { mola } from '@/styles/motion';
+import { colors, mobile, radius, shadow } from '@/styles/tokens';
+import { spring } from '@/styles/motion';
 import { IconHeartOutline, IconHome, IconPlus, IconUser } from '@/components/Icons';
 import { paths } from '@/app/paths';
 
-const Barra = styled.nav`
+const Bar = styled.nav`
   display: none;
 
-  ${celular} {
+  ${mobile} {
     position: fixed;
     left: 16px;
     right: 16px;
@@ -19,9 +19,9 @@ const Barra = styled.nav`
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 4px;
     padding: 6px;
-    border-radius: ${raio.pilula};
-    background: ${cores.branco};
-    box-shadow: ${sombra.flutuante};
+    border-radius: ${radius.pill};
+    background: ${colors.white};
+    box-shadow: ${shadow.floating};
   }
 `;
 
@@ -33,15 +33,15 @@ const Item = styled(NavLink)`
   justify-content: center;
   gap: 2px;
   min-height: 52px;
-  border-radius: ${raio.pilula};
-  color: ${cores.tintaSuave};
+  border-radius: ${radius.pill};
+  color: ${colors.inkSoft};
   font-size: 11px;
   font-weight: 500;
   text-decoration: none;
   transition: color 0.2s ease;
 
   &[aria-current='page'] {
-    color: ${cores.branco};
+    color: ${colors.white};
     font-weight: 700;
   }
 
@@ -52,35 +52,35 @@ const Item = styled(NavLink)`
 `;
 
 // Fundo escuro da aba ativa. Desliza entre as abas ao trocar de tela.
-const AbaAtiva = styled(motion.span)`
+const ActiveTab = styled(motion.span)`
   position: absolute;
   inset: 0;
-  border-radius: ${raio.pilula};
-  background: ${cores.tinta};
+  border-radius: ${radius.pill};
+  background: ${colors.ink};
 `;
 
-const abas = [
-  { to: paths.home, label: 'Início', icone: <IconHome /> },
-  { to: paths.myBooks, label: 'Meus livros', icone: <IconHeartOutline /> },
-  { to: paths.addBook, label: 'Adicionar', icone: <IconPlus /> },
-  { to: paths.profile, label: 'Perfil', icone: <IconUser /> },
+const tabs = [
+  { to: paths.home, label: 'Início', icon: <IconHome /> },
+  { to: paths.myBooks, label: 'Meus livros', icon: <IconHeartOutline /> },
+  { to: paths.addBook, label: 'Adicionar', icon: <IconPlus /> },
+  { to: paths.profile, label: 'Perfil', icon: <IconUser /> },
 ];
 
 // Barra de navegação do celular. No celular o "Sair" fica dentro do Perfil.
 export function MobileNav() {
   return (
-    <Barra aria-label="Principal">
-      {abas.map((aba) => (
-        <Item key={aba.to} to={aba.to}>
+    <Bar aria-label="Principal">
+      {tabs.map((tab) => (
+        <Item key={tab.to} to={tab.to}>
           {({ isActive }) => (
             <>
-              {isActive && <AbaAtiva layoutId="abaAtiva" transition={mola} />}
-              {aba.icone}
-              <span>{aba.label}</span>
+              {isActive && <ActiveTab layoutId="activeTab" transition={spring} />}
+              {tab.icon}
+              <span>{tab.label}</span>
             </>
           )}
         </Item>
       ))}
-    </Barra>
+    </Bar>
   );
 }

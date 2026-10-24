@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { motion } from 'motion/react';
-import { cores, celular, raio, sombra } from '@/styles/tokens';
+import { colors, mobile, radius, shadow } from '@/styles/tokens';
 
 export const MatchArea = styled.div`
   flex: 1;
@@ -10,7 +10,7 @@ export const MatchArea = styled.div`
   justify-content: center;
   gap: 80px;
 
-  ${celular} {
+  ${mobile} {
     flex-direction: column;
     flex-wrap: nowrap;
     align-items: stretch;
@@ -26,16 +26,16 @@ export const Intro = styled.div`
   flex-direction: column;
   gap: 14px;
 
-  ${celular} {
+  ${mobile} {
     flex: 0 0 auto;
     max-width: none;
   }
 `;
 
-export const Eyebrow = styled(motion.p)<{ $cor: string }>`
+export const Eyebrow = styled(motion.p)<{ $color: string }>`
   font-size: 15px;
   font-weight: 700;
-  color: ${({ $cor }) => $cor};
+  color: ${({ $color }) => $color};
   transition: color 0.4s ease;
 `;
 
@@ -46,7 +46,7 @@ export const Headline = styled(motion.h1)`
   letter-spacing: -0.02em;
   text-wrap: balance;
 
-  ${celular} {
+  ${mobile} {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -59,10 +59,10 @@ export const Headline = styled(motion.h1)`
 export const Helper = styled(motion.p)`
   font-size: 17px;
   line-height: 1.5;
-  color: ${cores.tintaSuave};
+  color: ${colors.inkSoft};
   text-wrap: pretty;
 
-  ${celular} {
+  ${mobile} {
     display: none;
   }
 `;
@@ -75,7 +75,7 @@ export const Recommendation = styled.section`
   align-items: stretch;
   gap: 28px;
 
-  ${celular} {
+  ${mobile} {
     flex: 0 0 auto;
     gap: 18px;
   }
@@ -87,20 +87,20 @@ export const Stack = styled.div`
   width: 100%;
   min-height: 480px;
 
-  ${celular} {
+  ${mobile} {
     min-height: 380px;
   }
 `;
 
-export const GhostCard = styled.div<{ $opacidade: number; $transform: string }>`
+export const GhostCard = styled.div<{ $opacity: number; $transform: string }>`
   position: absolute;
   inset: 0;
-  border-radius: ${raio.carta};
-  background: ${cores.branco};
-  opacity: ${({ $opacidade }) => $opacidade};
+  border-radius: ${radius.matchCard};
+  background: ${colors.white};
+  opacity: ${({ $opacity }) => $opacity};
   transform: ${({ $transform }) => $transform};
 
-  ${celular} {
+  ${mobile} {
     border-radius: 26px;
   }
 `;
@@ -116,11 +116,11 @@ export const BookCard = styled(motion.article)`
   flex-direction: column;
   gap: 18px;
   padding: 14px;
-  border-radius: ${raio.carta};
-  background: ${cores.branco};
-  box-shadow: ${sombra.carta};
+  border-radius: ${radius.matchCard};
+  background: ${colors.white};
+  box-shadow: ${shadow.matchCard};
 
-  ${celular} {
+  ${mobile} {
     gap: 14px;
     padding: 12px;
     border-radius: 26px;
@@ -133,7 +133,7 @@ export const BookInfo = styled.div`
   gap: 10px;
   padding: 0 10px 10px;
 
-  ${celular} {
+  ${mobile} {
     gap: 8px;
     padding: 0 6px 6px;
   }
@@ -144,7 +144,7 @@ export const BookAuthor = styled.p`
   font-weight: 700;
   letter-spacing: -0.01em;
 
-  ${celular} {
+  ${mobile} {
     font-size: 19px;
   }
 `;
@@ -160,20 +160,20 @@ export const MetaList = styled.ul`
 export const Synopsis = styled.p`
   font-size: 15px;
   line-height: 1.5;
-  color: ${cores.tintaSuave};
+  color: ${colors.inkSoft};
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 
-  ${celular} {
+  ${mobile} {
     font-size: 14px;
     -webkit-line-clamp: 2;
   }
 `;
 
 // Selo que aparece no meio da capa enquanto a carta é arrastada.
-export const Stamp = styled(motion.span)<{ $cor?: string; $lado: 'esquerda' | 'direita' }>`
+export const Stamp = styled(motion.span)<{ $color?: string; $side: 'left' | 'right' }>`
   position: absolute;
   top: 140px;
   left: 50%;
@@ -182,17 +182,17 @@ export const Stamp = styled(motion.span)<{ $cor?: string; $lado: 'esquerda' | 'd
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
-  border-radius: ${raio.pilula};
-  background: ${cores.branco};
-  color: ${({ $cor }) => $cor || cores.tinta};
+  border-radius: ${radius.pill};
+  background: ${colors.white};
+  color: ${({ $color }) => $color || colors.ink};
   font-size: 22px;
   font-weight: 800;
   white-space: nowrap;
-  box-shadow: ${sombra.amei};
-  transform: translateX(-50%) rotate(${({ $lado }) => ($lado === 'esquerda' ? '-8deg' : '8deg')});
+  box-shadow: ${shadow.love};
+  transform: translateX(-50%) rotate(${({ $side }) => ($side === 'left' ? '-8deg' : '8deg')});
   pointer-events: none;
 
-  ${celular} {
+  ${mobile} {
     top: 100px;
     font-size: 19px;
     padding: 8px 16px;
@@ -203,20 +203,20 @@ export const Stamp = styled(motion.span)<{ $cor?: string; $lado: 'esquerda' | 'd
 export const LoadingCard = styled(motion.div)`
   position: relative;
   z-index: 1;
-  border-radius: ${raio.carta};
-  background: ${cores.branco};
-  box-shadow: ${sombra.carta};
+  border-radius: ${radius.matchCard};
+  background: ${colors.white};
+  box-shadow: ${shadow.matchCard};
   min-height: 520px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 18px;
-  color: ${cores.tinta};
+  color: ${colors.ink};
   font-size: 17px;
   font-weight: 700;
 
-  ${celular} {
+  ${mobile} {
     min-height: 400px;
     border-radius: 26px;
   }
@@ -230,7 +230,7 @@ export const Actions = styled.div`
 `;
 
 export const ActionButton = styled(motion.button).attrs({ type: 'button' })<{
-  $principal?: boolean;
+  $primary?: boolean;
 }>`
   display: flex;
   flex-direction: column;
@@ -239,35 +239,35 @@ export const ActionButton = styled(motion.button).attrs({ type: 'button' })<{
   padding: 0;
   border: 0;
   background: transparent;
-  color: ${({ $principal }) => ($principal ? cores.tinta : cores.tintaSuave)};
-  font-size: ${({ $principal }) => ($principal ? '16px' : '14px')};
-  font-weight: ${({ $principal }) => ($principal ? 800 : 500)};
+  color: ${({ $primary }) => ($primary ? colors.ink : colors.inkSoft)};
+  font-size: ${({ $primary }) => ($primary ? '16px' : '14px')};
+  font-weight: ${({ $primary }) => ($primary ? 800 : 500)};
 
   &:disabled {
     opacity: 0.5;
   }
 
-  ${celular} {
+  ${mobile} {
     gap: 6px;
-    font-size: ${({ $principal }) => ($principal ? '15px' : '13px')};
+    font-size: ${({ $primary }) => ($primary ? '15px' : '13px')};
   }
 `;
 
-export const ActionCircle = styled.span<{ $principal?: boolean; $cor?: string }>`
+export const ActionCircle = styled.span<{ $primary?: boolean; $color?: string }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: ${({ $principal }) => ($principal ? 92 : 60)}px;
-  height: ${({ $principal }) => ($principal ? 92 : 60)}px;
-  border-radius: ${raio.pilula};
-  background: ${({ $cor }) => $cor};
-  color: ${({ $principal }) => ($principal ? cores.branco : cores.tinta)};
-  box-shadow: ${({ $principal }) => ($principal ? sombra.amei : sombra.botaoBranco)};
+  width: ${({ $primary }) => ($primary ? 92 : 60)}px;
+  height: ${({ $primary }) => ($primary ? 92 : 60)}px;
+  border-radius: ${radius.pill};
+  background: ${({ $color }) => $color};
+  color: ${({ $primary }) => ($primary ? colors.white : colors.ink)};
+  box-shadow: ${({ $primary }) => ($primary ? shadow.love : shadow.whiteButton)};
   transition: background-color 0.4s ease;
 
-  ${celular} {
-    width: ${({ $principal }) => ($principal ? 80 : 56)}px;
-    height: ${({ $principal }) => ($principal ? 80 : 56)}px;
+  ${mobile} {
+    width: ${({ $primary }) => ($primary ? 80 : 56)}px;
+    height: ${({ $primary }) => ($primary ? 80 : 56)}px;
   }
 `;
 
@@ -281,14 +281,14 @@ export const FeedbackArea = styled.div`
 
 export const Hint = styled(motion.p)`
   font-size: 14px;
-  color: ${cores.tintaSuave};
+  color: ${colors.inkSoft};
   text-align: center;
 
   span:last-child {
     display: none;
   }
 
-  ${celular} {
+  ${mobile} {
     font-size: 13px;
 
     span:first-child {

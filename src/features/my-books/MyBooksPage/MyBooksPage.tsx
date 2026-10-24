@@ -29,150 +29,148 @@ import {
   BookDetail,
   LoadingContainer,
 } from './styles';
-import { useCurtidos } from '@/lib/likedCount';
-import { recomendacaoService } from '@/lib/api/services';
+import { useLikedCount } from '@/lib/likedCount';
+import { likedBooksApi } from '@/lib/api/likedBooks';
 import type { LikedBookItem } from '@/lib/api/types';
 import { getSessionUser } from '@/lib/session';
-import { cores, coresDoGenero, nomeDoGenero } from '@/styles/tokens';
-import { curvaSaida, mola, molaSuave } from '@/styles/motion';
+import { colors, genreColors, genreName } from '@/styles/tokens';
+import { exitEase, spring, softSpring } from '@/styles/motion';
 import { paths } from '@/app/paths';
 
 // Os livros entram em sequência, saem encolhendo e o resto da grade se reorganiza.
-const variantesItem: Variants = {
-  entrar: { opacity: 0, y: 16, scale: 0.96 },
-  parado: (ordem: number) => ({
+const itemVariants: Variants = {
+  enter: { opacity: 0, y: 16, scale: 0.96 },
+  idle: (order: number) => ({
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { ...molaSuave, delay: Math.min(ordem * 0.04, 0.32) },
+    transition: { ...softSpring, delay: Math.min(order * 0.04, 0.32) },
   }),
-  sair: { opacity: 0, scale: 0.9, transition: { duration: 0.2, ease: curvaSaida } },
+  exit: { opacity: 0, scale: 0.9, transition: { duration: 0.2, ease: exitEase } },
 };
 
-interface LivroFavorito {
+interface FavoriteBook {
   id: number;
-  titulo?: string;
-  autor?: string;
-  genero: string;
-  numeroPaginas?: number | null;
-  capaUrl?: string | null;
-  dataCurtida?: string;
+  title?: string;
+  author?: string;
+  genre: string;
+  pageCount?: number | null;
+  coverUrl?: string | null;
+  likedAt?: string;
 }
 
 // A API pode devolver o livro direto ou dentro de "livro"; aqui vira um formato só.
 // Ela nunca manda "livro", "livroId", "capaUrl", "imagem" nem "dataCurtida" (ver LikedBookItem
 // em src/lib/api/types.ts); as leituras ficam até a fase do backend.
-const normalizarLivro = (item: LikedBookItem): LivroFavorito => {
-  const livro = item.livro || item;
+const normalizeBook = (item: LikedBookItem): FavoriteBook => {
+  const book = item.livro || item;
   return {
-    id: (item.livroId ?? livro.id ?? item.id) as number,
-    titulo: livro.titulo,
-    autor: livro.autor,
-    genero: nomeDoGenero(livro.genero) || livro.genero || 'Outros',
-    numeroPaginas: livro.numeroPaginas,
-    capaUrl: livro.capaUrl || livro.capa || livro.imagem || livro.imagemUrl,
-    dataCurtida: item.dataCurtida || livro.dataCurtida,
+    id: (item.livroId ?? book.id ?? item.id) as number,
+    title: book.titulo,
+    author: book.autor,
+    genre: genreName(book.genero) || book.genero || 'Outros',
+    pageCount: book.numeroPaginas,
+    coverUrl: book.capaUrl || book.capa || book.imagem || book.imagemUrl,
+    likedAt: item.dataCurtida || book.dataCurtida,
   };
 };
 
-const formatarData = (data?: string) => (data ? new Date(data).toLocaleDateString('pt-BR') : '');
+const formatDate = (date?: string) => (date ? new Date(date).toLocaleDateString('pt-BR') : '');
 
 // O instante da curtida para ordenar; sem data, NaN, como new Date(undefined) dava.
-const quando = (data?: string) => (data ? new Date(data).getTime() : NaN);
+const timestampOf = (date?: string) => (date ? new Date(date).getTime() : NaN);
 
-type AvisoLista =
-  | { tipo: 'removido'; livro: LivroFavorito; posicao: number; chave: number }
-  | { tipo: 'erro'; mensagem: string; chave: number };
+type ListNotice =
+  | { type: 'removed'; book: FavoriteBook; position: number; id: number }
+  | { type: 'error'; message: string; id: number };
 
 export default function MyBooksPage() {
-  const { somar } = useCurtidos();
-  const [usuario] = useState(() => getSessionUser());
-  const [livros, setLivros] = useState<LivroFavorito[]>([]);
+  const { add } = useLikedCount();
+  const [user] = useState(() => getSessionUser());
+  const [books, setBooks] = useState<FavoriteBook[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filtroGenero, setFiltroGenero] = useState('Todos');
-  const [removendo, setRemovendo] = useState<number | null>(null);
-  const [aviso, setAviso] = useState<AvisoLista | null>(null);
+  const [genreFilter, setGenreFilter] = useState('Todos');
+  const [removingId, setRemovingId] = useState<number | null>(null);
+  const [notice, setNotice] = useState<ListNotice | null>(null);
 
-  const carregarLivrosCurtidos = useCallback(async () => {
-    if (!usuario?.id) return;
+  const loadLikedBooks = useCallback(async () => {
+    if (!user?.id) return;
     setLoading(true);
     setError(null);
 
-    const response = await recomendacaoService.obterLivrosCurtidos(usuario.id);
+    const response = await likedBooksApi.list(user.id);
 
     if (response.success) {
-      const livrosOrdenados = (response.data || [])
-        .map(normalizarLivro)
-        .sort((a, b) => quando(b.dataCurtida) - quando(a.dataCurtida));
-      setLivros(livrosOrdenados);
+      const sortedBooks = (response.data || [])
+        .map(normalizeBook)
+        .sort((a, b) => timestampOf(b.likedAt) - timestampOf(a.likedAt));
+      setBooks(sortedBooks);
     } else {
       setError(response.error || 'Erro ao carregar seus livros.');
     }
     setLoading(false);
-  }, [usuario?.id]);
+  }, [user?.id]);
 
   useEffect(() => {
-    carregarLivrosCurtidos();
-  }, [carregarLivrosCurtidos]);
+    loadLikedBooks();
+  }, [loadLikedBooks]);
 
-  const fecharAviso = useCallback(() => setAviso(null), []);
+  const closeNotice = useCallback(() => setNotice(null), []);
 
-  // A tela só abre com sessão (ProtectedRoute), por isso o "usuario!" nas ações.
-  const handleRemoverLivro = async (livro: LivroFavorito) => {
-    const posicao = livros.findIndex((item) => item.id === livro.id);
-    setRemovendo(livro.id);
+  // A tela só abre com sessão (ProtectedRoute), por isso o "user!" nas ações.
+  const handleRemoveBook = async (book: FavoriteBook) => {
+    const position = books.findIndex((item) => item.id === book.id);
+    setRemovingId(book.id);
 
-    const response = await recomendacaoService.descurtirLivro(usuario!.id, livro.id);
+    const response = await likedBooksApi.unlike(user!.id, book.id);
 
     if (response.success) {
-      setLivros((atual) => atual.filter((item) => item.id !== livro.id));
-      somar(-1);
-      setAviso({ tipo: 'removido', livro, posicao, chave: Date.now() });
+      setBooks((current) => current.filter((item) => item.id !== book.id));
+      add(-1);
+      setNotice({ type: 'removed', book, position, id: Date.now() });
     } else {
-      setAviso({ tipo: 'erro', mensagem: 'Não deu para remover agora.', chave: Date.now() });
+      setNotice({ type: 'error', message: 'Não deu para remover agora.', id: Date.now() });
     }
-    setRemovendo(null);
+    setRemovingId(null);
   };
 
-  const desfazerRemocao = async () => {
-    if (aviso?.tipo !== 'removido') return;
-    const { livro, posicao } = aviso;
-    setAviso(null);
+  const undoRemoval = async () => {
+    if (notice?.type !== 'removed') return;
+    const { book, position } = notice;
+    setNotice(null);
 
-    const response = await recomendacaoService.curtirLivro(usuario!.id, livro.id);
+    const response = await likedBooksApi.like(user!.id, book.id);
 
     if (response.success) {
-      setLivros((atual) => {
-        const lista = [...atual];
-        lista.splice(Math.min(posicao, lista.length), 0, livro);
-        return lista;
+      setBooks((current) => {
+        const list = [...current];
+        list.splice(Math.min(position, list.length), 0, book);
+        return list;
       });
-      somar(1);
+      add(1);
     } else {
-      setAviso({ tipo: 'erro', mensagem: 'Não deu para desfazer.', chave: Date.now() });
+      setNotice({ type: 'error', message: 'Não deu para desfazer.', id: Date.now() });
     }
   };
 
-  const contagem = livros.reduce<Record<string, number>>((total, livro) => {
-    total[livro.genero] = (total[livro.genero] || 0) + 1;
+  const countByGenre = books.reduce<Record<string, number>>((total, book) => {
+    total[book.genre] = (total[book.genre] || 0) + 1;
     return total;
   }, {});
-  const generos = Object.keys(contagem);
-  const filtro = filtroGenero !== 'Todos' && !contagem[filtroGenero] ? 'Todos' : filtroGenero;
-  const livrosFiltrados =
-    filtro === 'Todos' ? livros : livros.filter((livro) => livro.genero === filtro);
+  const likedGenres = Object.keys(countByGenre);
+  const activeFilter =
+    genreFilter !== 'Todos' && !countByGenre[genreFilter] ? 'Todos' : genreFilter;
+  const filteredBooks =
+    activeFilter === 'Todos' ? books : books.filter((book) => book.genre === activeFilter);
 
-  const totalPaginas = livros.reduce(
-    (total, livro) => total + (Number(livro.numeroPaginas) || 0),
-    0,
-  );
-  const generoMaisLido = generos.reduce<string | null>(
-    (maior, genero) =>
-      contagem[genero] > ((maior !== null && contagem[maior]) || 0) ? genero : maior,
+  const totalPages = books.reduce((total, book) => total + (Number(book.pageCount) || 0), 0);
+  const topGenre = likedGenres.reduce<string | null>(
+    (top, genre) =>
+      countByGenre[genre] > ((top !== null && countByGenre[top]) || 0) ? genre : top,
     null,
   );
-  const coresMaisLido = generoMaisLido ? coresDoGenero(generoMaisLido) : null;
+  const topGenreColors = topGenre ? genreColors(topGenre) : null;
 
   return (
     <AppLayout>
@@ -182,12 +180,12 @@ export default function MyBooksPage() {
           <PageSubtitle>Os livros que você amou, do mais recente ao mais antigo.</PageSubtitle>
         </TitleBlock>
         <HeadingActions>
-          <ButtonLink to={paths.addBook} $variante="branco">
-            <IconPlus tamanho={17} />
+          <ButtonLink to={paths.addBook} $variant="white">
+            <IconPlus size={17} />
             Adicionar livro
           </ButtonLink>
           <ButtonLink to={paths.home}>
-            <IconHeart tamanho={17} />
+            <IconHeart size={17} />
             Descobrir livros
           </ButtonLink>
         </HeadingActions>
@@ -195,76 +193,76 @@ export default function MyBooksPage() {
 
       {loading && (
         <LoadingContainer role="status">
-          <Spinner tamanho={36} cor={cores.marca} />
+          <Spinner size={36} color={colors.brand} />
           Carregando seus livros
         </LoadingContainer>
       )}
 
       {!loading && error && (
         <EmptyState
-          icone={<IconAlert tamanho={28} />}
-          tom="erro"
-          titulo="Não deu para carregar seus livros"
-          descricao="Confira sua conexão e tente de novo."
+          icon={<IconAlert size={28} />}
+          tone="error"
+          title="Não deu para carregar seus livros"
+          description="Confira sua conexão e tente de novo."
         >
-          <Button onClick={carregarLivrosCurtidos}>
-            <IconRefresh tamanho={16} />
+          <Button onClick={loadLikedBooks}>
+            <IconRefresh size={16} />
             Tentar de novo
           </Button>
         </EmptyState>
       )}
 
-      {!loading && !error && livros.length === 0 && (
+      {!loading && !error && books.length === 0 && (
         <EmptyState
-          icone={<IconHeart tamanho={30} />}
-          titulo="Nenhum livro por aqui ainda"
-          descricao="Dê Amei nas recomendações e os livros aparecem aqui."
+          icon={<IconHeart size={30} />}
+          title="Nenhum livro por aqui ainda"
+          description="Dê Amei nas recomendações e os livros aparecem aqui."
         >
           <ButtonLink to={paths.home}>Descobrir livros</ButtonLink>
-          <ButtonLink to={paths.addBook} $variante="secundario">
+          <ButtonLink to={paths.addBook} $variant="secondary">
             Adicionar livro
           </ButtonLink>
         </EmptyState>
       )}
 
-      {!loading && !error && livros.length > 0 && (
+      {!loading && !error && books.length > 0 && (
         <>
           <StatGrid>
-            <StatTile ordem={0} rotulo="Livros curtidos" valor={livros.length} />
+            <StatTile order={0} label="Livros curtidos" value={books.length} />
             <StatTile
-              ordem={1}
-              rotulo="Páginas no total"
-              valor={totalPaginas.toLocaleString('pt-BR')}
+              order={1}
+              label="Páginas no total"
+              value={totalPages.toLocaleString('pt-BR')}
             />
-            <StatTile ordem={2} rotulo="Gêneros diferentes" valor={generos.length} />
-            {generoMaisLido && (
+            <StatTile order={2} label="Gêneros diferentes" value={likedGenres.length} />
+            {topGenre && (
               <StatTile
-                ordem={3}
-                rotulo="Gênero mais curtido"
-                valor={generoMaisLido}
-                fundo={coresMaisLido?.fundo}
-                cor={coresMaisLido?.capa}
-                texto
+                order={3}
+                label="Gênero mais curtido"
+                value={topGenre}
+                background={topGenreColors?.background}
+                color={topGenreColors?.cover}
+                isText
               />
             )}
           </StatGrid>
 
-          {generos.length > 1 && (
+          {likedGenres.length > 1 && (
             <FilterContainer role="group" aria-label="Filtrar por gênero">
-              {['Todos', ...generos].map((genero) => {
-                const ativo = genero === filtro;
+              {['Todos', ...likedGenres].map((genre) => {
+                const active = genre === activeFilter;
                 return (
                   <FilterChip
-                    key={genero}
-                    $ativo={ativo}
-                    aria-pressed={ativo}
-                    onClick={() => setFiltroGenero(genero)}
+                    key={genre}
+                    $active={active}
+                    aria-pressed={active}
+                    onClick={() => setGenreFilter(genre)}
                   >
-                    {ativo && <FilterPill layoutId="filtroAtivo" transition={mola} />}
+                    {active && <FilterPill layoutId="activeFilter" transition={spring} />}
                     <FilterLabel>
-                      {genero}
-                      <ChipCount $ativo={ativo}>
-                        {genero === 'Todos' ? livros.length : contagem[genero]}
+                      {genre}
+                      <ChipCount $active={active}>
+                        {genre === 'Todos' ? books.length : countByGenre[genre]}
                       </ChipCount>
                     </FilterLabel>
                   </FilterChip>
@@ -275,43 +273,39 @@ export default function MyBooksPage() {
 
           <BooksGrid>
             <AnimatePresence mode="popLayout">
-              {livrosFiltrados.map((livro, ordem) => (
+              {filteredBooks.map((book, order) => (
                 <BookCard
-                  key={livro.id}
+                  key={book.id}
                   layout
-                  custom={ordem}
-                  variants={variantesItem}
-                  initial="entrar"
-                  animate="parado"
-                  exit="sair"
+                  custom={order}
+                  variants={itemVariants}
+                  initial="enter"
+                  animate="idle"
+                  exit="exit"
                 >
                   <BookCardInner>
                     <BookCover
-                      titulo={livro.titulo}
-                      genero={livro.genero}
-                      capaUrl={livro.capaUrl}
-                      tamanho="grade"
+                      title={book.title}
+                      genre={book.genre}
+                      coverUrl={book.coverUrl}
+                      size="grid"
                     >
                       <RemoveButton
-                        aria-label={`Remover ${livro.titulo} dos favoritos`}
-                        onClick={() => handleRemoverLivro(livro)}
-                        disabled={removendo === livro.id}
+                        aria-label={`Remover ${book.title} dos favoritos`}
+                        onClick={() => handleRemoveBook(book)}
+                        disabled={removingId === book.id}
                       >
                         <span>
-                          {removendo === livro.id ? (
-                            <Spinner tamanho={16} />
-                          ) : (
-                            <IconTrash tamanho={17} />
-                          )}
+                          {removingId === book.id ? <Spinner size={16} /> : <IconTrash size={17} />}
                         </span>
                       </RemoveButton>
                     </BookCover>
                     <BookInfo>
-                      <BookAuthor>{livro.autor}</BookAuthor>
+                      <BookAuthor>{book.author}</BookAuthor>
                       <BookDetail>
                         {[
-                          livro.numeroPaginas && `${livro.numeroPaginas} páginas`,
-                          livro.dataCurtida && `Curtido em ${formatarData(livro.dataCurtida)}`,
+                          book.pageCount && `${book.pageCount} páginas`,
+                          book.likedAt && `Curtido em ${formatDate(book.likedAt)}`,
                         ]
                           .filter(Boolean)
                           .join(' · ')}
@@ -326,24 +320,22 @@ export default function MyBooksPage() {
       )}
 
       <AnimatePresence>
-        {aviso && (
+        {notice && (
           <Toast
-            key={aviso.chave}
-            chave={aviso.chave}
-            onFechar={fecharAviso}
-            duracao={aviso.tipo === 'removido' ? 6000 : 4000}
-            acao={
-              aviso.tipo === 'removido'
-                ? { rotulo: 'Desfazer', onClick: desfazerRemocao }
-                : undefined
+            key={notice.id}
+            resetKey={notice.id}
+            onClose={closeNotice}
+            duration={notice.type === 'removed' ? 6000 : 4000}
+            action={
+              notice.type === 'removed' ? { label: 'Desfazer', onClick: undoRemoval } : undefined
             }
           >
-            {aviso.tipo === 'removido' ? (
+            {notice.type === 'removed' ? (
               <>
-                <strong>{aviso.livro.titulo}</strong> saiu dos seus livros.
+                <strong>{notice.book.title}</strong> saiu dos seus livros.
               </>
             ) : (
-              aviso.mensagem
+              notice.message
             )}
           </Toast>
         )}

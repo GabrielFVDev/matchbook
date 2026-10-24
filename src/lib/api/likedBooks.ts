@@ -5,9 +5,9 @@ import type { ApiResult, LikedBookItem, LikedCount, LikeResult } from './types';
 // Serviços dos livros curtidos (os favoritos de "Meus livros")
 export const likedBooksApi = {
   // Obter livros curtidos pelo usuário
-  async list(idUsuario: number): Promise<ApiResult<LikedBookItem[]>> {
+  async list(userId: number): Promise<ApiResult<LikedBookItem[]>> {
     try {
-      const response = await api.get<LikedBookItem[]>(`/livros-curtidos/usuario/${idUsuario}`);
+      const response = await api.get<LikedBookItem[]>(`/livros-curtidos/usuario/${userId}`);
 
       // Se retornar 204 (No Content), significa que não há livros curtidos
       if (response.status === 204) {
@@ -43,10 +43,10 @@ export const likedBooksApi = {
   },
 
   // Curtir um livro
-  async like(idUsuario: number, idLivro: number): Promise<ApiResult<LikeResult>> {
+  async like(userId: number, bookId: number): Promise<ApiResult<LikeResult>> {
     try {
       const response = await api.post<LikeResult>(
-        `/livros-curtidos/curtir?usuarioId=${idUsuario}&livroId=${idLivro}`,
+        `/livros-curtidos/curtir?usuarioId=${userId}&livroId=${bookId}`,
       );
       return {
         success: true,
@@ -63,10 +63,10 @@ export const likedBooksApi = {
   },
 
   // Descurtir um livro
-  async unlike(idUsuario: number, idLivro: number): Promise<ApiResult<unknown>> {
+  async unlike(userId: number, bookId: number): Promise<ApiResult<unknown>> {
     try {
       const response = await api.delete(
-        `/livros-curtidos/descurtir?usuarioId=${idUsuario}&livroId=${idLivro}`,
+        `/livros-curtidos/descurtir?usuarioId=${userId}&livroId=${bookId}`,
       );
       return {
         success: true,
@@ -83,9 +83,9 @@ export const likedBooksApi = {
   },
 
   // Contar livros curtidos
-  async count(idUsuario: number): Promise<ApiResult<LikedCount, LikedCount>> {
+  async count(userId: number): Promise<ApiResult<LikedCount, LikedCount>> {
     try {
-      const response = await api.get<LikedCount>(`/livros-curtidos/usuario/${idUsuario}/contador`);
+      const response = await api.get<LikedCount>(`/livros-curtidos/usuario/${userId}/contador`);
       return {
         success: true,
         data: response.data,

@@ -3,8 +3,8 @@ import type { ReactNode } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { Variants } from 'motion/react';
 import styled from 'styled-components';
-import { cores, raio, sombra } from '@/styles/tokens';
-import { mola } from '@/styles/motion';
+import { colors, radius, shadow } from '@/styles/tokens';
+import { spring } from '@/styles/motion';
 import { IconMinus, IconPlus } from '@/components/Icons';
 
 export const ChoiceLabel = styled.p`
@@ -12,34 +12,34 @@ export const ChoiceLabel = styled.p`
   font-weight: 700;
 `;
 
-const Grupo = styled.div`
+const Group = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
   min-width: 0;
 `;
 
-const Trilho = styled.div`
+const Track = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
   padding: 4px;
-  border-radius: ${raio.pilula};
-  background: ${cores.fundoApp};
+  border-radius: ${radius.pill};
+  background: ${colors.appBackground};
 `;
 
-const Opcao = styled.button.attrs({ type: 'button' })<{ $ativo?: boolean }>`
+const OptionButton = styled.button.attrs({ type: 'button' })<{ $active?: boolean }>`
   position: relative;
   flex: 1 1 0;
   min-width: 0;
   min-height: 44px;
   padding: 0 8px;
   border: 0;
-  border-radius: ${raio.pilula};
+  border-radius: ${radius.pill};
   background: transparent;
-  color: ${cores.tinta};
+  color: ${colors.ink};
   font-size: 14px;
-  font-weight: ${({ $ativo }) => ($ativo ? 700 : 500)};
+  font-weight: ${({ $active }) => ($active ? 700 : 500)};
 
   span {
     position: relative;
@@ -47,54 +47,54 @@ const Opcao = styled.button.attrs({ type: 'button' })<{ $ativo?: boolean }>`
 `;
 
 // Fundo branco da opção escolhida. Desliza até a opção nova.
-const Marcador = styled(motion.span)`
+const Indicator = styled(motion.span)`
   position: absolute !important;
   inset: 0;
-  border-radius: ${raio.pilula};
-  background: ${cores.branco};
-  box-shadow: ${sombra.ativo};
+  border-radius: ${radius.pill};
+  background: ${colors.white};
+  box-shadow: ${shadow.active};
 `;
 
 // Escolha única entre poucas opções (nível de leitura).
 interface SegmentedProps {
   id: string;
   label: ReactNode;
-  opcoes: readonly string[];
-  valor: string;
-  onChange: (opcao: string) => void;
+  options: readonly string[];
+  value: string;
+  onChange: (option: string) => void;
 }
 
-export function Segmented({ id, label, opcoes, valor, onChange }: SegmentedProps) {
+export function Segmented({ id, label, options, value, onChange }: SegmentedProps) {
   return (
-    <Grupo role="group" aria-labelledby={id}>
+    <Group role="group" aria-labelledby={id}>
       <ChoiceLabel id={id}>{label}</ChoiceLabel>
-      <Trilho>
-        {opcoes.map((opcao) => (
-          <Opcao
-            key={opcao}
-            $ativo={opcao === valor}
-            aria-pressed={opcao === valor}
-            onClick={() => onChange(opcao)}
+      <Track>
+        {options.map((option) => (
+          <OptionButton
+            key={option}
+            $active={option === value}
+            aria-pressed={option === value}
+            onClick={() => onChange(option)}
           >
-            {opcao === valor && <Marcador layoutId={`${id}Marcador`} transition={mola} />}
-            <span>{opcao}</span>
-          </Opcao>
+            {option === value && <Indicator layoutId={`${id}Indicator`} transition={spring} />}
+            <span>{option}</span>
+          </OptionButton>
         ))}
-      </Trilho>
-    </Grupo>
+      </Track>
+    </Group>
   );
 }
 
-const BotaoRedondo = styled.button.attrs({ type: 'button' })`
+const RoundButton = styled.button.attrs({ type: 'button' })`
   display: flex;
   align-items: center;
   justify-content: center;
   width: 44px;
   height: 44px;
   border: 0;
-  border-radius: ${raio.pilula};
-  background: ${cores.branco};
-  color: ${cores.tinta};
+  border-radius: ${radius.pill};
+  background: ${colors.white};
+  color: ${colors.ink};
   transition:
     transform 0.12s ease,
     opacity 0.15s ease;
@@ -108,7 +108,7 @@ const BotaoRedondo = styled.button.attrs({ type: 'button' })`
   }
 `;
 
-const Valor = styled.output`
+const ValueDisplay = styled.output`
   position: relative;
   min-width: 48px;
   height: 24px;
@@ -124,7 +124,7 @@ const Valor = styled.output`
   }
 `;
 
-const LinhaContador = styled.div`
+const StepperRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -133,90 +133,90 @@ const LinhaContador = styled.div`
 
 // Contador com botões de menos e mais (livros já lidos).
 // O número novo entra por baixo quando sobe e por cima quando desce.
-const rolarNumero: Variants = {
-  entrar: (direcao: number) => ({ y: direcao * 18, opacity: 0 }),
-  parado: { y: 0, opacity: 1, transition: { duration: 0.18 } },
-  sair: (direcao: number) => ({ y: direcao * -18, opacity: 0, transition: { duration: 0.18 } }),
+const rollNumber: Variants = {
+  enter: (direction: number) => ({ y: direction * 18, opacity: 0 }),
+  idle: { y: 0, opacity: 1, transition: { duration: 0.18 } },
+  exit: (direction: number) => ({ y: direction * -18, opacity: 0, transition: { duration: 0.18 } }),
 };
 
 interface StepperProps {
   id: string;
   label: ReactNode;
-  valor: number;
-  onChange: (valor: number) => void;
-  minimo?: number;
+  value: number;
+  onChange: (value: number) => void;
+  min?: number;
 }
 
-export function Stepper({ id, label, valor, onChange, minimo = 0 }: StepperProps) {
-  const [direcao, setDirecao] = useState(1);
+export function Stepper({ id, label, value, onChange, min = 0 }: StepperProps) {
+  const [direction, setDirection] = useState(1);
 
-  const mudar = (passo: number) => {
-    setDirecao(passo);
-    onChange(Math.max(minimo, valor + passo));
+  const changeBy = (step: number) => {
+    setDirection(step);
+    onChange(Math.max(min, value + step));
   };
 
   return (
-    <LinhaContador role="group" aria-labelledby={id}>
+    <StepperRow role="group" aria-labelledby={id}>
       <ChoiceLabel id={id}>{label}</ChoiceLabel>
-      <Trilho>
-        <BotaoRedondo aria-label="Diminuir" disabled={valor <= minimo} onClick={() => mudar(-1)}>
-          <IconMinus tamanho={18} />
-        </BotaoRedondo>
-        <Valor aria-live="polite">
-          <AnimatePresence initial={false} custom={direcao}>
+      <Track>
+        <RoundButton aria-label="Diminuir" disabled={value <= min} onClick={() => changeBy(-1)}>
+          <IconMinus size={18} />
+        </RoundButton>
+        <ValueDisplay aria-live="polite">
+          <AnimatePresence initial={false} custom={direction}>
             <motion.span
-              key={valor}
-              custom={direcao}
-              variants={rolarNumero}
-              initial="entrar"
-              animate="parado"
-              exit="sair"
+              key={value}
+              custom={direction}
+              variants={rollNumber}
+              initial="enter"
+              animate="idle"
+              exit="exit"
             >
-              {valor}
+              {value}
             </motion.span>
           </AnimatePresence>
-        </Valor>
-        <BotaoRedondo aria-label="Aumentar" onClick={() => mudar(1)}>
-          <IconPlus tamanho={18} />
-        </BotaoRedondo>
-      </Trilho>
-    </LinhaContador>
+        </ValueDisplay>
+        <RoundButton aria-label="Aumentar" onClick={() => changeBy(1)}>
+          <IconPlus size={18} />
+        </RoundButton>
+      </Track>
+    </StepperRow>
   );
 }
 
-const LinhaInterruptor = styled.div`
+const SwitchRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
   padding: 14px 16px;
   border-radius: 16px;
-  background: ${cores.fundoApp};
+  background: ${colors.appBackground};
 `;
 
-const TextoInterruptor = styled.span`
+const SwitchLabel = styled.span`
   font-size: 15px;
   font-weight: 600;
 `;
 
-const Trilha = styled.button.attrs({ type: 'button', role: 'switch' })<{ $ligado: boolean }>`
+const SwitchTrack = styled.button.attrs({ type: 'button', role: 'switch' })<{ $checked: boolean }>`
   flex: 0 0 auto;
   display: flex;
   width: 52px;
   height: 32px;
   padding: 4px;
   border: 0;
-  border-radius: ${raio.pilula};
-  background: ${({ $ligado }) => ($ligado ? cores.marca : cores.desligado)};
+  border-radius: ${radius.pill};
+  background: ${({ $checked }) => ($checked ? colors.brand : colors.disabled)};
   transition: background-color 0.15s ease;
 
   span {
     width: 24px;
     height: 24px;
-    border-radius: ${raio.pilula};
-    background: ${cores.branco};
+    border-radius: ${radius.pill};
+    background: ${colors.white};
     box-shadow: 0 1px 3px rgba(26, 23, 38, 0.25);
-    transform: translateX(${({ $ligado }) => ($ligado ? '20px' : '0')});
+    transform: translateX(${({ $checked }) => ($checked ? '20px' : '0')});
     transition: transform 0.15s ease;
   }
 `;
@@ -225,22 +225,22 @@ const Trilha = styled.button.attrs({ type: 'button', role: 'switch' })<{ $ligado
 interface SwitchProps {
   id: string;
   label: ReactNode;
-  ligado: boolean;
-  onChange: (ligado: boolean) => void;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
 }
 
-export function Switch({ id, label, ligado, onChange }: SwitchProps) {
+export function Switch({ id, label, checked, onChange }: SwitchProps) {
   return (
-    <LinhaInterruptor>
-      <TextoInterruptor id={id}>{label}</TextoInterruptor>
-      <Trilha
-        $ligado={ligado}
-        aria-checked={ligado}
+    <SwitchRow>
+      <SwitchLabel id={id}>{label}</SwitchLabel>
+      <SwitchTrack
+        $checked={checked}
+        aria-checked={checked}
         aria-labelledby={id}
-        onClick={() => onChange(!ligado)}
+        onClick={() => onChange(!checked)}
       >
         <span />
-      </Trilha>
-    </LinhaInterruptor>
+      </SwitchTrack>
+    </SwitchRow>
   );
 }

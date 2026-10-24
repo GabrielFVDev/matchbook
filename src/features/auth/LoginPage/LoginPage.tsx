@@ -18,84 +18,84 @@ import { Spinner } from '@/components/Spinner';
 import { IconAlert } from '@/components/Icons';
 import { BrandRow, CoverStack, StackCover, QuoteText } from './styles';
 import { useAuth } from '@/features/auth/useAuth';
-import { generos } from '@/styles/tokens';
-import type { NomeGenero } from '@/styles/tokens';
-import { curvaEntrada, entradaCartao, mola, molaSuave } from '@/styles/motion';
+import { genres } from '@/styles/tokens';
+import type { GenreName } from '@/styles/tokens';
+import { enterEase, cardEntrance, spring, softSpring } from '@/styles/motion';
 import type { Variants } from 'motion/react';
 import { paths } from '@/app/paths';
 
 // Cada medida vem em par: [desktop, celular].
-type Par = [number, number];
+type Pair = [number, number];
 
-interface CapaPilha {
-  titulo: string;
-  genero: NomeGenero;
-  x: Par;
-  y: Par;
-  w: Par;
-  h: Par;
-  giro: number;
-  abrir: number;
-  fonte: Par;
-  tituloCelular: boolean;
+interface StackCoverSpec {
+  title: string;
+  genre: GenreName;
+  x: Pair;
+  y: Pair;
+  w: Pair;
+  h: Pair;
+  tilt: number;
+  spread: number;
+  fontSize: Pair;
+  mobileTitle: boolean;
 }
 
 // Pilha de capas da lateral: posição, tamanho e giro no desktop e no celular.
-// "abrir" é quanto cada capa se afasta quando o mouse passa por cima da pilha.
-const capasDaPilha: CapaPilha[] = [
+// "spread" é quanto cada capa se afasta quando o mouse passa por cima da pilha.
+const stackCovers: StackCoverSpec[] = [
   {
-    titulo: 'O Hobbit',
-    genero: 'Fantasia',
+    title: 'O Hobbit',
+    genre: 'Fantasia',
     x: [0, 0],
     y: [50, 24],
     w: [200, 92],
     h: [280, 130],
-    giro: -9,
-    abrir: -22,
-    fonte: [32, 17],
-    tituloCelular: false,
+    tilt: -9,
+    spread: -22,
+    fontSize: [32, 17],
+    mobileTitle: false,
   },
   {
-    titulo: '1984',
-    genero: 'Distopia',
+    title: '1984',
+    genre: 'Distopia',
     x: [170, 58],
     y: [10, 6],
     w: [200, 92],
     h: [280, 130],
-    giro: 7,
-    abrir: 22,
-    fonte: [32, 17],
-    tituloCelular: false,
+    tilt: 7,
+    spread: 22,
+    fontSize: [32, 17],
+    mobileTitle: false,
   },
   {
-    titulo: 'Fundação',
-    genero: 'Ficção Científica',
+    title: 'Fundação',
+    genre: 'Ficção Científica',
     x: [86, 28],
     y: [72, 34],
     w: [210, 98],
     h: [288, 134],
-    giro: -1.5,
-    abrir: 0,
-    fonte: [36, 17],
-    tituloCelular: true,
+    tilt: -1.5,
+    spread: 0,
+    fontSize: [36, 17],
+    mobileTitle: true,
   },
 ];
 
 // As capas caem uma de cada vez e se abrem em leque no hover.
-const variantesCapa: Variants = {
-  escondida: { opacity: 0, y: -48, rotate: 0 },
-  visivel: (capa: CapaPilha) => ({
+const coverVariants: Variants = {
+  hidden: { opacity: 0, y: -48, rotate: 0 },
+  visible: (cover: StackCoverSpec) => ({
     opacity: 1,
     y: 0,
     x: 0,
-    rotate: capa.giro,
-    transition: molaSuave,
+    rotate: cover.tilt,
+    transition: softSpring,
   }),
-  aberta: (capa: CapaPilha) => ({
-    rotate: capa.giro * 1.8,
-    x: capa.abrir,
-    y: capa.abrir ? 0 : -10,
-    transition: mola,
+  open: (cover: StackCoverSpec) => ({
+    rotate: cover.tilt * 1.8,
+    x: cover.spread,
+    y: cover.spread ? 0 : -10,
+    transition: spring,
   }),
 };
 
@@ -104,32 +104,32 @@ export default function LoginPage() {
   const { login, loading } = useAuth();
 
   const [formData, setFormData] = useState({ email: '', senha: '' });
-  const [erros, setErros] = useState<Record<string, string | null>>({});
-  const [erroLogin, setErroLogin] = useState<string | null>(null);
-  const [pilhaPronta, setPilhaPronta] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string | null>>({});
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [stackReady, setStackReady] = useState(false);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (erros[name]) setErros((prev) => ({ ...prev, [name]: null }));
-    if (erroLogin) setErroLogin(null);
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
+    if (loginError) setLoginError(null);
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    const novosErros: Record<string, string> = {};
-    if (!formData.email) novosErros.email = 'Informe seu email';
-    if (!formData.senha) novosErros.senha = 'Informe sua senha';
-    setErros(novosErros);
-    if (Object.keys(novosErros).length > 0) return;
+    const newErrors: Record<string, string> = {};
+    if (!formData.email) newErrors.email = 'Informe seu email';
+    if (!formData.senha) newErrors.senha = 'Informe sua senha';
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
 
-    const resultado = await login(formData.email, formData.senha);
+    const result = await login(formData.email, formData.senha);
 
-    if (resultado.success) {
+    if (result.success) {
       navigate(paths.home);
     } else {
-      setErroLogin(resultado.error || 'Confira seu email e sua senha e tente de novo.');
+      setLoginError(result.error || 'Confira seu email e sua senha e tente de novo.');
     }
   };
 
@@ -139,32 +139,32 @@ export default function LoginPage() {
         <BrandRow>
           <CoverStack
             aria-hidden="true"
-            initial="escondida"
-            animate="visivel"
-            whileHover="aberta"
+            initial="hidden"
+            animate="visible"
+            whileHover="open"
             variants={{
-              visivel: {
-                transition: pilhaPronta ? {} : { delayChildren: 0.15, staggerChildren: 0.12 },
+              visible: {
+                transition: stackReady ? {} : { delayChildren: 0.15, staggerChildren: 0.12 },
               },
             }}
-            onAnimationComplete={() => setPilhaPronta(true)}
+            onAnimationComplete={() => setStackReady(true)}
           >
-            {capasDaPilha.map((capa) => (
+            {stackCovers.map((cover) => (
               <StackCover
-                key={capa.titulo}
-                custom={capa}
-                variants={variantesCapa}
-                $cor={generos[capa.genero].capa}
-                $x={capa.x}
-                $y={capa.y}
-                $w={capa.w}
-                $h={capa.h}
-                $giro={capa.giro}
-                $fonte={capa.fonte}
-                $tituloCelular={capa.tituloCelular}
+                key={cover.title}
+                custom={cover}
+                variants={coverVariants}
+                $color={genres[cover.genre].cover}
+                $x={cover.x}
+                $y={cover.y}
+                $w={cover.w}
+                $h={cover.h}
+                $tilt={cover.tilt}
+                $fontSize={cover.fontSize}
+                $mobileTitle={cover.mobileTitle}
               >
-                <span>{capa.genero}</span>
-                <span>{capa.titulo}</span>
+                <span>{cover.genre}</span>
+                <span>{cover.title}</span>
               </StackCover>
             ))}
           </CoverStack>
@@ -173,7 +173,7 @@ export default function LoginPage() {
             animate={{
               opacity: 1,
               y: 0,
-              transition: { duration: 0.5, ease: curvaEntrada, delay: 0.5 },
+              transition: { duration: 0.5, ease: enterEase, delay: 0.5 },
             }}
           >
             Um livro é um sonho que você segura em suas mãos.
@@ -181,14 +181,14 @@ export default function LoginPage() {
         </BrandRow>
       </AuthSide>
 
-      <AuthCard aria-labelledby="tituloEntrar" {...entradaCartao}>
+      <AuthCard aria-labelledby="loginTitle" {...cardEntrance}>
         <AuthHeading>
-          <AuthTitle id="tituloEntrar">Entrar</AuthTitle>
+          <AuthTitle id="loginTitle">Entrar</AuthTitle>
           <AuthText>Boas-vindas de volta ao Matchbook.</AuthText>
         </AuthHeading>
 
         <AuthForm onSubmit={handleSubmit} noValidate>
-          <Field id="email" label="Email" error={erros.email}>
+          <Field id="email" label="Email" error={errors.email}>
             <Input
               name="email"
               type="email"
@@ -198,7 +198,7 @@ export default function LoginPage() {
               onChange={handleInputChange}
             />
           </Field>
-          <Field id="senha" label="Senha" error={erros.senha}>
+          <Field id="senha" label="Senha" error={errors.senha}>
             <PasswordInput
               name="senha"
               autoComplete="current-password"
@@ -208,14 +208,14 @@ export default function LoginPage() {
             />
           </Field>
 
-          {erroLogin && (
+          {loginError && (
             <FormAlert role="alert">
-              <IconAlert tamanho={18} />
-              {erroLogin}
+              <IconAlert size={18} />
+              {loginError}
             </FormAlert>
           )}
 
-          <Button type="submit" $tamanho="grande" $total disabled={loading}>
+          <Button type="submit" $size="large" $fullWidth disabled={loading}>
             {loading && <Spinner />}
             {loading ? 'Entrando' : 'Entrar'}
           </Button>

@@ -1,10 +1,10 @@
 import { useLayoutEffect } from 'react';
 import type { ReactNode } from 'react';
 import styled from 'styled-components';
-import { useDefinirShell } from '@/layouts/AppShell/shellContext';
-import { cores, celular } from '@/styles/tokens';
+import { useSetShell } from '@/layouts/AppShell/shellContext';
+import { colors, mobile } from '@/styles/tokens';
 
-const Principal = styled.main<{ $espaco: string }>`
+const Main = styled.main<{ $gap: string }>`
   flex: 1;
   width: 100%;
   max-width: 1200px;
@@ -12,33 +12,33 @@ const Principal = styled.main<{ $espaco: string }>`
   padding: 24px 40px 64px;
   display: flex;
   flex-direction: column;
-  gap: ${({ $espaco }) => $espaco};
+  gap: ${({ $gap }) => $gap};
 
-  ${celular} {
+  ${mobile} {
     padding: 4px 20px 112px;
     gap: 16px;
   }
 `;
 
 interface AppLayoutProps {
-  fundo?: string;
-  corDestaque?: string;
-  espaco?: string;
+  background?: string;
+  accentColor?: string;
+  gap?: string;
   children: ReactNode;
 }
 
 // Conteúdo de uma tela dentro do AppShell. Avisa ao shell o fundo e a cor de destaque.
 export function AppLayout({
-  fundo = cores.fundoApp,
-  corDestaque = cores.marca,
-  espaco = '28px',
+  background = colors.appBackground,
+  accentColor = colors.brand,
+  gap = '28px',
   children,
 }: AppLayoutProps) {
-  const definirShell = useDefinirShell();
+  const setShell = useSetShell();
 
   useLayoutEffect(() => {
-    definirShell({ fundo, corDestaque });
-  }, [definirShell, fundo, corDestaque]);
+    setShell({ background, accentColor });
+  }, [setShell, background, accentColor]);
 
-  return <Principal $espaco={espaco}>{children}</Principal>;
+  return <Main $gap={gap}>{children}</Main>;
 }

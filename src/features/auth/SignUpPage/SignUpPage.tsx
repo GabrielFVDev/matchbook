@@ -20,7 +20,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { Spinner } from '@/components/Spinner';
 import { IconAlert, IconArrowLeft, IconArrowRight, IconCheck } from '@/components/Icons';
 import {
-  CadastroSide,
+  SignUpSide,
   SideTitle,
   SideHeadline,
   StepList,
@@ -31,32 +31,32 @@ import {
   StepPill,
   PillNumber,
   ButtonRow,
-  EtapaConteudo,
+  StepContent,
 } from './styles';
-import type { EstadoEtapa } from './styles';
-import { useRegister } from '@/features/auth/useAuth';
+import type { StepState } from './styles';
+import { useSignUp } from '@/features/auth/useAuth';
 import { paths } from '@/app/paths';
-import { validarEmail, normalizarDadosUsuario } from '@/lib/formatters';
-import { curvaEntrada, curvaSaida, entradaCartao } from '@/styles/motion';
+import { isValidEmail, normalizeUserData } from '@/lib/formatters';
+import { enterEase, exitEase, cardEntrance } from '@/styles/motion';
 
 // A etapa nova entra pelo lado do avanço: da direita ao continuar, da esquerda ao voltar.
-const variantesEtapa: Variants = {
-  entrar: (sentido: number) => ({ opacity: 0, x: sentido * 40 }),
-  parado: { opacity: 1, x: 0, transition: { duration: 0.3, ease: curvaEntrada } },
-  sair: (sentido: number) => ({
+const stepVariants: Variants = {
+  enter: (direction: number) => ({ opacity: 0, x: direction * 40 }),
+  idle: { opacity: 1, x: 0, transition: { duration: 0.3, ease: enterEase } },
+  exit: (direction: number) => ({
     opacity: 0,
-    x: sentido * -40,
-    transition: { duration: 0.15, ease: curvaSaida },
+    x: direction * -40,
+    transition: { duration: 0.15, ease: exitEase },
   }),
 };
 
-const etapas = [
-  { numero: 1, nome: 'Sua conta', detalhe: 'Nome, email e senha' },
-  { numero: 2, nome: 'Seu gosto', detalhe: 'Gênero, autor e ritmo de leitura' },
+const steps = [
+  { number: 1, name: 'Sua conta', detail: 'Nome, email e senha' },
+  { number: 2, name: 'Seu gosto', detail: 'Gênero, autor e ritmo de leitura' },
 ];
 
 // O formulário das duas etapas, com os nomes de campo da API.
-interface FormularioCadastro {
+interface SignUpForm {
   nome: string;
   email: string;
   senha: string;
@@ -72,15 +72,15 @@ interface FormularioCadastro {
 
 export default function SignUpPage() {
   const navigate = useNavigate();
-  const { register, loading } = useRegister();
+  const { signUp, loading } = useSignUp();
 
-  const [etapa, setEtapa] = useState(1);
-  const [sentido, setSentido] = useState(1);
-  const [erros, setErros] = useState<Record<string, string | null>>({});
-  const [erroCadastro, setErroCadastro] = useState<string | null>(null);
-  const [contaCriada, setContaCriada] = useState(false);
+  const [step, setStep] = useState(1);
+  const [direction, setDirection] = useState(1);
+  const [errors, setErrors] = useState<Record<string, string | null>>({});
+  const [signUpError, setSignUpError] = useState<string | null>(null);
+  const [accountCreated, setAccountCreated] = useState(false);
 
-  const [formData, setFormData] = useState<FormularioCadastro>({
+  const [formData, setFormData] = useState<SignUpForm>({
     nome: '',
     email: '',
     senha: '',
@@ -96,169 +96,166 @@ export default function SignUpPage() {
 
   // Depois de criar a conta, leva para o login.
   useEffect(() => {
-    if (!contaCriada) return undefined;
+    if (!accountCreated) return undefined;
     const timer = setTimeout(() => navigate(paths.login), 3000);
     return () => clearTimeout(timer);
-  }, [contaCriada, navigate]);
+  }, [accountCreated, navigate]);
 
-  const atualizar = <K extends keyof FormularioCadastro>(
-    campo: K,
-    valor: FormularioCadastro[K],
-  ) => {
-    setFormData((prev) => ({ ...prev, [campo]: valor }));
-    if (erros[campo]) setErros((prev) => ({ ...prev, [campo]: null }));
-    if (erroCadastro) setErroCadastro(null);
+  const updateField = <K extends keyof SignUpForm>(field: K, value: SignUpForm[K]) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: null }));
+    if (signUpError) setSignUpError(null);
   };
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) =>
-    atualizar(e.target.name as keyof FormularioCadastro, e.target.value);
+    updateField(e.target.name as keyof SignUpForm, e.target.value);
 
-  const senhaValida = formData.senha.length >= 6;
-  const senhasConferem = formData.confirmarSenha && formData.senha === formData.confirmarSenha;
+  const passwordValid = formData.senha.length >= 6;
+  const passwordsMatch = formData.confirmarSenha && formData.senha === formData.confirmarSenha;
 
-  const validarEtapa1 = () => {
-    const novosErros: Record<string, string> = {};
-    if (!formData.nome.trim()) novosErros.nome = 'Informe seu nome';
-    if (!formData.email.trim()) novosErros.email = 'Informe seu email';
-    else if (!validarEmail(formData.email)) novosErros.email = 'Esse email parece incompleto';
-    if (!formData.senha) novosErros.senha = 'Crie uma senha';
-    else if (!senhaValida) novosErros.senha = 'Use pelo menos 6 caracteres';
-    if (!formData.confirmarSenha) novosErros.confirmarSenha = 'Repita a senha';
-    else if (!senhasConferem) novosErros.confirmarSenha = 'As senhas não coincidem';
-    setErros(novosErros);
-    return Object.keys(novosErros).length === 0;
+  const validateStep1 = () => {
+    const newErrors: Record<string, string> = {};
+    if (!formData.nome.trim()) newErrors.nome = 'Informe seu nome';
+    if (!formData.email.trim()) newErrors.email = 'Informe seu email';
+    else if (!isValidEmail(formData.email)) newErrors.email = 'Esse email parece incompleto';
+    if (!formData.senha) newErrors.senha = 'Crie uma senha';
+    else if (!passwordValid) newErrors.senha = 'Use pelo menos 6 caracteres';
+    if (!formData.confirmarSenha) newErrors.confirmarSenha = 'Repita a senha';
+    else if (!passwordsMatch) newErrors.confirmarSenha = 'As senhas não coincidem';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const continuar = (e: FormEvent) => {
+  const goToStep2 = (e: FormEvent) => {
     e.preventDefault();
-    if (validarEtapa1()) {
-      setSentido(1);
-      setEtapa(2);
+    if (validateStep1()) {
+      setDirection(1);
+      setStep(2);
     }
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    const { confirmarSenha: _confirmarSenha, ...dadosParaEnvio } = formData;
-    const resultado = await register(normalizarDadosUsuario(dadosParaEnvio));
+    const { confirmarSenha: _confirmPassword, ...payload } = formData;
+    const result = await signUp(normalizeUserData(payload));
 
-    if (resultado.success) {
-      setContaCriada(true);
+    if (result.success) {
+      setAccountCreated(true);
     } else {
-      setErroCadastro(resultado.error || 'Não deu para criar sua conta. Tente de novo.');
+      setSignUpError(result.error || 'Não deu para criar sua conta. Tente de novo.');
     }
   };
 
   // Mensagens embaixo das senhas: erro de envio vence a validação ao vivo.
-  const mensagemSenha = erros.senha
-    ? { error: erros.senha }
+  const passwordMessage = errors.senha
+    ? { error: errors.senha }
     : formData.senha
-      ? senhaValida
+      ? passwordValid
         ? { success: 'Senha válida' }
         : { error: 'Muito curta, use pelo menos 6 caracteres' }
       : { help: 'Pelo menos 6 caracteres' };
 
-  const mensagemConfirmacao = erros.confirmarSenha
-    ? { error: erros.confirmarSenha }
+  const confirmationMessage = errors.confirmarSenha
+    ? { error: errors.confirmarSenha }
     : formData.confirmarSenha
-      ? senhasConferem
+      ? passwordsMatch
         ? { success: 'As senhas coincidem' }
         : { error: 'As senhas não coincidem' }
       : {};
 
-  const estadoEtapa = (numero: number): EstadoEtapa =>
-    numero === etapa ? 'atual' : numero < etapa ? 'feito' : 'proximo';
+  const stepState = (stepNumber: number): StepState =>
+    stepNumber === step ? 'current' : stepNumber < step ? 'done' : 'next';
 
   return (
     <AuthLayout
-      alinhar="flex-start"
-      linkTopo={
+      align="flex-start"
+      topLink={
         <>
           Já tem conta? <Link to={paths.login}>Entrar</Link>
         </>
       }
     >
-      <CadastroSide>
+      <SignUpSide>
         <SideTitle>
-          <AuthEyebrow $marca>Criar conta</AuthEyebrow>
+          <AuthEyebrow $brand>Criar conta</AuthEyebrow>
           <SideHeadline>Duas etapas e você recebe seu primeiro livro.</SideHeadline>
         </SideTitle>
         <StepList aria-label="Etapas do cadastro">
-          {etapas.map((item) => {
-            const estado = estadoEtapa(item.numero);
+          {steps.map((item) => {
+            const state = stepState(item.number);
             return (
-              <StepItem key={item.numero} aria-current={estado === 'atual' ? 'step' : undefined}>
-                <StepNumber $estado={estado}>
-                  {estado === 'feito' ? <IconCheck tamanho={20} /> : item.numero}
+              <StepItem key={item.number} aria-current={state === 'current' ? 'step' : undefined}>
+                <StepNumber $state={state}>
+                  {state === 'done' ? <IconCheck size={20} /> : item.number}
                 </StepNumber>
-                <StepText $apagado={estado === 'proximo'}>
-                  <strong>{item.nome}</strong>
-                  <span>{estado === 'feito' ? 'Pronta' : item.detalhe}</span>
+                <StepText $dimmed={state === 'next'}>
+                  <strong>{item.name}</strong>
+                  <span>{state === 'done' ? 'Pronta' : item.detail}</span>
                 </StepText>
               </StepItem>
             );
           })}
         </StepList>
         <StepPills aria-label="Etapas do cadastro">
-          {etapas.map((item) => {
-            const estado = estadoEtapa(item.numero);
+          {steps.map((item) => {
+            const state = stepState(item.number);
             return (
               <StepPill
-                key={item.numero}
-                $atual={estado === 'atual'}
-                aria-current={estado === 'atual' ? 'step' : undefined}
+                key={item.number}
+                $current={state === 'current'}
+                aria-current={state === 'current' ? 'step' : undefined}
               >
-                {estado === 'feito' ? (
-                  <IconCheck tamanho={16} />
+                {state === 'done' ? (
+                  <IconCheck size={16} />
                 ) : (
-                  <PillNumber $atual={estado === 'atual'}>{item.numero}</PillNumber>
+                  <PillNumber $current={state === 'current'}>{item.number}</PillNumber>
                 )}
-                {item.nome}
+                {item.name}
               </StepPill>
             );
           })}
         </StepPills>
-      </CadastroSide>
+      </SignUpSide>
 
-      <AuthCard $largura={560} aria-labelledby="tituloCadastro" {...entradaCartao}>
-        <AnimatePresence mode="wait" initial={false} custom={sentido}>
-          {contaCriada ? (
-            <EtapaConteudo key="contaCriada" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <AuthCard $width={560} aria-labelledby="signUpTitle" {...cardEntrance}>
+        <AnimatePresence mode="wait" initial={false} custom={direction}>
+          {accountCreated ? (
+            <StepContent key="accountCreated" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <EmptyState
-                icone={<IconCheck tamanho={30} />}
-                tom="sucesso"
-                titulo="Conta criada"
-                descricao={`Boas-vindas, ${formData.nome.trim().split(' ')[0]}! Em instantes você vai para o login.`}
+                icon={<IconCheck size={30} />}
+                tone="success"
+                title="Conta criada"
+                description={`Boas-vindas, ${formData.nome.trim().split(' ')[0]}! Em instantes você vai para o login.`}
                 role="status"
               >
-                <ButtonLink to={paths.login} $variante="primario">
+                <ButtonLink to={paths.login} $variant="primary">
                   Entrar agora
                 </ButtonLink>
               </EmptyState>
-            </EtapaConteudo>
+            </StepContent>
           ) : (
-            <EtapaConteudo
-              key={etapa}
-              custom={sentido}
-              variants={variantesEtapa}
-              initial="entrar"
-              animate="parado"
-              exit="sair"
+            <StepContent
+              key={step}
+              custom={direction}
+              variants={stepVariants}
+              initial="enter"
+              animate="idle"
+              exit="exit"
             >
               <AuthHeading>
-                <AuthEyebrow>Etapa {etapa} de 2</AuthEyebrow>
-                <AuthTitle id="tituloCadastro">{etapa === 1 ? 'Sua conta' : 'Seu gosto'}</AuthTitle>
-                {etapa === 2 && (
+                <AuthEyebrow>Etapa {step} de 2</AuthEyebrow>
+                <AuthTitle id="signUpTitle">{step === 1 ? 'Sua conta' : 'Seu gosto'}</AuthTitle>
+                {step === 2 && (
                   <AuthText>
                     Ajuda o Matchbook a acertar desde o primeiro livro. Tudo aqui é opcional.
                   </AuthText>
                 )}
               </AuthHeading>
 
-              {etapa === 1 ? (
-                <AuthForm onSubmit={continuar} noValidate>
-                  <Field id="nome" label="Nome completo" error={erros.nome}>
+              {step === 1 ? (
+                <AuthForm onSubmit={goToStep2} noValidate>
+                  <Field id="nome" label="Nome completo" error={errors.nome}>
                     <Input
                       name="nome"
                       type="text"
@@ -268,7 +265,7 @@ export default function SignUpPage() {
                       onChange={handleInputChange}
                     />
                   </Field>
-                  <Field id="email" label="Email" error={erros.email}>
+                  <Field id="email" label="Email" error={errors.email}>
                     <Input
                       name="email"
                       type="email"
@@ -278,7 +275,7 @@ export default function SignUpPage() {
                       onChange={handleInputChange}
                     />
                   </Field>
-                  <Field id="senha" label="Senha" {...mensagemSenha}>
+                  <Field id="senha" label="Senha" {...passwordMessage}>
                     <PasswordInput
                       name="senha"
                       autoComplete="new-password"
@@ -287,7 +284,7 @@ export default function SignUpPage() {
                       onChange={handleInputChange}
                     />
                   </Field>
-                  <Field id="confirmarSenha" label="Confirmar senha" {...mensagemConfirmacao}>
+                  <Field id="confirmarSenha" label="Confirmar senha" {...confirmationMessage}>
                     <PasswordInput
                       name="confirmarSenha"
                       autoComplete="new-password"
@@ -304,42 +301,42 @@ export default function SignUpPage() {
                       onChange={handleInputChange}
                     />
                   </Field>
-                  <Button type="submit" $tamanho="grande" $total>
+                  <Button type="submit" $size="large" $fullWidth>
                     Continuar
-                    <IconArrowRight tamanho={18} />
+                    <IconArrowRight size={18} />
                   </Button>
                 </AuthForm>
               ) : (
                 <AuthForm onSubmit={handleSubmit} noValidate>
-                  <TasteFields dados={formData} onChange={atualizar} prefixo="cadastro" />
+                  <TasteFields values={formData} onChange={updateField} idPrefix="signUp" />
 
-                  {erroCadastro && (
+                  {signUpError && (
                     <FormAlert role="alert">
-                      <IconAlert tamanho={18} />
-                      {erroCadastro}
+                      <IconAlert size={18} />
+                      {signUpError}
                     </FormAlert>
                   )}
 
                   <ButtonRow>
                     <Button
-                      $variante="secundario"
-                      $tamanho="grande"
+                      $variant="secondary"
+                      $size="large"
                       onClick={() => {
-                        setSentido(-1);
-                        setEtapa(1);
+                        setDirection(-1);
+                        setStep(1);
                       }}
                     >
-                      <IconArrowLeft tamanho={18} />
+                      <IconArrowLeft size={18} />
                       Voltar
                     </Button>
-                    <Button type="submit" $tamanho="grande" disabled={loading}>
+                    <Button type="submit" $size="large" disabled={loading}>
                       {loading && <Spinner />}
                       {loading ? 'Criando conta' : 'Criar conta'}
                     </Button>
                   </ButtonRow>
                 </AuthForm>
               )}
-            </EtapaConteudo>
+            </StepContent>
           )}
         </AnimatePresence>
       </AuthCard>

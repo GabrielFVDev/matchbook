@@ -1,18 +1,18 @@
 import type { AriaRole, ReactNode } from 'react';
 import styled from 'styled-components';
 import { motion } from 'motion/react';
-import { cores, celular } from '@/styles/tokens';
-import { curvaEntrada } from '@/styles/motion';
+import { colors, mobile } from '@/styles/tokens';
+import { enterEase } from '@/styles/motion';
 
-const tons = {
-  marca: { fundo: cores.fundoMarca, cor: cores.marca },
-  erro: { fundo: cores.erroFundo, cor: cores.erro },
-  sucesso: { fundo: cores.sucessoFundo, cor: cores.sucesso },
+const tones = {
+  brand: { background: colors.brandBackground, color: colors.brand },
+  error: { background: colors.errorBackground, color: colors.error },
+  success: { background: colors.successBackground, color: colors.success },
 };
 
-type Tom = keyof typeof tons;
+type Tone = keyof typeof tones;
 
-const Caixa = styled(motion.div)<{ $fundo?: string }>`
+const Box = styled(motion.div)<{ $background?: string }>`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -20,44 +20,44 @@ const Caixa = styled(motion.div)<{ $fundo?: string }>`
   gap: 14px;
   padding: 64px 24px;
   border-radius: 28px;
-  background: ${({ $fundo }) => $fundo || cores.branco};
+  background: ${({ $background }) => $background || colors.white};
   text-align: center;
 
-  ${celular} {
+  ${mobile} {
     padding: 44px 20px;
     border-radius: 24px;
   }
 `;
 
-const Icone = styled(motion.span)<{ $tom: Tom }>`
+const IconWrap = styled(motion.span)<{ $tone: Tone }>`
   display: flex;
   align-items: center;
   justify-content: center;
   width: 64px;
   height: 64px;
   border-radius: 999px;
-  background: ${({ $tom }) => tons[$tom].fundo};
-  color: ${({ $tom }) => tons[$tom].cor};
+  background: ${({ $tone }) => tones[$tone].background};
+  color: ${({ $tone }) => tones[$tone].color};
 `;
 
-const Titulo = styled.p`
+const Title = styled.p`
   font-size: 24px;
   font-weight: 800;
   letter-spacing: -0.02em;
 
-  ${celular} {
+  ${mobile} {
     font-size: 22px;
   }
 `;
 
-const Descricao = styled.p`
+const Description = styled.p`
   max-width: 420px;
   font-size: 16px;
   line-height: 1.5;
-  color: ${cores.tintaSuave};
+  color: ${colors.inkSoft};
 `;
 
-const Acoes = styled.div`
+const Actions = styled.div`
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -67,45 +67,45 @@ const Acoes = styled.div`
 
 // Bloco para tela vazia, erro ou sucesso: ícone, título, texto e ações.
 interface EmptyStateProps {
-  icone?: ReactNode;
-  tom?: Tom;
-  titulo: ReactNode;
-  descricao?: ReactNode;
-  fundo?: string;
+  icon?: ReactNode;
+  tone?: Tone;
+  title: ReactNode;
+  description?: ReactNode;
+  background?: string;
   children?: ReactNode;
   role?: AriaRole;
 }
 
 export function EmptyState({
-  icone,
-  tom = 'marca',
-  titulo,
-  descricao,
-  fundo,
+  icon,
+  tone = 'brand',
+  title,
+  description,
+  background,
   children,
   role,
 }: EmptyStateProps) {
   return (
-    <Caixa
-      $fundo={fundo}
+    <Box
+      $background={background}
       role={role}
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: curvaEntrada }}
+      transition={{ duration: 0.35, ease: enterEase }}
     >
-      {icone && (
-        <Icone
-          $tom={tom}
+      {icon && (
+        <IconWrap
+          $tone={tone}
           initial={{ scale: 0.4, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', stiffness: 420, damping: 16, delay: 0.1 }}
         >
-          {icone}
-        </Icone>
+          {icon}
+        </IconWrap>
       )}
-      <Titulo>{titulo}</Titulo>
-      {descricao && <Descricao>{descricao}</Descricao>}
-      {children && <Acoes>{children}</Acoes>}
-    </Caixa>
+      <Title>{title}</Title>
+      {description && <Description>{description}</Description>}
+      {children && <Actions>{children}</Actions>}
+    </Box>
   );
 }

@@ -39,24 +39,22 @@ export const authApi = {
   },
 
   // Fazer login (simulação, pois não há endpoint específico de login na API)
-  async login(email: string, senha: string): Promise<ApiResult<Omit<UserDto, 'senha'>>> {
+  async login(email: string, password: string): Promise<ApiResult<Omit<UserDto, 'senha'>>> {
     try {
       // Como não temos endpoint de login específico, vamos buscar todos os usuários
       // e verificar se existe um com o email/senha fornecidos
       const response = await api.get<UserDto[]>('/usuario/all');
-      const usuarios = response.data;
+      const users = response.data;
 
-      const usuarioEncontrado = usuarios.find(
-        (usuario) => usuario.email === email && usuario.senha === senha,
-      );
+      const foundUser = users.find((user) => user.email === email && user.senha === password);
 
-      if (usuarioEncontrado) {
+      if (foundUser) {
         // Remove a senha do objeto retornado por segurança
-        const { senha: _, ...usuarioSemSenha } = usuarioEncontrado;
+        const { senha: _, ...userWithoutPassword } = foundUser;
 
         return {
           success: true,
-          data: usuarioSemSenha,
+          data: userWithoutPassword,
           message: 'Login realizado com sucesso!',
         };
       } else {

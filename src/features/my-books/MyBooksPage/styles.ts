@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { motion } from 'motion/react';
-import { cores, celular, raio, sombra } from '@/styles/tokens';
+import { colors, mobile, radius, shadow } from '@/styles/tokens';
 
 export const PageHeading = styled.div`
   display: flex;
@@ -21,16 +21,16 @@ export const PageTitle = styled.h1`
   font-weight: 800;
   letter-spacing: -0.03em;
 
-  ${celular} {
+  ${mobile} {
     font-size: 32px;
   }
 `;
 
 export const PageSubtitle = styled.p`
   font-size: 17px;
-  color: ${cores.tintaSuave};
+  color: ${colors.inkSoft};
 
-  ${celular} {
+  ${mobile} {
     font-size: 15px;
   }
 `;
@@ -40,12 +40,12 @@ export const HeadingActions = styled.div`
   flex-wrap: wrap;
   gap: 10px;
 
-  ${celular} {
+  ${mobile} {
     display: none;
   }
 `;
 
-export const FilterChip = styled.button.attrs({ type: 'button' })<{ $ativo?: boolean }>`
+export const FilterChip = styled.button.attrs({ type: 'button' })<{ $active?: boolean }>`
   position: relative;
   flex: 0 0 auto;
   display: inline-flex;
@@ -53,9 +53,9 @@ export const FilterChip = styled.button.attrs({ type: 'button' })<{ $ativo?: boo
   min-height: 44px;
   padding: 0 16px;
   border: 0;
-  border-radius: ${raio.pilula};
-  background: ${cores.branco};
-  color: ${({ $ativo }) => ($ativo ? cores.branco : cores.tinta)};
+  border-radius: ${radius.pill};
+  background: ${colors.white};
+  color: ${({ $active }) => ($active ? colors.white : colors.ink)};
   font-size: 15px;
   font-weight: 600;
   white-space: nowrap;
@@ -72,8 +72,8 @@ export const FilterChip = styled.button.attrs({ type: 'button' })<{ $ativo?: boo
 export const FilterPill = styled(motion.span)`
   position: absolute;
   inset: 0;
-  border-radius: ${raio.pilula};
-  background: ${cores.tinta};
+  border-radius: ${radius.pill};
+  background: ${colors.ink};
 `;
 
 export const FilterLabel = styled.span`
@@ -88,7 +88,7 @@ export const FilterContainer = styled.div`
   flex-wrap: wrap;
   gap: 8px;
 
-  ${celular} {
+  ${mobile} {
     flex-wrap: nowrap;
     margin: 0 -20px;
     padding: 0 20px 4px;
@@ -104,7 +104,7 @@ export const BooksGrid = styled.ul`
   grid-template-columns: repeat(auto-fill, minmax(min(230px, 100%), 1fr));
   gap: 20px;
 
-  ${celular} {
+  ${mobile} {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
   }
@@ -123,9 +123,9 @@ export const BookCardInner = styled.div`
   flex-direction: column;
   gap: 12px;
   padding: 10px 10px 14px;
-  border-radius: ${raio.cartao};
-  background: ${cores.branco};
-  box-shadow: ${sombra.leve};
+  border-radius: ${radius.card};
+  background: ${colors.white};
+  box-shadow: ${shadow.soft};
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
@@ -137,7 +137,7 @@ export const BookCardInner = styled.div`
     }
   }
 
-  ${celular} {
+  ${mobile} {
     gap: 10px;
     padding: 8px 8px 12px;
     border-radius: 20px;
@@ -154,9 +154,9 @@ export const RemoveButton = styled.button.attrs({ type: 'button' })`
   align-items: center;
   justify-content: center;
   border: 0;
-  border-radius: ${raio.pilula};
+  border-radius: ${radius.pill};
   background: transparent;
-  color: ${cores.tinta};
+  color: ${colors.ink};
 
   span {
     display: flex;
@@ -164,15 +164,15 @@ export const RemoveButton = styled.button.attrs({ type: 'button' })`
     justify-content: center;
     width: 36px;
     height: 36px;
-    border-radius: ${raio.pilula};
-    background: ${cores.branco};
+    border-radius: ${radius.pill};
+    background: ${colors.white};
     transition:
       transform 0.12s ease,
       color 0.15s ease;
   }
 
   &:hover span {
-    color: ${cores.erro};
+    color: ${colors.error};
   }
 
   &:active:not(:disabled) span {
@@ -190,7 +190,7 @@ export const BookInfo = styled.div`
   gap: 4px;
   padding: 0 6px;
 
-  ${celular} {
+  ${mobile} {
     gap: 2px;
     padding: 0 4px;
   }
@@ -200,16 +200,16 @@ export const BookAuthor = styled.p`
   font-size: 16px;
   font-weight: 700;
 
-  ${celular} {
+  ${mobile} {
     font-size: 14px;
   }
 `;
 
 export const BookDetail = styled.p`
   font-size: 13px;
-  color: ${cores.tintaSuave};
+  color: ${colors.inkSoft};
 
-  ${celular} {
+  ${mobile} {
     font-size: 12px;
   }
 `;

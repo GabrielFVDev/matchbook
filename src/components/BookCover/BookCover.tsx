@@ -1,80 +1,80 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import styled, { css } from 'styled-components';
-import { cores, celular, coresDoGenero, nomeDoGenero, raio } from '@/styles/tokens';
+import { colors, mobile, genreColors, genreName, radius } from '@/styles/tokens';
 import { Tag } from '@/components/Chip';
 
 // Medidas de cada uso da capa: altura, respiro interno e corpo do título,
 // primeiro no desktop e depois no celular.
-const tamanhos = {
-  match: { altura: [340, 260], respiro: [24, 20], titulo: [64, 48] },
-  grade: { altura: [250, 200], respiro: [16, 12], titulo: [27, 19] },
-  previa: { altura: [320, 320], respiro: [20, 20], titulo: [40, 40] },
-  mini: { altura: [148, 148], respiro: [10, 10], titulo: [16, 16] },
+const sizes = {
+  match: { height: [340, 260], padding: [24, 20], titleSize: [64, 48] },
+  grid: { height: [250, 200], padding: [16, 12], titleSize: [27, 19] },
+  preview: { height: [320, 320], padding: [20, 20], titleSize: [40, 40] },
+  mini: { height: [148, 148], padding: [10, 10], titleSize: [16, 16] },
 };
 
-type Tamanho = keyof typeof tamanhos;
+type CoverSize = keyof typeof sizes;
 
-const Moldura = styled.div<{ $capa: string; $tamanho: Tamanho }>`
+const Frame = styled.div<{ $cover: string; $size: CoverSize }>`
   position: relative;
   flex: 0 0 auto;
   overflow: hidden;
-  border-radius: ${({ $tamanho }) => ($tamanho === 'mini' ? '14px' : raio.capa)};
-  background: ${({ $capa }) => $capa};
-  color: ${cores.branco};
+  border-radius: ${({ $size }) => ($size === 'mini' ? '14px' : radius.cover)};
+  background: ${({ $cover }) => $cover};
+  color: ${colors.white};
   transition: background-color 0.4s ease;
-  ${({ $tamanho }) => {
-    const t = tamanhos[$tamanho];
+  ${({ $size }) => {
+    const t = sizes[$size];
     return css`
-      height: ${t.altura[0]}px;
-      ${celular} {
-        height: ${t.altura[1]}px;
+      height: ${t.height[0]}px;
+      ${mobile} {
+        height: ${t.height[1]}px;
       }
     `;
   }}
-  ${({ $tamanho }) =>
-    $tamanho === 'mini' &&
+  ${({ $size }) =>
+    $size === 'mini' &&
     css`
       width: 104px;
     `}
 `;
 
-const Gerada = styled.div<{ $soTitulo?: boolean; $tamanho: Tamanho }>`
+const Generated = styled.div<{ $titleOnly?: boolean; $size: CoverSize }>`
   height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: ${({ $soTitulo }) => ($soTitulo ? 'flex-end' : 'space-between')};
+  justify-content: ${({ $titleOnly }) => ($titleOnly ? 'flex-end' : 'space-between')};
   gap: 12px;
-  ${({ $tamanho }) => {
-    const t = tamanhos[$tamanho];
+  ${({ $size }) => {
+    const t = sizes[$size];
     return css`
-      padding: ${t.respiro[0]}px;
-      ${celular} {
-        padding: ${t.respiro[1]}px;
+      padding: ${t.padding[0]}px;
+      ${mobile} {
+        padding: ${t.padding[1]}px;
       }
     `;
   }}
 `;
 
-const Titulo = styled.span<{ $vazio?: boolean; $tamanho: Tamanho }>`
+const Title = styled.span<{ $empty?: boolean; $size: CoverSize }>`
   font-weight: 800;
   line-height: 0.96;
   letter-spacing: -0.03em;
   overflow-wrap: anywhere;
   text-wrap: balance;
-  opacity: ${({ $vazio }) => ($vazio ? 0.6 : 1)};
-  ${({ $tamanho }) => {
-    const t = tamanhos[$tamanho];
+  opacity: ${({ $empty }) => ($empty ? 0.6 : 1)};
+  ${({ $size }) => {
+    const t = sizes[$size];
     return css`
-      font-size: ${t.titulo[0]}px;
-      ${celular} {
-        font-size: ${t.titulo[1]}px;
+      font-size: ${t.titleSize[0]}px;
+      ${mobile} {
+        font-size: ${t.titleSize[1]}px;
       }
     `;
   }}
 `;
 
-const Imagem = styled.img`
+const CoverImage = styled.img`
   display: block;
   width: 100%;
   height: 100%;
@@ -84,59 +84,59 @@ const Imagem = styled.img`
 // Capa do livro: usa a imagem do link quando ela carrega; sem link ou com erro,
 // monta uma capa com a cor do gênero e o título.
 interface BookCoverProps {
-  titulo?: string | null;
-  genero?: string | null;
-  capaUrl?: string | null;
-  tamanho?: Tamanho;
-  tituloVazio?: string;
+  title?: string | null;
+  genre?: string | null;
+  coverUrl?: string | null;
+  size?: CoverSize;
+  placeholderTitle?: string;
   children?: ReactNode;
 }
 
 export function BookCover({
-  titulo,
-  genero,
-  capaUrl,
-  tamanho = 'grade',
-  tituloVazio,
+  title,
+  genre,
+  coverUrl,
+  size = 'grid',
+  placeholderTitle,
   children,
 }: BookCoverProps) {
-  const [urlComErro, setUrlComErro] = useState<string | null | undefined>(null);
-  const mostrarImagem = Boolean(capaUrl) && urlComErro !== capaUrl;
-  const { capa } = coresDoGenero(genero);
-  const nomeGenero = nomeDoGenero(genero) || genero;
-  const textoTitulo = titulo || tituloVazio;
+  const [failedUrl, setFailedUrl] = useState<string | null | undefined>(null);
+  const showImage = Boolean(coverUrl) && failedUrl !== coverUrl;
+  const { cover } = genreColors(genre);
+  const genreLabel = genreName(genre) || genre;
+  const titleText = title || placeholderTitle;
 
   return (
-    <Moldura $capa={capa} $tamanho={tamanho}>
-      {mostrarImagem ? (
-        <Imagem
-          src={capaUrl ?? undefined}
-          alt={titulo ? `Capa de ${titulo}` : 'Capa do livro'}
+    <Frame $cover={cover} $size={size}>
+      {showImage ? (
+        <CoverImage
+          src={coverUrl ?? undefined}
+          alt={title ? `Capa de ${title}` : 'Capa do livro'}
           draggable={false}
-          onError={() => setUrlComErro(capaUrl)}
+          onError={() => setFailedUrl(coverUrl)}
         />
       ) : (
-        <Gerada
-          $tamanho={tamanho}
-          $soTitulo={tamanho === 'mini' || !nomeGenero}
+        <Generated
+          $size={size}
+          $titleOnly={size === 'mini' || !genreLabel}
           role="img"
-          aria-label={titulo ? `Capa de ${titulo}` : 'Capa do livro'}
+          aria-label={title ? `Capa de ${title}` : 'Capa do livro'}
         >
-          {tamanho !== 'mini' && nomeGenero && (
+          {size !== 'mini' && genreLabel && (
             <Tag
-              $pequena={tamanho === 'grade'}
+              $small={size === 'grid'}
               aria-hidden="true"
               style={children ? { maxWidth: 'calc(100% - 40px)' } : undefined}
             >
-              {nomeGenero}
+              {genreLabel}
             </Tag>
           )}
-          <Titulo $tamanho={tamanho} $vazio={!titulo} aria-hidden="true">
-            {textoTitulo}
-          </Titulo>
-        </Gerada>
+          <Title $size={size} $empty={!title} aria-hidden="true">
+            {titleText}
+          </Title>
+        </Generated>
       )}
       {children}
-    </Moldura>
+    </Frame>
   );
 }
