@@ -1,8 +1,6 @@
 import { http, HttpResponse } from 'msw';
+import { apiUrl as API } from '@/lib/env';
 import { books, likedBooks, likedCount, rejectResult, stats, user } from './data';
-
-// O mesmo endereço fixo de src/lib/api/client.js.
-const API = 'http://localhost:8080/api';
 
 type Body = Record<string, unknown>;
 
