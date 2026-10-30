@@ -248,6 +248,7 @@ Quando as regras se cruzam, vence a primeira que bater nesta ordem: 10 recusas, 
 
 - **`ownerUid: null`** é um livro comum, que ninguém edita. **Igual a `auth.currentUser.uid`** é um livro da pessoa: mostrar editar e apagar.
 - **O conteúdo dos livros continua em português.** Só os nomes dos campos mudaram.
+- **Todo texto do livro cabe em 255 caracteres,** sinopse e link da capa inclusive: as colunas são `varchar(255)`, e um texto maior faz o banco recusar o livro (500). O Adicionar livro corta em 255. Só `title`, `author` e `genre` são obrigatórios, e quem exige é o front: o backend não valida.
 
 ### Preferências
 
