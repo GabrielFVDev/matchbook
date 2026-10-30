@@ -46,6 +46,12 @@ Sem essas variáveis, o app para na abertura com um erro no console. Esses valor
 
 Os testes e o `dev:mock` não leem nada disso.
 
+### Deploy na Vercel
+
+A Vercel não vê o `.env.local`, que fica fora do git. As mesmas variáveis vão em **Settings → Environment Variables**, e a `VITE_API_URL` passa a ser obrigatória: o endereço **https** do backend publicado, terminando em `/api`. O Vite escreve os valores no site na hora do build, então trocar uma variável só vale depois de um **Redeploy**. O domínio da Vercel também entra em Firebase → Authentication → Configurações → Domínios autorizados.
+
+O `vercel.json` manda todo endereço para o `index.html`. Sem ele, abrir ou recarregar `/home` direto dá 404, porque as rotas existem só dentro do app.
+
 ## Estrutura
 
 ```
