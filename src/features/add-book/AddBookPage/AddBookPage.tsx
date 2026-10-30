@@ -63,6 +63,9 @@ const emptyForm = {
 
 type BookForm = typeof emptyForm;
 
+// Every text column of the books table is varchar(255): a longer text makes the database refuse the book.
+const maxTextLength = 255;
+
 const isValidUrl = (text: string) => {
   try {
     new URL(text);
@@ -97,12 +100,6 @@ export default function AddBookPage() {
     if (!formData.title.trim()) newErrors.title = 'Informe o título';
     if (!formData.author.trim()) newErrors.author = 'Informe o autor';
     if (!formData.genre) newErrors.genre = 'Escolha um gênero';
-
-    if (!formData.synopsis.trim()) {
-      newErrors.synopsis = 'Escreva a sinopse';
-    } else if (formData.synopsis.length < 50) {
-      newErrors.synopsis = 'Escreva pelo menos 50 caracteres';
-    }
 
     if (
       formData.publicationYear &&
@@ -167,7 +164,7 @@ export default function AddBookPage() {
     window.scrollTo({ top: 0 });
   };
 
-  const synopsisCount = `${formData.synopsis.length} de 1000`;
+  const synopsisCount = `${formData.synopsis.length} de ${maxTextLength}`;
 
   return (
     <AppLayout>
@@ -225,7 +222,7 @@ export default function AddBookPage() {
                     <Input
                       name="title"
                       type="text"
-                      maxLength={255}
+                      maxLength={maxTextLength}
                       placeholder="Como está na capa"
                       value={formData.title}
                       onChange={handleInputChange}
@@ -235,7 +232,7 @@ export default function AddBookPage() {
                     <Input
                       name="author"
                       type="text"
-                      maxLength={255}
+                      maxLength={maxTextLength}
                       placeholder="Nome de quem escreveu"
                       value={formData.author}
                       onChange={handleInputChange}
@@ -255,7 +252,7 @@ export default function AddBookPage() {
                     <Input
                       name="publisher"
                       type="text"
-                      maxLength={255}
+                      maxLength={maxTextLength}
                       placeholder="Ex.: Companhia das Letras"
                       value={formData.publisher}
                       onChange={handleInputChange}
@@ -312,17 +309,11 @@ export default function AddBookPage() {
                   <SectionTitle id="synopsisSection">Sinopse</SectionTitle>
                   <CounterRow aria-live="polite">{synopsisCount}</CounterRow>
                 </SectionHeading>
-                <Field
-                  id="synopsis"
-                  label="Do que o livro trata"
-                  tag="obrigatório"
-                  error={errors.synopsis}
-                  help="Mínimo de 50 caracteres"
-                >
+                <Field id="synopsis" label="Do que o livro trata">
                   <TextArea
                     name="synopsis"
                     rows={5}
-                    maxLength={1000}
+                    maxLength={maxTextLength}
                     placeholder="Em poucas linhas"
                     value={formData.synopsis}
                     onChange={handleInputChange}
@@ -341,6 +332,7 @@ export default function AddBookPage() {
                   <Input
                     name="coverUrl"
                     type="url"
+                    maxLength={maxTextLength}
                     placeholder="https://"
                     value={formData.coverUrl}
                     onChange={handleInputChange}

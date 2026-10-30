@@ -41,4 +41,75 @@ describe('Add book', () => {
     // Adding to the favorites is accepting the new book.
     expect(changes(calls)).toEqual(['POST /book/create', 'POST /recommendation/accept?bookId=6']);
   });
+
+  it('asks only for the title, the author and the genre, and creates the book without a synopsis', async () => {
+    const calls = trackApiCalls();
+    const { user } = renderApp('/adicionar-livro', { loggedIn: true });
+    const submit = await screen.findByRole('button', { name: 'Adicionar aos meus livros' });
+    const titleField = screen.getByRole('textbox', { name: /^Título/ });
+    const authorField = screen.getByRole('textbox', { name: /^Autor/ });
+    const genreField = screen.getByRole('combobox', { name: /^Gênero/ });
+    const synopsisField = screen.getByRole('textbox', { name: /^Do que o livro trata/ });
+
+    await user.click(submit);
+
+    expect(titleField).toHaveAccessibleDescription('Informe o título');
+    expect(authorField).toHaveAccessibleDescription('Informe o autor');
+    expect(genreField).toHaveAccessibleDescription('Escolha um gênero');
+    // The synopsis is optional, as in the backend: no required tag and no error.
+    expect(synopsisField).toHaveAccessibleName('Do que o livro trata');
+    expect(synopsisField).toBeValid();
+    expect(changes(calls)).toEqual([]);
+
+    await user.type(titleField, 'Duna');
+    await user.type(authorField, 'Frank Herbert');
+    await user.selectOptions(genreField, 'Ficção Científica');
+    await user.click(submit);
+
+    expect(await screen.findByText('Livro adicionado')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(calls.find((call) => call.path === '/book/create')?.body).toMatchObject({
+        title: 'Duna',
+        synopsis: '',
+      }),
+    );
+  });
+
+  // Both columns are varchar(255): a longer text made MySQL refuse the book with a 500.
+  it('stops the synopsis and the cover link at 255 characters', async () => {
+    const calls = trackApiCalls();
+    const { user } = renderApp('/adicionar-livro', { loggedIn: true });
+    const longCoverUrl = `https://exemplo.com/${'a'.repeat(300)}.jpg`;
+
+    await user.type(await screen.findByRole('textbox', { name: /^Título/ }), 'Duna');
+    await user.type(screen.getByRole('textbox', { name: /^Autor/ }), 'Frank Herbert');
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: /^Gênero/ }),
+      'Ficção Científica',
+    );
+    const synopsisField = screen.getByRole<HTMLTextAreaElement>('textbox', {
+      name: /^Do que o livro trata/,
+    });
+    await user.click(synopsisField);
+    await user.paste('a'.repeat(300));
+    const coverField = screen.getByRole<HTMLInputElement>('textbox', { name: 'Link da imagem' });
+    await user.click(coverField);
+    await user.paste(longCoverUrl);
+
+    expect({
+      synopsis: synopsisField.value.length,
+      coverUrl: coverField.value.length,
+    }).toEqual({ synopsis: 255, coverUrl: 255 });
+    expect(screen.getByText('255 de 255')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Adicionar aos meus livros' }));
+
+    expect(await screen.findByText('Livro adicionado')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(calls.find((call) => call.path === '/book/create')?.body).toMatchObject({
+        synopsis: 'a'.repeat(255),
+        coverUrl: longCoverUrl.slice(0, 255),
+      }),
+    );
+  });
 });
