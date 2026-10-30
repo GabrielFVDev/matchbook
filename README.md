@@ -40,7 +40,7 @@ VITE_FIREBASE_APP_ID=...
 VITE_API_URL=https://...
 ```
 
-Sem essas variáveis, o app para na abertura com um erro no console. Esses valores vão no site publicado de propósito, porque quem protege os dados é o backend conferindo o token. No console do Firebase, o provedor **Google** precisa estar ativado (Authentication → Método de login), e o `FIREBASE_PROJECT_ID` do backend precisa ser o mesmo `projectId`.
+Sem essas variáveis, o app para na abertura com um erro no console. Esses valores vão no site publicado de propósito, porque quem protege os dados é o backend conferindo o token. No console do Firebase, o Authentication precisa ter sido iniciado (o botão **Vamos começar**, senão toda entrada dá `CONFIGURATION_NOT_FOUND`) e o provedor **Google** precisa estar ativado (Authentication → Método de login), e o `FIREBASE_PROJECT_ID` do backend precisa ser o mesmo `projectId`.
 
 **Cuidado:** o Vite dá prioridade às variáveis `VITE_*` que já existem no terminal sobre as do `.env.local`. Se o seu terminal exporta `VITE_FIREBASE_*` de outro projeto, é esse projeto que o app usa. Para conferir só os nomes, sem mostrar os valores: `env | cut -d= -f1 | grep '^VITE_'`.
 

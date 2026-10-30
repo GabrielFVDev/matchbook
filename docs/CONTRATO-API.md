@@ -14,6 +14,7 @@ Este documento ensina o front a falar com o backend novo (`matchbook-api`, outub
 
 ### No console do Firebase (uma vez)
 
+- **Authentication → Vamos começar:** sem isso, toda entrada responde `400 CONFIGURATION_NOT_FOUND`.
 - **Authentication → Método de login → Adicionar novo provedor → Google:** ativar e escolher o e-mail de suporte do projeto.
 - **Configurações do projeto → Seus apps → app Web:** copiar o `firebaseConfig`.
 - **Authentication → Configurações → Domínios autorizados:** o `localhost` já vem. O domínio de produção **precisa** entrar quando o app for publicado: a janela do Google só abre em domínio autorizado.
