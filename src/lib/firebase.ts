@@ -75,8 +75,13 @@ export const updateName = async (name: string) => {
 };
 
 // Firebase only deletes an account with a recent login, so the Google popup opens again first.
+// Here there is no account chooser: the email of whoever is logged in sends Google straight to that
+// account, because picking another one would end in auth/user-mismatch.
 export const confirmIdentity = async () => {
-  await reauthenticateWithPopup(loggedInUser(), google);
+  const user = loggedInUser();
+  const sameAccount = new GoogleAuthProvider();
+  if (user.email) sameAccount.setCustomParameters({ login_hint: user.email });
+  await reauthenticateWithPopup(user, sameAccount);
 };
 
 export const deleteAccount = async () => {
