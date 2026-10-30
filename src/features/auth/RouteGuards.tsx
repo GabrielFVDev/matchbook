@@ -15,6 +15,7 @@ export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
 
 // Redirects to Home whoever arrives already logged in. Whoever logs in or creates an account here
 // is taken on by the screen itself: Firebase logs the new account in before sign-up saves the taste.
+// A new account on the login goes on to the sign-up under this same guard, with no new decision.
 export const PublicRoute = ({ children }: { children: ReactNode }) => {
   const { status } = useSession();
 

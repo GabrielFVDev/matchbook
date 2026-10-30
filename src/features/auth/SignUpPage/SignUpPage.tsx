@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence } from 'motion/react';
 import type { Variants } from 'motion/react';
 import {
@@ -59,10 +59,13 @@ const steps = [
 
 export default function SignUpPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const user = useSessionUser();
   const { signIn, loading: signingIn, error: signInError } = useGoogleSignIn();
 
-  const [step, setStep] = useState(1);
+  // A new account that came in through the login (LoginPage) starts at the taste step.
+  const cameFromLogin = (location.state as { step?: number } | null)?.step === 2;
+  const [step, setStep] = useState(user && cameFromLogin ? 2 : 1);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [accountCreated, setAccountCreated] = useState(false);

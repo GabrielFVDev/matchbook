@@ -102,10 +102,13 @@ export default function LoginPage() {
   const { signIn, loading, error } = useGoogleSignIn();
   const [stackReady, setStackReady] = useState(false);
 
-  // An account created here goes straight to Home; the taste can be filled in later, in the Profile.
+  // An account created here goes on to the taste step of the sign-up, like one created there. One
+  // that already existed opens Home, so its saved taste is not shown as a blank form.
   const handleGoogle = async () => {
     const result = await signIn();
-    if (result.success) navigate(paths.home);
+    if (!result.success) return;
+    if (result.isNewUser) navigate(paths.signUp, { replace: true, state: { step: 2 } });
+    else navigate(paths.home);
   };
 
   return (

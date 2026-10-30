@@ -13,12 +13,36 @@ describe('login and sign-up', () => {
     expect(window.location.pathname).toBe('/entrar');
   });
 
-  it('"Entrar com Google" opens Home', async () => {
+  it('"Entrar com Google" with an account that already exists opens Home', async () => {
+    const calls = trackApiCalls();
     const { user } = renderApp('/entrar');
 
     await user.click(await screen.findByRole('button', { name: 'Entrar com Google' }));
 
     expect(await screen.findByRole('heading', { name: 'Achei um pra você.' })).toBeInTheDocument();
+    expect(calls.filter((call) => call.method === 'PUT')).toEqual([]);
+  });
+
+  it('a new Google account on the login goes through the taste step of the sign-up', async () => {
+    const calls = trackApiCalls();
+    const { user } = renderApp('/entrar');
+    // After renderApp, which starts each test with the sample account.
+    mockNewGoogleAccount();
+
+    await user.click(await screen.findByRole('button', { name: 'Entrar com Google' }));
+
+    expect(await screen.findByRole('heading', { name: 'Seu gosto' })).toBeInTheDocument();
+    expect(screen.getByText('Etapa 2 de 2')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Fantasia' }));
+    await user.click(screen.getByRole('button', { name: 'Salvar e começar' }));
+
+    expect(await screen.findByText('Conta criada')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(calls.find((call) => call.path === '/me/preferences')).toMatchObject({
+        method: 'PUT',
+        body: { favoriteGenre: 'Fantasia' },
+      }),
+    );
   });
 
   it('a new Google account goes to the taste step, which is saved in the backend', async () => {
