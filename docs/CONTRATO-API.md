@@ -116,10 +116,14 @@ O nome e o e-mail ficam em `auth.currentUser.displayName` e `auth.currentUser.em
 A ordem importa. O backend precisa receber o pedido **enquanto o token ainda vale**, e o Firebase só deixa apagar a conta se o login for recente:
 
 ```ts
-import { reauthenticateWithPopup, deleteUser } from 'firebase/auth';
+import { GoogleAuthProvider, reauthenticateWithPopup, deleteUser } from 'firebase/auth';
 
-// 1. Abrir a janela do Google de novo (o Firebase exige login recente para apagar)
-await reauthenticateWithPopup(auth.currentUser!, google);
+// 1. Abrir a janela do Google de novo (o Firebase exige login recente para apagar). Sem a lista
+//    de contas: o e-mail de quem está logado leva direto à conta certa, porque escolher outra
+//    terminaria em auth/user-mismatch.
+const sameAccount = new GoogleAuthProvider();
+sameAccount.setCustomParameters({ login_hint: auth.currentUser!.email! });
+await reauthenticateWithPopup(auth.currentUser!, sameAccount);
 // 2. Apagar os dados no backend: preferências, reações, livros que ela criou
 await api.delete('/me');
 // 3. Apagar a conta no Firebase
