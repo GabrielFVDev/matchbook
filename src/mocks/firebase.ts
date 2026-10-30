@@ -51,10 +51,17 @@ export const getIdToken: typeof RealFirebase.getIdToken = async () => {
   return session.status === 'loggedIn' ? `mock-token-${session.user.uid}` : null;
 };
 
-// For the tests: each one starts with the sample account, logged in or not.
-export const resetMockFirebase = ({ loggedIn }: { loggedIn: boolean }) => {
+// For the tests: each one starts with the sample account, logged in or not, with or without the
+// Google photo.
+export const resetMockFirebase = ({
+  loggedIn,
+  photoUrl = null,
+}: {
+  loggedIn: boolean;
+  photoUrl?: string | null;
+}) => {
   nextGoogleAccount = { user: account.user, isNewUser: false };
-  save(loggedIn ? account.user : null);
+  save(loggedIn ? { ...account.user, photoUrl } : null);
 };
 
 // For the tests: the next Google popup creates an account.

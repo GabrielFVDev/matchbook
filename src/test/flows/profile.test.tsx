@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { changes, renderApp, trackApiCalls } from '@/test/renderApp';
 
@@ -28,6 +28,27 @@ describe('Profile', () => {
         },
       }),
     );
+  });
+
+  it('shows the Google photo, and the initials when it does not load', async () => {
+    const { container } = renderApp('/profile', {
+      loggedIn: true,
+      photoUrl: 'https://lh3.googleusercontent.com/a/ana-ribeiro',
+    });
+
+    expect(await screen.findByRole('heading', { name: 'Ana Ribeiro' })).toBeInTheDocument();
+    // The avatar is decorative (the name is right beside it), so the photo has no role to find.
+    const photo = container.querySelector(
+      'img[src="https://lh3.googleusercontent.com/a/ana-ribeiro"]',
+    );
+    expect(photo).toBeInTheDocument();
+    // Google's photo servers refuse the image when the browser says which page asked for it.
+    expect(photo).toHaveAttribute('referrerpolicy', 'no-referrer');
+
+    // A deleted photo, or no internet: the initials take its place.
+    fireEvent.error(photo!);
+    expect(await screen.findByText('AR')).toBeInTheDocument();
+    expect(photo).not.toBeInTheDocument();
   });
 
   it('"Excluir conta" confirms the Google account, deletes the data in the backend and leaves', async () => {

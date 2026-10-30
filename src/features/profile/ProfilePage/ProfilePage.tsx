@@ -115,6 +115,29 @@ const initials = (name?: string | null) =>
     .map((part) => part[0].toUpperCase())
     .join('');
 
+// The photo of the Google account, or the initials when there is none or it does not load (deleted
+// photo, no internet). Google's photo servers refuse the image when the browser sends the address
+// of the page that asked for it (the Referer header), so it goes without one.
+function ProfileAvatar({ user }: { user: SessionUser }) {
+  const [failedPhoto, setFailedPhoto] = useState<string | null>(null);
+  const { photoUrl } = user;
+
+  return (
+    <Avatar aria-hidden="true">
+      {photoUrl && photoUrl !== failedPhoto ? (
+        <img
+          src={photoUrl}
+          alt=""
+          referrerPolicy="no-referrer"
+          onError={() => setFailedPhoto(photoUrl)}
+        />
+      ) : (
+        initials(user.name)
+      )}
+    </Avatar>
+  );
+}
+
 export default function ProfilePage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -285,9 +308,7 @@ export default function ProfilePage() {
   return (
     <AppLayout gap="20px">
       <ProfileHeader aria-label="Seus dados" {...appear(0)}>
-        <Avatar aria-hidden="true">
-          {user.photoUrl ? <img src={user.photoUrl} alt="" /> : initials(user.name)}
-        </Avatar>
+        <ProfileAvatar user={user} />
         <ProfileInfo>
           <h1>{user.name}</h1>
           <p>

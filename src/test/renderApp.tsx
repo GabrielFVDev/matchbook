@@ -9,6 +9,8 @@ import { server } from '@/mocks/server';
 interface RenderAppOptions {
   // Starts with the sample account logged in, as if Firebase had restored her session.
   loggedIn?: boolean;
+  // The photo of her Google account. Without it, the account has none.
+  photoUrl?: string;
 }
 
 let router: ReturnType<typeof createBrowserRouter> | null = null;
@@ -16,8 +18,8 @@ let router: ReturnType<typeof createBrowserRouter> | null = null;
 // Opens the whole app at an address, like typing the URL in the bar. Each test gets a new router,
 // which reads the address that was just put in the bar. The first screen arrives on demand:
 // look for its first element with findBy, not getBy.
-export function renderApp(url: string, { loggedIn = false }: RenderAppOptions = {}) {
-  resetMockFirebase({ loggedIn });
+export function renderApp(url: string, { loggedIn = false, photoUrl }: RenderAppOptions = {}) {
+  resetMockFirebase({ loggedIn, photoUrl });
   window.history.pushState({}, '', url);
   router?.dispose();
   router = createBrowserRouter(routes);
