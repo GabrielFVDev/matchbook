@@ -17,6 +17,15 @@ export default defineConfig(({ mode }) => ({
       { find: '@', replacement: src('') },
     ],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // The Firebase SDK goes in a file of its own, so the main one stays under Vite's 500 kB warning.
+        // Rollup brings along what only Firebase uses (the @firebase/* packages).
+        manualChunks: { firebase: ['firebase/app', 'firebase/auth'] },
+      },
+    },
+  },
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
