@@ -1,9 +1,7 @@
 // Sample data for the fake API and the fake Firebase. All made up; the field names are the backend's.
 
-// The sample account, which lives in Firebase. "dev:mock" logs in with this email and password.
+// The sample account, which lives in Firebase. In "dev:mock", "Entrar com Google" logs in as her.
 export const account = {
-  email: 'ana@email.com',
-  password: '123456',
   user: {
     uid: 'uid-ana',
     name: 'Ana Ribeiro',
@@ -11,6 +9,15 @@ export const account = {
     photoUrl: null,
     createdAt: 'Tue, 10 Mar 2026 12:00:00 GMT',
   },
+};
+
+// A Google account that has never been to the Matchbook, for the sign-up test.
+export const newAccount = {
+  uid: 'uid-bia',
+  name: 'Bia Souza',
+  email: 'bia@email.com',
+  photoUrl: null,
+  createdAt: 'Thu, 29 Oct 2026 12:00:00 GMT',
 };
 
 export const preferences = {

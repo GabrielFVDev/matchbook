@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { ChangeEvent, FormEvent } from 'react';
+import type { FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence } from 'motion/react';
 import type { Variants } from 'motion/react';
@@ -12,13 +12,13 @@ import {
   AuthText,
   AuthForm,
 } from '@/layouts/AuthLayout';
-import { Field, FormAlert, Input } from '@/components/Field';
-import { PasswordInput } from '@/components/PasswordInput';
+import { FormAlert } from '@/components/Field';
 import { TasteFields } from '@/components/TasteFields';
+import type { TasteValues } from '@/components/TasteFields';
 import { Button, ButtonLink } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
 import { Spinner } from '@/components/Spinner';
-import { IconAlert, IconArrowLeft, IconArrowRight, IconCheck } from '@/components/Icons';
+import { IconAlert, IconCheck, IconGoogle } from '@/components/Icons';
 import {
   SignUpSide,
   SideTitle,
@@ -34,12 +34,14 @@ import {
   StepContent,
 } from './styles';
 import type { StepState } from './styles';
-import { useSignUp } from '@/features/auth/useAuth';
+import { useGoogleSignIn } from '@/features/auth/useAuth';
 import { paths } from '@/app/paths';
-import { isValidEmail, toPreferencesRequest } from '@/lib/formatters';
+import { accountApi } from '@/lib/api/account';
+import { toPreferencesRequest } from '@/lib/formatters';
+import { useSessionUser } from '@/lib/session';
 import { enterEase, exitEase, cardEntrance } from '@/styles/motion';
 
-// The new step enters from the side of travel: from the right going on, from the left going back.
+// The new step enters from the right; leaving, the old one goes to the left.
 const stepVariants: Variants = {
   enter: (direction: number) => ({ opacity: 0, x: direction * 40 }),
   idle: { opacity: 1, x: 0, transition: { duration: 0.3, ease: enterEase } },
@@ -51,37 +53,21 @@ const stepVariants: Variants = {
 };
 
 const steps = [
-  { number: 1, name: 'Sua conta', detail: 'Nome, email e senha' },
+  { number: 1, name: 'Sua conta', detail: 'Com a sua conta do Google' },
   { number: 2, name: 'Seu gosto', detail: 'Gênero, autor e ritmo de leitura' },
 ];
 
-// The form of both steps: the account goes to Firebase, the taste to the backend.
-interface SignUpForm {
-  name: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  favoriteGenre: string;
-  favoriteAuthor: string;
-  readingLevel: string;
-  receiveRecommendations: boolean;
-}
-
 export default function SignUpPage() {
   const navigate = useNavigate();
-  const { signUp, loading } = useSignUp();
+  const user = useSessionUser();
+  const { signIn, loading: signingIn, error: signInError } = useGoogleSignIn();
 
   const [step, setStep] = useState(1);
-  const [direction, setDirection] = useState(1);
-  const [errors, setErrors] = useState<Record<string, string | null>>({});
-  const [signUpError, setSignUpError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [accountCreated, setAccountCreated] = useState(false);
 
-  const [formData, setFormData] = useState<SignUpForm>({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
+  const [taste, setTaste] = useState<TasteValues>({
     favoriteGenre: '',
     favoriteAuthor: '',
     readingLevel: '',
@@ -95,72 +81,35 @@ export default function SignUpPage() {
     return () => clearTimeout(timer);
   }, [accountCreated, navigate]);
 
-  const updateField = <K extends keyof SignUpForm>(field: K, value: SignUpForm[K]) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: null }));
-    if (signUpError) setSignUpError(null);
+  const updateTaste = (field: keyof TasteValues, value: TasteValues[keyof TasteValues]) => {
+    setTaste((prev) => ({ ...prev, [field]: value }));
+    if (saveError) setSaveError(null);
   };
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) =>
-    updateField(e.target.name as keyof SignUpForm, e.target.value);
-
-  const passwordValid = formData.password.length >= 6;
-  const passwordsMatch = formData.confirmPassword && formData.password === formData.confirmPassword;
-
-  const validateStep1 = () => {
-    const newErrors: Record<string, string> = {};
-    if (!formData.name.trim()) newErrors.name = 'Informe seu nome';
-    if (!formData.email.trim()) newErrors.email = 'Informe seu email';
-    else if (!isValidEmail(formData.email)) newErrors.email = 'Esse email parece incompleto';
-    if (!formData.password) newErrors.password = 'Crie uma senha';
-    else if (!passwordValid) newErrors.password = 'Use pelo menos 6 caracteres';
-    if (!formData.confirmPassword) newErrors.confirmPassword = 'Repita a senha';
-    else if (!passwordsMatch) newErrors.confirmPassword = 'As senhas não coincidem';
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  // Step 1: the Google popup creates the account. An account that already existed skips the taste,
+  // so its saved preferences are not replaced by a blank form.
+  const handleGoogle = async () => {
+    const result = await signIn();
+    if (!result.success) return;
+    if (result.isNewUser) setStep(2);
+    else navigate(paths.home);
   };
 
-  const goToStep2 = (e: FormEvent) => {
-    e.preventDefault();
-    if (validateStep1()) {
-      setDirection(1);
-      setStep(2);
-    }
-  };
-
+  // Step 2: the taste goes to the backend, which keeps it under the uid of the token.
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setSaving(true);
+    const response = await accountApi.savePreferences(toPreferencesRequest(taste));
+    setSaving(false);
 
-    const account = {
-      name: formData.name.trim(),
-      email: formData.email.toLowerCase().trim(),
-      password: formData.password,
-    };
-    const result = await signUp(account, toPreferencesRequest(formData));
-
-    if (result.success) {
+    if (response.success) {
       setAccountCreated(true);
     } else {
-      setSignUpError(result.error || 'Não deu para criar sua conta. Tente de novo.');
+      setSaveError('Não deu para salvar seu gosto. Tente de novo ou pule esta etapa.');
     }
   };
 
-  // Messages under the passwords: a submit error wins over the live validation.
-  const passwordMessage = errors.password
-    ? { error: errors.password }
-    : formData.password
-      ? passwordValid
-        ? { success: 'Senha válida' }
-        : { error: 'Muito curta, use pelo menos 6 caracteres' }
-      : { help: 'Pelo menos 6 caracteres' };
-
-  const confirmationMessage = errors.confirmPassword
-    ? { error: errors.confirmPassword }
-    : formData.confirmPassword
-      ? passwordsMatch
-        ? { success: 'As senhas coincidem' }
-        : { error: 'As senhas não coincidem' }
-      : {};
+  const firstName = user?.name?.trim().split(' ')[0];
 
   const stepState = (stepNumber: number): StepState =>
     stepNumber === step ? 'current' : stepNumber < step ? 'done' : 'next';
@@ -217,14 +166,14 @@ export default function SignUpPage() {
       </SignUpSide>
 
       <AuthCard $width={560} aria-labelledby="signUpTitle" {...cardEntrance}>
-        <AnimatePresence mode="wait" initial={false} custom={direction}>
+        <AnimatePresence mode="wait" initial={false} custom={1}>
           {accountCreated ? (
             <StepContent key="accountCreated" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <EmptyState
                 icon={<IconCheck size={30} />}
                 tone="success"
                 title="Conta criada"
-                description={`Boas-vindas, ${formData.name.trim().split(' ')[0]}! Em instantes chega o seu primeiro livro.`}
+                description={`Boas-vindas${firstName ? `, ${firstName}` : ''}! Em instantes chega o seu primeiro livro.`}
                 role="status"
               >
                 <ButtonLink to={paths.home} $variant="primary">
@@ -235,7 +184,7 @@ export default function SignUpPage() {
           ) : (
             <StepContent
               key={step}
-              custom={direction}
+              custom={1}
               variants={stepVariants}
               initial="enter"
               animate="idle"
@@ -244,84 +193,51 @@ export default function SignUpPage() {
               <AuthHeading>
                 <AuthEyebrow>Etapa {step} de 2</AuthEyebrow>
                 <AuthTitle id="signUpTitle">{step === 1 ? 'Sua conta' : 'Seu gosto'}</AuthTitle>
-                {step === 2 && (
-                  <AuthText>
-                    Ajuda o Matchbook a acertar desde o primeiro livro. Tudo aqui é opcional.
-                  </AuthText>
-                )}
+                <AuthText>
+                  {step === 1
+                    ? 'Entre com a sua conta do Google. O Matchbook não guarda senha.'
+                    : 'Ajuda o Matchbook a acertar desde o primeiro livro. Tudo aqui é opcional.'}
+                </AuthText>
               </AuthHeading>
 
               {step === 1 ? (
-                <AuthForm onSubmit={goToStep2} noValidate>
-                  <Field id="name" label="Nome completo" error={errors.name}>
-                    <Input
-                      name="name"
-                      type="text"
-                      autoComplete="name"
-                      placeholder="Seu nome"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                    />
-                  </Field>
-                  <Field id="email" label="Email" error={errors.email}>
-                    <Input
-                      name="email"
-                      type="email"
-                      autoComplete="email"
-                      placeholder="seu@email.com"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                    />
-                  </Field>
-                  <Field id="password" label="Senha" {...passwordMessage}>
-                    <PasswordInput
-                      name="password"
-                      autoComplete="new-password"
-                      placeholder="Crie uma senha"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                    />
-                  </Field>
-                  <Field id="confirmPassword" label="Confirmar senha" {...confirmationMessage}>
-                    <PasswordInput
-                      name="confirmPassword"
-                      autoComplete="new-password"
-                      placeholder="Repita a senha"
-                      value={formData.confirmPassword}
-                      onChange={handleInputChange}
-                    />
-                  </Field>
-                  <Button type="submit" $size="large" $fullWidth>
-                    Continuar
-                    <IconArrowRight size={18} />
+                <AuthForm as="div">
+                  {signInError && (
+                    <FormAlert role="alert">
+                      <IconAlert size={18} />
+                      {signInError}
+                    </FormAlert>
+                  )}
+                  <Button
+                    $variant="secondary"
+                    $size="large"
+                    $fullWidth
+                    disabled={signingIn}
+                    onClick={handleGoogle}
+                  >
+                    {signingIn ? <Spinner /> : <IconGoogle size={20} />}
+                    {signingIn ? 'Criando conta' : 'Criar conta com Google'}
                   </Button>
                 </AuthForm>
               ) : (
                 <AuthForm onSubmit={handleSubmit} noValidate>
-                  <TasteFields values={formData} onChange={updateField} idPrefix="signUp" />
+                  <TasteFields values={taste} onChange={updateTaste} idPrefix="signUp" />
 
-                  {signUpError && (
+                  {saveError && (
                     <FormAlert role="alert">
                       <IconAlert size={18} />
-                      {signUpError}
+                      {saveError}
                     </FormAlert>
                   )}
 
+                  {/* The account already exists: skipping only leaves the taste for the Profile. */}
                   <ButtonRow>
-                    <Button
-                      $variant="secondary"
-                      $size="large"
-                      onClick={() => {
-                        setDirection(-1);
-                        setStep(1);
-                      }}
-                    >
-                      <IconArrowLeft size={18} />
-                      Voltar
-                    </Button>
-                    <Button type="submit" $size="large" disabled={loading}>
-                      {loading && <Spinner />}
-                      {loading ? 'Criando conta' : 'Criar conta'}
+                    <ButtonLink to={paths.home} $variant="secondary" $size="large">
+                      Pular
+                    </ButtonLink>
+                    <Button type="submit" $size="large" disabled={saving}>
+                      {saving && <Spinner />}
+                      {saving ? 'Salvando' : 'Salvar e começar'}
                     </Button>
                   </ButtonRow>
                 </AuthForm>

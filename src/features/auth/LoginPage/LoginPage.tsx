@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import type { ChangeEvent, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   AuthLayout,
@@ -11,14 +10,12 @@ import {
   AuthForm,
   AuthFooter,
 } from '@/layouts/AuthLayout';
-import { Field, FormAlert, Input } from '@/components/Field';
-import { PasswordInput } from '@/components/PasswordInput';
+import { FormAlert } from '@/components/Field';
 import { Button } from '@/components/Button';
 import { Spinner } from '@/components/Spinner';
-import { IconAlert } from '@/components/Icons';
+import { IconAlert, IconGoogle } from '@/components/Icons';
 import { BrandRow, CoverStack, StackCover, QuoteText } from './styles';
-import { useAuth } from '@/features/auth/useAuth';
-import { isValidEmail } from '@/lib/formatters';
+import { useGoogleSignIn } from '@/features/auth/useAuth';
 import { genres } from '@/styles/tokens';
 import type { GenreName } from '@/styles/tokens';
 import { enterEase, cardEntrance, spring, softSpring } from '@/styles/motion';
@@ -102,54 +99,13 @@ const coverVariants: Variants = {
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login, resetPassword, loading } = useAuth();
-
-  const [formData, setFormData] = useState({ email: '', password: '' });
-  const [errors, setErrors] = useState<Record<string, string | null>>({});
-  const [loginError, setLoginError] = useState<string | null>(null);
-  const [resetSent, setResetSent] = useState(false);
+  const { signIn, loading, error } = useGoogleSignIn();
   const [stackReady, setStackReady] = useState(false);
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
-    if (loginError) setLoginError(null);
-    if (name === 'email') setResetSent(false);
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-
-    const newErrors: Record<string, string> = {};
-    if (!formData.email) newErrors.email = 'Informe seu email';
-    if (!formData.password) newErrors.password = 'Informe sua senha';
-    setErrors(newErrors);
-    if (Object.keys(newErrors).length > 0) return;
-
-    const result = await login(formData.email, formData.password);
-
-    if (result.success) {
-      navigate(paths.home);
-    } else {
-      setLoginError(result.error || 'Confira seu email e sua senha e tente de novo.');
-    }
-  };
-
-  // The link goes to the email typed above.
-  const handleForgotPassword = async () => {
-    if (!isValidEmail(formData.email.trim())) {
-      setErrors({ email: 'Informe seu email para receber o link' });
-      return;
-    }
-
-    setLoginError(null);
-    const result = await resetPassword(formData.email);
-    if (result.success) {
-      setResetSent(true);
-    } else {
-      setLoginError(result.error);
-    }
+  // An account created here goes straight to Home; the taste can be filled in later, in the Profile.
+  const handleGoogle = async () => {
+    const result = await signIn();
+    if (result.success) navigate(paths.home);
   };
 
   return (
@@ -206,47 +162,23 @@ export default function LoginPage() {
           <AuthText>Boas-vindas de volta ao Matchbook.</AuthText>
         </AuthHeading>
 
-        <AuthForm onSubmit={handleSubmit} noValidate>
-          <Field
-            id="email"
-            label="Email"
-            error={errors.email}
-            success={
-              resetSent && 'Se esse email tiver conta, o link para criar uma nova senha chega nele.'
-            }
-          >
-            <Input
-              name="email"
-              type="email"
-              autoComplete="email"
-              placeholder="seu@email.com"
-              value={formData.email}
-              onChange={handleInputChange}
-            />
-          </Field>
-          <Field id="password" label="Senha" error={errors.password}>
-            <PasswordInput
-              name="password"
-              autoComplete="current-password"
-              placeholder="Sua senha"
-              value={formData.password}
-              onChange={handleInputChange}
-            />
-          </Field>
-
-          {loginError && (
+        <AuthForm as="div">
+          {error && (
             <FormAlert role="alert">
               <IconAlert size={18} />
-              {loginError}
+              {error}
             </FormAlert>
           )}
 
-          <Button type="submit" $size="large" $fullWidth disabled={loading}>
-            {loading && <Spinner />}
-            {loading ? 'Entrando' : 'Entrar'}
-          </Button>
-          <Button $variant="subtle" onClick={handleForgotPassword}>
-            Esqueci minha senha
+          <Button
+            $variant="secondary"
+            $size="large"
+            $fullWidth
+            disabled={loading}
+            onClick={handleGoogle}
+          >
+            {loading ? <Spinner /> : <IconGoogle size={20} />}
+            {loading ? 'Entrando' : 'Entrar com Google'}
           </Button>
         </AuthForm>
 

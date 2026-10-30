@@ -1,13 +1,5 @@
 import type { PreferencesRequest, ReadingLevel } from '@/lib/api/types';
 
-// Helpers for formatting and validating data
-
-// Validates an email
-export const isValidEmail = (email: string) => {
-  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return regex.test(email);
-};
-
 // The taste form, as TasteFields fills it.
 interface TasteForm {
   favoriteGenre: string;

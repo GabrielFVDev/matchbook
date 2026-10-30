@@ -8,7 +8,6 @@ import { Tag } from '@/components/Chip';
 import { StatTile } from '@/components/StatTile';
 import { Dialog, ConfirmDialog } from '@/components/Dialog';
 import { Field, FormAlert, Input } from '@/components/Field';
-import { PasswordInput } from '@/components/PasswordInput';
 import { TasteFields, readingLevelLabel } from '@/components/TasteFields';
 import { Toast } from '@/components/Toast';
 import { Spinner } from '@/components/Spinner';
@@ -50,8 +49,8 @@ import {
 import { useLikedCount } from '@/lib/likedCount';
 import { accountApi } from '@/lib/api/account';
 import { recommendationsApi } from '@/lib/api/recommendations';
-import { authErrorMessage, isWrongPassword } from '@/lib/authErrors';
-import { confirmPassword, deleteAccount, logOut, updateName } from '@/lib/firebase';
+import { authErrorMessage, isPopupClosed } from '@/lib/authErrors';
+import { confirmIdentity, deleteAccount, logOut, updateName } from '@/lib/firebase';
 import { toPreferencesRequest } from '@/lib/formatters';
 import { useSessionUser } from '@/lib/session';
 import type { SessionUser } from '@/lib/session';
@@ -133,7 +132,6 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState<{ text: string; id: number } | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deletePassword, setDeletePassword] = useState('');
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
@@ -237,7 +235,6 @@ export default function ProfilePage() {
   };
 
   const openDelete = () => {
-    setDeletePassword('');
     setDeleteError(null);
     setShowDeleteModal(true);
   };
@@ -245,22 +242,16 @@ export default function ProfilePage() {
   // The order matters: Firebase only deletes with a recent login, and the backend only deletes
   // while the token still works, that is, before the Firebase account goes.
   const confirmDeleteAccount = async () => {
-    if (!deletePassword) {
-      setDeleteError('Digite sua senha para confirmar.');
-      return;
-    }
-
     setDeleting(true);
     setDeleteError(null);
 
     try {
-      await confirmPassword(deletePassword);
+      await confirmIdentity();
     } catch (error) {
-      setDeleteError(
-        isWrongPassword(error)
-          ? 'Senha incorreta.'
-          : authErrorMessage(error, 'Não deu para confirmar sua senha. Tente de novo.'),
-      );
+      // Closing the Google popup is giving up: the account stays.
+      if (!isPopupClosed(error)) {
+        setDeleteError(authErrorMessage(error, 'Não deu para confirmar sua conta. Tente de novo.'));
+      }
       setDeleting(false);
       return;
     }
@@ -469,25 +460,19 @@ export default function ProfilePage() {
       <ConfirmDialog
         open={showDeleteModal}
         title="Excluir sua conta?"
-        description="Seus livros curtidos, preferências e histórico somem para sempre."
+        description="Seus livros curtidos, preferências e histórico somem para sempre. Para confirmar, o Google pede a sua conta de novo."
         icon={<IconTrash size={24} />}
         confirmLabel="Sim, excluir"
         loading={deleting}
         onConfirm={confirmDeleteAccount}
         onCancel={() => setShowDeleteModal(false)}
       >
-        <Field id="deletePassword" label="Sua senha" error={deleteError}>
-          <PasswordInput
-            autoComplete="current-password"
-            placeholder="Para confirmar que é você"
-            value={deletePassword}
-            onChange={(e) => {
-              setDeletePassword(e.target.value);
-              setDeleteError(null);
-            }}
-            autoFocus
-          />
-        </Field>
+        {deleteError && (
+          <FormAlert role="alert">
+            <IconAlert size={18} />
+            {deleteError}
+          </FormAlert>
+        )}
       </ConfirmDialog>
 
       <AnimatePresence>

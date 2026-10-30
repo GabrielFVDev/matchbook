@@ -181,7 +181,7 @@ interface ConfirmDialogProps {
   loading?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
-  // Extra content between the description and the buttons, like a password field.
+  // Extra content between the description and the buttons, like an error message.
   children?: ReactNode;
 }
 
@@ -205,8 +205,7 @@ export function ConfirmDialog({
       <Description>{description}</Description>
       {children}
       <Buttons>
-        {/* With a field in the dialog, the focus goes to the field instead. */}
-        <Button $variant="secondary" onClick={onCancel} autoFocus={!children}>
+        <Button $variant="secondary" onClick={onCancel} autoFocus>
           Cancelar
         </Button>
         <Button $variant={variant} onClick={onConfirm} disabled={loading}>

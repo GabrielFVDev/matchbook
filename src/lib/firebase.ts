@@ -1,13 +1,12 @@
 import { initializeApp } from 'firebase/app';
 import {
-  EmailAuthProvider,
-  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
   deleteUser,
+  getAdditionalUserInfo,
   getAuth,
   onAuthStateChanged,
-  reauthenticateWithCredential,
-  sendPasswordResetEmail,
-  signInWithEmailAndPassword,
+  reauthenticateWithPopup,
+  signInWithPopup,
   signOut,
   updateProfile,
 } from 'firebase/auth';
@@ -32,6 +31,11 @@ const app = initializeApp({
 
 const auth = getAuth(app);
 
+// The only way in is the Google account. The chooser always shows, so whoever is logged in to more
+// than one Google account in the browser picks which one.
+const google = new GoogleAuthProvider();
+google.setCustomParameters({ prompt: 'select_account' });
+
 const toSessionUser = (user: User): SessionUser => ({
   uid: user.uid,
   name: user.displayName,
@@ -53,16 +57,11 @@ const loggedInUser = () => {
   return auth.currentUser;
 };
 
-export const signIn = async (email: string, password: string) => {
-  await signInWithEmailAndPassword(auth, email, password);
+// Opens the Google popup. The same call logs in and creates the account: isNewUser tells which.
+export const signInWithGoogle = async () => {
+  const result = await signInWithPopup(auth, google);
   publish();
-};
-
-// Creates the account with the name on the profile. Firebase logs the new account in right away.
-export const signUp = async (name: string, email: string, password: string) => {
-  const { user } = await createUserWithEmailAndPassword(auth, email, password);
-  await updateProfile(user, { displayName: name });
-  publish();
+  return { isNewUser: getAdditionalUserInfo(result)?.isNewUser ?? false };
 };
 
 export const logOut = async () => {
@@ -70,21 +69,14 @@ export const logOut = async () => {
   publish();
 };
 
-// Firebase sends the email with the link to choose a new password.
-export const sendPasswordReset = (email: string) => sendPasswordResetEmail(auth, email);
-
 export const updateName = async (name: string) => {
   await updateProfile(loggedInUser(), { displayName: name });
   publish();
 };
 
-// Firebase only deletes an account with a recent login, so the password is asked again first.
-export const confirmPassword = async (password: string) => {
-  const user = loggedInUser();
-  await reauthenticateWithCredential(
-    user,
-    EmailAuthProvider.credential(user.email ?? '', password),
-  );
+// Firebase only deletes an account with a recent login, so the Google popup opens again first.
+export const confirmIdentity = async () => {
+  await reauthenticateWithPopup(loggedInUser(), google);
 };
 
 export const deleteAccount = async () => {

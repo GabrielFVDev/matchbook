@@ -4,7 +4,7 @@ Um site que recomenda **um livro por vez**. A pessoa responde **Amei** (o livro 
 
 Este repositório é o **front**: React 19, TypeScript estrito, Vite 7, styled-components, motion (animações) e react-router. O backend (Spring Boot + MySQL) fica no repositório `matchbook-api`.
 
-A conta da pessoa (nome, email, senha e foto) fica no **Firebase Auth**. O backend não guarda nada disso: ele só conhece o `uid` do Firebase, que tira do token enviado em toda chamada, e guarda as preferências de leitura, as reações (Amei e Próximo) e os livros que a pessoa criou. O contrato está em [`docs/CONTRATO-API.md`](docs/CONTRATO-API.md).
+A conta da pessoa fica no **Firebase Auth**: ela entra com a conta do **Google**, e o nome, o email e a foto vêm de lá. Ninguém guarda senha. O backend não guarda nada disso: ele só conhece o `uid` do Firebase, que tira do token enviado em toda chamada, e guarda as preferências de leitura, as reações (Amei e Próximo) e os livros que a pessoa criou. O contrato está em [`docs/CONTRATO-API.md`](docs/CONTRATO-API.md).
 
 ## Como rodar
 
@@ -15,7 +15,7 @@ npm install
 npm run dev:mock   # o app com uma API falsa, sem backend
 ```
 
-O app abre na página de primeira visita (`/`); o login fica em `/entrar`. No modo `dev:mock`, entre com **`ana@email.com` / `123456`**. A API falsa (MSW, em `src/mocks/`) responde no formato do backend de verdade, com dados de exemplo, e o Firebase também é falso (`src/mocks/firebase.ts`): as contas ficam na memória e nada sai para a rede.
+O app abre na página de primeira visita (`/`); o login fica em `/entrar`. No modo `dev:mock`, clique em **Entrar com Google**: o Firebase falso (`src/mocks/firebase.ts`) não abre janela nenhuma e entra direto como a conta de exemplo, a Ana. A API falsa (MSW, em `src/mocks/`) responde no formato do backend de verdade, com dados de exemplo, e nada sai para a rede.
 
 | Comando             | O que faz                                                                         |
 | ------------------- | --------------------------------------------------------------------------------- |
@@ -40,7 +40,7 @@ VITE_FIREBASE_APP_ID=...
 VITE_API_URL=https://...
 ```
 
-Sem essas variáveis, o app para na abertura com um erro no console. Esses valores vão no site publicado de propósito, porque quem protege os dados é o backend conferindo o token. No console do Firebase, o login por **E-mail/senha** precisa estar ativado, e o `FIREBASE_PROJECT_ID` do backend precisa ser o mesmo `projectId`.
+Sem essas variáveis, o app para na abertura com um erro no console. Esses valores vão no site publicado de propósito, porque quem protege os dados é o backend conferindo o token. No console do Firebase, o provedor **Google** precisa estar ativado (Authentication → Método de login), e o `FIREBASE_PROJECT_ID` do backend precisa ser o mesmo `projectId`.
 
 **Cuidado:** o Vite dá prioridade às variáveis `VITE_*` que já existem no terminal sobre as do `.env.local`. Se o seu terminal exporta `VITE_FIREBASE_*` de outro projeto, é esse projeto que o app usa. Para conferir só os nomes, sem mostrar os valores: `env | cut -d= -f1 | grep '^VITE_'`.
 
@@ -48,7 +48,7 @@ Os testes e o `dev:mock` não leem nada disso.
 
 ### Deploy na Vercel
 
-A Vercel não vê o `.env.local`, que fica fora do git. As mesmas variáveis vão em **Settings → Environment Variables**, e a `VITE_API_URL` passa a ser obrigatória: o endereço **https** do backend publicado, terminando em `/api`. O Vite escreve os valores no site na hora do build, então trocar uma variável só vale depois de um **Redeploy**. O domínio da Vercel também entra em Firebase → Authentication → Configurações → Domínios autorizados.
+A Vercel não vê o `.env.local`, que fica fora do git. As mesmas variáveis vão em **Settings → Environment Variables**, e a `VITE_API_URL` passa a ser obrigatória: o endereço **https** do backend publicado, terminando em `/api`. O Vite escreve os valores no site na hora do build, então trocar uma variável só vale depois de um **Redeploy**. O domínio da Vercel também precisa entrar em Firebase → Authentication → Configurações → Domínios autorizados: sem isso, a janela do Google não abre no site publicado.
 
 O `vercel.json` manda todo endereço para o `index.html`. Sem ele, abrir ou recarregar `/home` direto dá 404, porque as rotas existem só dentro do app.
 

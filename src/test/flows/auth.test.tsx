@@ -1,9 +1,10 @@
 import { screen, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { mockNewGoogleAccount } from '@/mocks/firebase';
 import { renderApp, trackApiCalls } from '@/test/renderApp';
 
-// Firebase itself (login, wrong password, sessions) is not tested here: in the tests it is the
-// stand-in of src/mocks/firebase.ts. What is tested is what the front does around it.
+// Firebase and the Google popup are not tested here: in the tests they are the stand-in of
+// src/mocks/firebase.ts. What is tested is what the front does around them.
 describe('login and sign-up', () => {
   it('sends a logged-out visitor who opens /home to the login', async () => {
     renderApp('/home');
@@ -12,24 +13,31 @@ describe('login and sign-up', () => {
     expect(window.location.pathname).toBe('/entrar');
   });
 
-  it('creates the account in two steps and saves the taste in the backend', async () => {
+  it('"Entrar com Google" opens Home', async () => {
+    const { user } = renderApp('/entrar');
+
+    await user.click(await screen.findByRole('button', { name: 'Entrar com Google' }));
+
+    expect(await screen.findByRole('heading', { name: 'Achei um pra você.' })).toBeInTheDocument();
+  });
+
+  it('a new Google account goes to the taste step, which is saved in the backend', async () => {
     const calls = trackApiCalls();
     const { user } = renderApp('/cadastro');
+    // After renderApp, which starts each test with the sample account.
+    mockNewGoogleAccount();
 
-    await user.type(await screen.findByLabelText('Nome completo'), '  Bia Souza  ');
-    await user.type(screen.getByLabelText('Email'), 'Bia@Email.com');
-    await user.type(screen.getByLabelText('Senha'), '123456');
-    await user.type(screen.getByLabelText('Confirmar senha'), '123456');
-    await user.click(screen.getByRole('button', { name: 'Continuar' }));
+    await user.click(await screen.findByRole('button', { name: 'Criar conta com Google' }));
 
     expect(await screen.findByRole('heading', { name: 'Seu gosto' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Fantasia' }));
     await user.type(screen.getByLabelText('Autor preferido'), '  Tolkien ');
     await user.click(screen.getByRole('button', { name: 'Avançado' }));
-    await user.click(screen.getByRole('button', { name: 'Criar conta' }));
+    await user.click(screen.getByRole('button', { name: 'Salvar e começar' }));
 
     expect(await screen.findByText('Conta criada')).toBeInTheDocument();
-    // The account went to Firebase; the backend only gets the taste, with the level in English.
+    expect(screen.getByText(/Boas-vindas, Bia!/)).toBeInTheDocument();
+    // The backend only gets the taste, with the level in English.
     await waitFor(() =>
       expect(calls.find((call) => call.path === '/me/preferences')).toMatchObject({
         method: 'PUT',
@@ -41,5 +49,15 @@ describe('login and sign-up', () => {
         },
       }),
     );
+  });
+
+  it('a Google account that already exists skips the taste and opens Home', async () => {
+    const calls = trackApiCalls();
+    const { user } = renderApp('/cadastro');
+
+    await user.click(await screen.findByRole('button', { name: 'Criar conta com Google' }));
+
+    expect(await screen.findByRole('heading', { name: 'Achei um pra você.' })).toBeInTheDocument();
+    expect(calls.filter((call) => call.method === 'PUT')).toEqual([]);
   });
 });

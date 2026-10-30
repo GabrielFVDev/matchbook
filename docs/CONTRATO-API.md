@@ -4,7 +4,7 @@ Este documento ensina o front a falar com o backend novo (`matchbook-api`, outub
 
 ## O que mudou, em uma lista
 
-1. **Conta e login saem do backend e vão para o Firebase Auth.** O backend não guarda mais e-mail, senha, nome nem foto. O login antigo, que baixava todos os usuários com a senha e comparava no navegador, deixa de existir.
+1. **Conta e login saem do backend e vão para o Firebase Auth, com a conta do Google.** O backend não guarda mais e-mail, senha, nome nem foto, e ninguém guarda senha: quem confere é o Google. O login antigo, que baixava todos os usuários com a senha e comparava no navegador, deixa de existir.
 2. **Toda chamada para `/api` precisa do token do Firebase** no cabeçalho `Authorization: Bearer <token>`. Sem token, ou com token vencido, a resposta é `401`.
 3. **Nenhuma rota recebe mais o id do usuário.** O backend descobre quem é pelo token. Some todo `userId`, `idUsuario` e `usuarioId` das URLs.
 4. **Rotas, campos e valores agora estão em inglês.** O texto da tela continua em português, e quem traduz é o front.
@@ -14,9 +14,9 @@ Este documento ensina o front a falar com o backend novo (`matchbook-api`, outub
 
 ### No console do Firebase (uma vez)
 
-- **Authentication → Método de login:** ativar **E-mail/senha**.
+- **Authentication → Método de login → Adicionar novo provedor → Google:** ativar e escolher o e-mail de suporte do projeto.
 - **Configurações do projeto → Seus apps → app Web:** copiar o `firebaseConfig`.
-- **Authentication → Configurações → Domínios autorizados:** o `localhost` já vem. O domínio de produção entra quando o app for publicado.
+- **Authentication → Configurações → Domínios autorizados:** o `localhost` já vem. O domínio de produção **precisa** entrar quando o app for publicado: a janela do Google só abre em domínio autorizado.
 - **Backend:** a variável `FIREBASE_PROJECT_ID` do backend é o mesmo `projectId` do `firebaseConfig`. Sem ela, a API nem sobe.
 
 ### No código
@@ -65,15 +65,25 @@ export const auth = getAuth(app);
 
 ## 2. Os fluxos de conta
 
-### Cadastro
+### Entrar e criar conta
 
-São três passos: a conta no Firebase, o nome no perfil do Firebase e as preferências no backend.
+É a mesma chamada: a janela (popup) do Google entra numa conta que já existe ou cria uma nova. O `isNewUser` diz qual foi.
 
 ```ts
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { GoogleAuthProvider, getAdditionalUserInfo, signInWithPopup, signOut } from 'firebase/auth';
 
-const { user } = await createUserWithEmailAndPassword(auth, email, password);
-await updateProfile(user, { displayName: name });
+const google = new GoogleAuthProvider();
+google.setCustomParameters({ prompt: 'select_account' }); // sempre deixa escolher a conta
+
+const result = await signInWithPopup(auth, google);
+const isNewUser = getAdditionalUserInfo(result)?.isNewUser;
+
+await signOut(auth);
+```
+
+O nome, o e-mail e a foto vêm da conta do Google. Para a conta nova, o cadastro pergunta o gosto e salva no backend:
+
+```ts
 await api.put('/me/preferences', {
   favoriteGenre,
   favoriteAuthor,
@@ -83,16 +93,6 @@ await api.put('/me/preferences', {
 ```
 
 As preferências podem ficar para depois. Quem não tem preferências salvas recebe recomendações mesmo assim, só que sem o peso do gosto.
-
-### Login, logout e senha esquecida
-
-```ts
-import { signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from 'firebase/auth';
-
-await signInWithEmailAndPassword(auth, email, password);
-await signOut(auth);
-await sendPasswordResetEmail(auth, email); // o Firebase manda o e-mail
-```
 
 ### Sessão e rotas protegidas
 
@@ -108,20 +108,17 @@ onAuthStateChanged(auth, (user) => {
 
 **Cuidado:** ao recarregar a página, o Firebase leva um instante para restaurar a sessão. Os guards (`ProtectedRoute` e `PublicRoute`) precisam esperar a **primeira** chamada do `onAuthStateChanged` antes de decidir. Senão, quem está logado é jogado para o login por um instante.
 
-O nome e o e-mail ficam em `auth.currentUser.displayName` e `auth.currentUser.email`. A foto fica em `photoURL`, alterada com `updateProfile`.
+O nome e o e-mail ficam em `auth.currentUser.displayName` e `auth.currentUser.email`. A foto fica em `photoURL`. O nome pode ser trocado com `updateProfile`.
 
 ### Apagar a conta
 
 A ordem importa. O backend precisa receber o pedido **enquanto o token ainda vale**, e o Firebase só deixa apagar a conta se o login for recente:
 
 ```ts
-import { EmailAuthProvider, reauthenticateWithCredential, deleteUser } from 'firebase/auth';
+import { reauthenticateWithPopup, deleteUser } from 'firebase/auth';
 
-// 1. Pedir a senha de novo (o Firebase exige login recente para apagar)
-await reauthenticateWithCredential(
-  auth.currentUser!,
-  EmailAuthProvider.credential(email, password),
-);
+// 1. Abrir a janela do Google de novo (o Firebase exige login recente para apagar)
+await reauthenticateWithPopup(auth.currentUser!, google);
 // 2. Apagar os dados no backend: preferências, reações, livros que ela criou
 await api.delete('/me');
 // 3. Apagar a conta no Firebase
@@ -132,14 +129,15 @@ Se o passo 2 vier antes do 1 e a reautenticação falhar, a pessoa fica com uma 
 
 ### Erros do Firebase para mostrar na tela
 
-| Código (`error.code`)         | Texto sugerido                                      |
-| ----------------------------- | --------------------------------------------------- |
-| `auth/email-already-in-use`   | Esse e-mail já tem conta.                           |
-| `auth/invalid-credential`     | E-mail ou senha incorretos.                         |
-| `auth/invalid-email`          | E-mail inválido.                                    |
-| `auth/weak-password`          | A senha precisa ter pelo menos 6 caracteres.        |
-| `auth/too-many-requests`      | Muitas tentativas. Tente de novo em alguns minutos. |
-| `auth/network-request-failed` | Sem conexão. Confira a internet.                    |
+| Código (`error.code`)                                       | O que fazer                                                  |
+| ----------------------------------------------------------- | ------------------------------------------------------------ |
+| `auth/popup-closed-by-user`, `auth/cancelled-popup-request` | A pessoa fechou a janela: não mostrar erro                   |
+| `auth/popup-blocked`                                        | O navegador bloqueou a janela: pedir para liberar pop-ups    |
+| `auth/user-mismatch`                                        | Na reautenticação, escolheu outra conta: pedir a mesma       |
+| `auth/unauthorized-domain`                                  | O domínio não está nos domínios autorizados (configuração)   |
+| `auth/operation-not-allowed`                                | O provedor Google não está ativado no console (configuração) |
+| `auth/too-many-requests`                                    | Muitas tentativas. Tente de novo em alguns minutos.          |
+| `auth/network-request-failed`                               | Sem conexão. Confira a internet.                             |
 
 ## 3. Mandar o token em toda chamada
 
@@ -267,8 +265,8 @@ Quando as regras se cruzam, vence a primeira que bater nesta ordem: 10 recusas, 
 
 | Antes                                                   | Agora                                                                   |
 | ------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `POST /usuario/create`                                  | Firebase (`createUserWithEmailAndPassword`) + `PUT /me/preferences`     |
-| `GET /usuario/all` (o login simulado)                   | Firebase (`signInWithEmailAndPassword`)                                 |
+| `POST /usuario/create`                                  | Firebase (`signInWithPopup` com Google) + `PUT /me/preferences`         |
+| `GET /usuario/all` (o login simulado)                   | Firebase (`signInWithPopup` com Google)                                 |
 | `PUT /usuario/update`                                   | `PUT /me/preferences`. Nome e foto vão pelo `updateProfile` do Firebase |
 | `POST /livro/create`                                    | `POST /book/create`                                                     |
 | `GET /recomendacao/getRecomendacaoAdaptativa/{id}`      | `GET /recommendation/getAdaptiveRecommendation`                         |

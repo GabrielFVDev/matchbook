@@ -30,13 +30,12 @@ describe('Profile', () => {
     );
   });
 
-  it('"Excluir conta" asks the password, deletes the data in the backend and leaves', async () => {
+  it('"Excluir conta" confirms the Google account, deletes the data in the backend and leaves', async () => {
     const calls = trackApiCalls();
     const { user } = renderApp('/profile', { loggedIn: true });
 
     await user.click(await screen.findByRole('button', { name: 'Excluir conta' }));
     const dialog = await screen.findByRole('dialog', { name: 'Excluir sua conta?' });
-    await user.type(within(dialog).getByLabelText('Sua senha'), '123456');
     await user.click(within(dialog).getByRole('button', { name: 'Sim, excluir' }));
 
     expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeInTheDocument();
