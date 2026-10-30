@@ -6,7 +6,7 @@ const synopsis =
   'Paul Atreides chega ao planeta deserto Arrakis, onde a especiaria mais valiosa do universo decide o destino de impérios.';
 
 describe('Add book', () => {
-  it('creates the book with the current body and adds it to the favorites', async () => {
+  it('creates the book and adds it to the favorites', async () => {
     const calls = trackApiCalls();
     const { user } = renderApp('/adicionar-livro', { loggedIn: true });
 
@@ -25,26 +25,20 @@ describe('Add book', () => {
     await user.click(screen.getByRole('button', { name: 'Adicionar aos meus livros' }));
 
     expect(await screen.findByText('Livro adicionado')).toBeInTheDocument();
-    // Current behavior: the cover goes as "capaUrl", which the backend ignores (its field is
-    // "capa"). Changes when the backend is rebuilt.
     await waitFor(() =>
-      expect(calls.find((call) => call.path === '/livro/create')?.body).toEqual({
-        titulo: 'Duna',
-        autor: 'Frank Herbert',
-        editora: '',
-        genero: 'Ficção Científica',
-        anoPublicacao: null,
-        numeroPaginas: null,
-        idioma: 'Português',
-        isbn: '',
-        sinopse: synopsis,
-        capaUrl: 'https://exemplo.com/duna.jpg',
-        disponivel: true,
+      expect(calls.find((call) => call.path === '/book/create')?.body).toEqual({
+        title: 'Duna',
+        author: 'Frank Herbert',
+        publisher: '',
+        genre: 'Ficção Científica',
+        publicationYear: null,
+        pageCount: null,
+        language: 'Português',
+        synopsis,
+        coverUrl: 'https://exemplo.com/duna.jpg',
       }),
     );
-    expect(changes(calls)).toEqual([
-      'POST /livro/create',
-      'POST /livros-curtidos/curtir?usuarioId=1&livroId=6',
-    ]);
+    // Adding to the favorites is accepting the new book.
+    expect(changes(calls)).toEqual(['POST /book/create', 'POST /recommendation/accept?bookId=6']);
   });
 });

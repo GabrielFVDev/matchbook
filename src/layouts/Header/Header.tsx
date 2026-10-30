@@ -20,7 +20,7 @@ import {
 import { Logo } from '@/components/Logo';
 import { IconHeart, IconPencil, IconPlus } from '@/components/Icons';
 import { useLikedCount } from '@/lib/likedCount';
-import { clearSessionUser } from '@/lib/session';
+import { logOut } from '@/lib/firebase';
 import { paths } from '@/app/paths';
 import { colors } from '@/styles/tokens';
 import { spring } from '@/styles/motion';
@@ -58,8 +58,8 @@ export default function Header({ accentColor = colors.brand }: { accentColor?: s
     previousTotal.current = total;
   }, [total]);
 
-  const handleLogout = () => {
-    clearSessionUser();
+  const handleLogout = async () => {
+    await logOut();
     navigate(paths.login);
   };
 

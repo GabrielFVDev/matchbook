@@ -1,51 +1,58 @@
 import { useState } from 'react';
-import { authApi } from '@/lib/api/auth';
-import type { SignUpRequest } from '@/lib/api/types';
-import { hasSession, saveSessionUser } from '@/lib/session';
+import { accountApi } from '@/lib/api/account';
+import type { PreferencesRequest } from '@/lib/api/types';
+import { authErrorMessage } from '@/lib/authErrors';
+import { sendPasswordReset, signIn, signUp as createAccount } from '@/lib/firebase';
 
-// Hook for login and protected routes. To only read or clear the session, use @/lib/session.
+// Hook for logging in. Who is logged in comes from useSession, in @/lib/session.
 export const useAuth = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Logs in
+  // Logs in with Firebase
   const login = async (email: string, password: string) => {
     setLoading(true);
     setError(null);
 
     try {
-      const result = await authApi.login(email, password);
-
-      if (result.success) {
-        // Stores the user data in localStorage
-        saveSessionUser(result.data);
-        setLoading(false);
-        return { success: true as const, user: result.data };
-      } else {
-        setError(result.error);
-        setLoading(false);
-        return { success: false as const, error: result.error };
-      }
-    } catch {
-      setError('Erro inesperado ao fazer login');
+      await signIn(email.trim(), password);
       setLoading(false);
-      return { success: false as const, error: 'Erro inesperado ao fazer login' };
+      return { success: true as const };
+    } catch (err) {
+      const message = authErrorMessage(err, 'Erro inesperado ao fazer login');
+      setError(message);
+      setLoading(false);
+      return { success: false as const, error: message };
     }
   };
 
-  // Checks whether someone is logged in
-  const isLoggedIn = () => {
-    return hasSession();
+  // Firebase sends the email with the link to choose a new password
+  const resetPassword = async (email: string) => {
+    try {
+      await sendPasswordReset(email.trim());
+      return { success: true as const };
+    } catch (err) {
+      return {
+        success: false as const,
+        error: authErrorMessage(err, 'Não deu para enviar o email. Tente de novo.'),
+      };
+    }
   };
 
   return {
     login,
-    isLoggedIn,
+    resetPassword,
     loading,
     error,
     setError,
   };
 };
+
+interface NewAccount {
+  name: string;
+  email: string;
+  password: string;
+}
 
 // Hook for signing up users
 export const useSignUp = () => {
@@ -53,30 +60,31 @@ export const useSignUp = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Signs up a user
-  const signUp = async (userData: SignUpRequest) => {
+  // Creates the account in Firebase, which logs it in, and then saves the taste in the backend.
+  const signUp = async ({ name, email, password }: NewAccount, preferences: PreferencesRequest) => {
     setLoading(true);
     setError(null);
     setSuccess(false);
 
     try {
-      const result = await authApi.signUp(userData);
-
-      if (result.success) {
-        setSuccess(true);
-        setLoading(false);
-        return { success: true as const, data: result.data };
-      } else {
-        setError(result.error);
-        setLoading(false);
-        return { success: false as const, error: result.error };
-      }
+      await createAccount(name, email, password);
     } catch (err) {
-      console.error('Hook: unexpected error:', err);
-      setError('Erro inesperado ao cadastrar usuário');
+      const message = authErrorMessage(err, 'Erro inesperado ao cadastrar usuário');
+      setError(message);
       setLoading(false);
-      return { success: false as const, error: 'Erro inesperado ao cadastrar usuário' };
+      return { success: false as const, error: message };
     }
+
+    // The account already exists: without the taste, the recommendations just start without it,
+    // and the person can fill it in the Profile.
+    const saved = await accountApi.savePreferences(preferences);
+    if (!saved.success) {
+      console.warn('Account created, but the preferences were not saved:', saved.error);
+    }
+
+    setSuccess(true);
+    setLoading(false);
+    return { success: true as const };
   };
 
   // Resets the states

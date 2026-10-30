@@ -181,6 +181,8 @@ interface ConfirmDialogProps {
   loading?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
+  // Extra content between the description and the buttons, like a password field.
+  children?: ReactNode;
 }
 
 // Confirmation of an action with no way back, like deleting the account.
@@ -195,13 +197,16 @@ export function ConfirmDialog({
   loading,
   onConfirm,
   onCancel,
+  children,
 }: ConfirmDialogProps) {
   return (
     <Dialog open={open} title={title} onClose={onCancel} width={400}>
       {icon && <AlertIcon $danger={variant === 'dangerStrong'}>{icon}</AlertIcon>}
       <Description>{description}</Description>
+      {children}
       <Buttons>
-        <Button $variant="secondary" onClick={onCancel} autoFocus>
+        {/* With a field in the dialog, the focus goes to the field instead. */}
+        <Button $variant="secondary" onClick={onCancel} autoFocus={!children}>
           Cancelar
         </Button>
         <Button $variant={variant} onClick={onConfirm} disabled={loading}>

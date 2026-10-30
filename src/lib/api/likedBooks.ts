@@ -1,39 +1,19 @@
-import { isAxiosError } from 'axios';
 import api, { errorMessage } from './client';
-import type { ApiResult, LikedBookItem, LikedCount, LikeResult } from './types';
+import type { ApiResult, BookDto, LikedCount } from './types';
 
-// Liked book services (the favorites of "Meus livros")
+// Liked book services (the favorites of "Meus livros"). Liking a book is accepting it:
+// recommendationsApi.accept.
 export const likedBooksApi = {
-  // Get the books the user liked
-  async list(userId: number): Promise<ApiResult<LikedBookItem[]>> {
+  // Get the books the user liked, from the most recent to the oldest
+  async list(): Promise<ApiResult<BookDto[]>> {
     try {
-      const response = await api.get<LikedBookItem[]>(`/livros-curtidos/usuario/${userId}`);
-
-      // A 204 (No Content) means there are no liked books
-      if (response.status === 204) {
-        return {
-          success: true,
-          data: [],
-          message: 'Nenhum livro curtido encontrado',
-        };
-      }
-
+      const response = await api.get<BookDto[]>('/book/liked');
       return {
         success: true,
         data: response.data,
         message: 'Livros curtidos obtidos com sucesso!',
       };
     } catch (error) {
-      // On a 404 or 204, return an empty list instead of an error
-      const status = isAxiosError(error) ? error.response?.status : undefined;
-      if (status === 404 || status === 204) {
-        return {
-          success: true,
-          data: [],
-          message: 'Nenhum livro curtido encontrado',
-        };
-      }
-
       return {
         success: false,
         error: errorMessage(error, 'Erro ao obter livros curtidos'),
@@ -42,32 +22,10 @@ export const likedBooksApi = {
     }
   },
 
-  // Like a book
-  async like(userId: number, bookId: number): Promise<ApiResult<LikeResult>> {
+  // Unlike a book. It may show up in the recommendations again.
+  async unlike(bookId: number): Promise<ApiResult<unknown>> {
     try {
-      const response = await api.post<LikeResult>(
-        `/livros-curtidos/curtir?usuarioId=${userId}&livroId=${bookId}`,
-      );
-      return {
-        success: true,
-        data: response.data,
-        message: 'Livro curtido com sucesso!',
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: errorMessage(error, 'Erro ao curtir livro'),
-        data: null,
-      };
-    }
-  },
-
-  // Unlike a book
-  async unlike(userId: number, bookId: number): Promise<ApiResult<unknown>> {
-    try {
-      const response = await api.delete(
-        `/livros-curtidos/descurtir?usuarioId=${userId}&livroId=${bookId}`,
-      );
+      const response = await api.delete(`/book/liked?bookId=${bookId}`);
       return {
         success: true,
         data: response.data,
@@ -83,9 +41,9 @@ export const likedBooksApi = {
   },
 
   // Count liked books
-  async count(userId: number): Promise<ApiResult<LikedCount, LikedCount>> {
+  async count(): Promise<ApiResult<LikedCount, LikedCount>> {
     try {
-      const response = await api.get<LikedCount>(`/livros-curtidos/usuario/${userId}/contador`);
+      const response = await api.get<LikedCount>('/book/liked/count');
       return {
         success: true,
         data: response.data,

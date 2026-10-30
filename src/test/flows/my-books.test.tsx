@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { changes, renderApp, trackApiCalls } from '@/test/renderApp';
 
 describe('My books', () => {
-  it('removing unlikes the book, and "Desfazer" likes it again', async () => {
+  it('removing unlikes the book, and "Desfazer" accepts it again', async () => {
     const calls = trackApiCalls();
     const { user } = renderApp('/meus-livros', { loggedIn: true });
     const removeButton = { name: 'Remover Fundação dos favoritos' };
@@ -17,8 +17,8 @@ describe('My books', () => {
 
     expect(await screen.findByRole('button', removeButton)).toBeInTheDocument();
     expect(changes(calls)).toEqual([
-      'DELETE /livros-curtidos/descurtir?usuarioId=1&livroId=1',
-      'POST /livros-curtidos/curtir?usuarioId=1&livroId=1',
+      'DELETE /book/liked?bookId=1',
+      'POST /recommendation/accept?bookId=1',
     ]);
   });
 });

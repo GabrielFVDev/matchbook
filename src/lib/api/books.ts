@@ -3,10 +3,10 @@ import type { ApiResult, BookDto, CreateBookRequest } from './types';
 
 // Book services
 export const booksApi = {
-  // Create a new book
+  // Create a new book. The backend returns it with id, ownerUid and createdAt.
   async create(bookData: CreateBookRequest): Promise<ApiResult<BookDto>> {
     try {
-      const response = await api.post<BookDto>('/livro/create', bookData);
+      const response = await api.post<BookDto>('/book/create', bookData);
       return {
         success: true,
         data: response.data,

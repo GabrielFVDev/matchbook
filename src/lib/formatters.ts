@@ -1,3 +1,5 @@
+import type { PreferencesRequest, ReadingLevel } from '@/lib/api/types';
+
 // Helpers for formatting and validating data
 
 // Validates an email
@@ -6,30 +8,18 @@ export const isValidEmail = (email: string) => {
   return regex.test(email);
 };
 
-// The user text fields the normalization touches; the rest passes through as it came.
-interface UserFields {
-  nome?: string;
-  email?: string;
-  generoFavorito?: string;
-  autorPreferido?: string;
-  nivelLeitura?: string;
-  biografia?: string;
-  livrosLidos?: number | string;
-  receberRecomendacoes?: boolean;
+// The taste form, as TasteFields fills it.
+interface TasteForm {
+  favoriteGenre: string;
+  favoriteAuthor: string;
+  readingLevel: string;
+  receiveRecommendations: boolean;
 }
 
-// Normalizes user data before sending it to the API. The return type is the input's: trimming
-// text keeps text, and livrosLidos and receberRecomendacoes always come out as number and boolean.
-export const normalizeUserData = <T extends UserFields>(data: T) => {
-  return {
-    ...data,
-    nome: data.nome?.trim(),
-    email: data.email?.toLowerCase().trim(),
-    generoFavorito: data.generoFavorito?.trim(),
-    autorPreferido: data.autorPreferido?.trim(),
-    nivelLeitura: data.nivelLeitura?.trim(),
-    biografia: data.biografia?.trim(),
-    livrosLidos: parseInt(String(data.livrosLidos)) || 0,
-    receberRecomendacoes: Boolean(data.receberRecomendacoes),
-  } as T & { livrosLidos: number; receberRecomendacoes: boolean };
-};
+// The taste form as it goes to PUT /me/preferences: trimmed text, and blank fields as null.
+export const toPreferencesRequest = (form: TasteForm): PreferencesRequest => ({
+  favoriteGenre: form.favoriteGenre.trim() || null,
+  favoriteAuthor: form.favoriteAuthor.trim() || null,
+  readingLevel: (form.readingLevel || null) as ReadingLevel | null,
+  receiveRecommendations: form.receiveRecommendations,
+});

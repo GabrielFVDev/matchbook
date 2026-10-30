@@ -36,7 +36,7 @@ import {
 import type { StepState } from './styles';
 import { useSignUp } from '@/features/auth/useAuth';
 import { paths } from '@/app/paths';
-import { isValidEmail, normalizeUserData } from '@/lib/formatters';
+import { isValidEmail, toPreferencesRequest } from '@/lib/formatters';
 import { enterEase, exitEase, cardEntrance } from '@/styles/motion';
 
 // The new step enters from the side of travel: from the right going on, from the left going back.
@@ -55,19 +55,16 @@ const steps = [
   { number: 2, name: 'Seu gosto', detail: 'Gênero, autor e ritmo de leitura' },
 ];
 
-// The form of both steps, with the API field names.
+// The form of both steps: the account goes to Firebase, the taste to the backend.
 interface SignUpForm {
-  nome: string;
+  name: string;
   email: string;
-  senha: string;
-  confirmarSenha: string;
-  dataNascimento: string;
-  generoFavorito: string;
-  livrosLidos: number | string;
-  autorPreferido: string;
-  nivelLeitura: string;
-  receberRecomendacoes: boolean;
-  biografia: string;
+  password: string;
+  confirmPassword: string;
+  favoriteGenre: string;
+  favoriteAuthor: string;
+  readingLevel: string;
+  receiveRecommendations: boolean;
 }
 
 export default function SignUpPage() {
@@ -81,23 +78,20 @@ export default function SignUpPage() {
   const [accountCreated, setAccountCreated] = useState(false);
 
   const [formData, setFormData] = useState<SignUpForm>({
-    nome: '',
+    name: '',
     email: '',
-    senha: '',
-    confirmarSenha: '',
-    dataNascimento: '',
-    generoFavorito: '',
-    livrosLidos: 0,
-    autorPreferido: '',
-    nivelLeitura: '',
-    receberRecomendacoes: false,
-    biografia: '',
+    password: '',
+    confirmPassword: '',
+    favoriteGenre: '',
+    favoriteAuthor: '',
+    readingLevel: '',
+    receiveRecommendations: false,
   });
 
-  // After creating the account, goes to the login.
+  // The new account is already logged in: after a moment, goes to Home.
   useEffect(() => {
     if (!accountCreated) return undefined;
-    const timer = setTimeout(() => navigate(paths.login), 3000);
+    const timer = setTimeout(() => navigate(paths.home), 3000);
     return () => clearTimeout(timer);
   }, [accountCreated, navigate]);
 
@@ -110,18 +104,18 @@ export default function SignUpPage() {
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) =>
     updateField(e.target.name as keyof SignUpForm, e.target.value);
 
-  const passwordValid = formData.senha.length >= 6;
-  const passwordsMatch = formData.confirmarSenha && formData.senha === formData.confirmarSenha;
+  const passwordValid = formData.password.length >= 6;
+  const passwordsMatch = formData.confirmPassword && formData.password === formData.confirmPassword;
 
   const validateStep1 = () => {
     const newErrors: Record<string, string> = {};
-    if (!formData.nome.trim()) newErrors.nome = 'Informe seu nome';
+    if (!formData.name.trim()) newErrors.name = 'Informe seu nome';
     if (!formData.email.trim()) newErrors.email = 'Informe seu email';
     else if (!isValidEmail(formData.email)) newErrors.email = 'Esse email parece incompleto';
-    if (!formData.senha) newErrors.senha = 'Crie uma senha';
-    else if (!passwordValid) newErrors.senha = 'Use pelo menos 6 caracteres';
-    if (!formData.confirmarSenha) newErrors.confirmarSenha = 'Repita a senha';
-    else if (!passwordsMatch) newErrors.confirmarSenha = 'As senhas não coincidem';
+    if (!formData.password) newErrors.password = 'Crie uma senha';
+    else if (!passwordValid) newErrors.password = 'Use pelo menos 6 caracteres';
+    if (!formData.confirmPassword) newErrors.confirmPassword = 'Repita a senha';
+    else if (!passwordsMatch) newErrors.confirmPassword = 'As senhas não coincidem';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -137,8 +131,12 @@ export default function SignUpPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    const { confirmarSenha: _confirmPassword, ...payload } = formData;
-    const result = await signUp(normalizeUserData(payload));
+    const account = {
+      name: formData.name.trim(),
+      email: formData.email.toLowerCase().trim(),
+      password: formData.password,
+    };
+    const result = await signUp(account, toPreferencesRequest(formData));
 
     if (result.success) {
       setAccountCreated(true);
@@ -148,17 +146,17 @@ export default function SignUpPage() {
   };
 
   // Messages under the passwords: a submit error wins over the live validation.
-  const passwordMessage = errors.senha
-    ? { error: errors.senha }
-    : formData.senha
+  const passwordMessage = errors.password
+    ? { error: errors.password }
+    : formData.password
       ? passwordValid
         ? { success: 'Senha válida' }
         : { error: 'Muito curta, use pelo menos 6 caracteres' }
       : { help: 'Pelo menos 6 caracteres' };
 
-  const confirmationMessage = errors.confirmarSenha
-    ? { error: errors.confirmarSenha }
-    : formData.confirmarSenha
+  const confirmationMessage = errors.confirmPassword
+    ? { error: errors.confirmPassword }
+    : formData.confirmPassword
       ? passwordsMatch
         ? { success: 'As senhas coincidem' }
         : { error: 'As senhas não coincidem' }
@@ -226,11 +224,11 @@ export default function SignUpPage() {
                 icon={<IconCheck size={30} />}
                 tone="success"
                 title="Conta criada"
-                description={`Boas-vindas, ${formData.nome.trim().split(' ')[0]}! Em instantes você vai para o login.`}
+                description={`Boas-vindas, ${formData.name.trim().split(' ')[0]}! Em instantes chega o seu primeiro livro.`}
                 role="status"
               >
-                <ButtonLink to={paths.login} $variant="primary">
-                  Entrar agora
+                <ButtonLink to={paths.home} $variant="primary">
+                  Ver meu primeiro livro
                 </ButtonLink>
               </EmptyState>
             </StepContent>
@@ -255,13 +253,13 @@ export default function SignUpPage() {
 
               {step === 1 ? (
                 <AuthForm onSubmit={goToStep2} noValidate>
-                  <Field id="nome" label="Nome completo" error={errors.nome}>
+                  <Field id="name" label="Nome completo" error={errors.name}>
                     <Input
-                      name="nome"
+                      name="name"
                       type="text"
                       autoComplete="name"
                       placeholder="Seu nome"
-                      value={formData.nome}
+                      value={formData.name}
                       onChange={handleInputChange}
                     />
                   </Field>
@@ -275,29 +273,21 @@ export default function SignUpPage() {
                       onChange={handleInputChange}
                     />
                   </Field>
-                  <Field id="senha" label="Senha" {...passwordMessage}>
+                  <Field id="password" label="Senha" {...passwordMessage}>
                     <PasswordInput
-                      name="senha"
+                      name="password"
                       autoComplete="new-password"
                       placeholder="Crie uma senha"
-                      value={formData.senha}
+                      value={formData.password}
                       onChange={handleInputChange}
                     />
                   </Field>
-                  <Field id="confirmarSenha" label="Confirmar senha" {...confirmationMessage}>
+                  <Field id="confirmPassword" label="Confirmar senha" {...confirmationMessage}>
                     <PasswordInput
-                      name="confirmarSenha"
+                      name="confirmPassword"
                       autoComplete="new-password"
                       placeholder="Repita a senha"
-                      value={formData.confirmarSenha}
-                      onChange={handleInputChange}
-                    />
-                  </Field>
-                  <Field id="dataNascimento" label="Data de nascimento" tag="opcional">
-                    <Input
-                      name="dataNascimento"
-                      type="date"
-                      value={formData.dataNascimento}
+                      value={formData.confirmPassword}
                       onChange={handleInputChange}
                     />
                   </Field>

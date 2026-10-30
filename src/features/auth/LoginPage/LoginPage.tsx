@@ -18,6 +18,7 @@ import { Spinner } from '@/components/Spinner';
 import { IconAlert } from '@/components/Icons';
 import { BrandRow, CoverStack, StackCover, QuoteText } from './styles';
 import { useAuth } from '@/features/auth/useAuth';
+import { isValidEmail } from '@/lib/formatters';
 import { genres } from '@/styles/tokens';
 import type { GenreName } from '@/styles/tokens';
 import { enterEase, cardEntrance, spring, softSpring } from '@/styles/motion';
@@ -101,11 +102,12 @@ const coverVariants: Variants = {
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login, loading } = useAuth();
+  const { login, resetPassword, loading } = useAuth();
 
-  const [formData, setFormData] = useState({ email: '', senha: '' });
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState<Record<string, string | null>>({});
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [resetSent, setResetSent] = useState(false);
   const [stackReady, setStackReady] = useState(false);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -113,6 +115,7 @@ export default function LoginPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
     if (loginError) setLoginError(null);
+    if (name === 'email') setResetSent(false);
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -120,16 +123,32 @@ export default function LoginPage() {
 
     const newErrors: Record<string, string> = {};
     if (!formData.email) newErrors.email = 'Informe seu email';
-    if (!formData.senha) newErrors.senha = 'Informe sua senha';
+    if (!formData.password) newErrors.password = 'Informe sua senha';
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
-    const result = await login(formData.email, formData.senha);
+    const result = await login(formData.email, formData.password);
 
     if (result.success) {
       navigate(paths.home);
     } else {
       setLoginError(result.error || 'Confira seu email e sua senha e tente de novo.');
+    }
+  };
+
+  // The link goes to the email typed above.
+  const handleForgotPassword = async () => {
+    if (!isValidEmail(formData.email.trim())) {
+      setErrors({ email: 'Informe seu email para receber o link' });
+      return;
+    }
+
+    setLoginError(null);
+    const result = await resetPassword(formData.email);
+    if (result.success) {
+      setResetSent(true);
+    } else {
+      setLoginError(result.error);
     }
   };
 
@@ -188,7 +207,14 @@ export default function LoginPage() {
         </AuthHeading>
 
         <AuthForm onSubmit={handleSubmit} noValidate>
-          <Field id="email" label="Email" error={errors.email}>
+          <Field
+            id="email"
+            label="Email"
+            error={errors.email}
+            success={
+              resetSent && 'Se esse email tiver conta, o link para criar uma nova senha chega nele.'
+            }
+          >
             <Input
               name="email"
               type="email"
@@ -198,12 +224,12 @@ export default function LoginPage() {
               onChange={handleInputChange}
             />
           </Field>
-          <Field id="senha" label="Senha" error={errors.senha}>
+          <Field id="password" label="Senha" error={errors.password}>
             <PasswordInput
-              name="senha"
+              name="password"
               autoComplete="current-password"
               placeholder="Sua senha"
-              value={formData.senha}
+              value={formData.password}
               onChange={handleInputChange}
             />
           </Field>
@@ -218,6 +244,9 @@ export default function LoginPage() {
           <Button type="submit" $size="large" $fullWidth disabled={loading}>
             {loading && <Spinner />}
             {loading ? 'Entrando' : 'Entrar'}
+          </Button>
+          <Button $variant="subtle" onClick={handleForgotPassword}>
+            Esqueci minha senha
           </Button>
         </AuthForm>
 

@@ -3,11 +3,11 @@ import userEvent from '@testing-library/user-event';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { AppProviders } from '@/app/AppProviders';
 import { routes } from '@/app/router';
-import { sessionUser } from '@/mocks/data';
+import { resetMockFirebase } from '@/mocks/firebase';
 import { server } from '@/mocks/server';
 
 interface RenderAppOptions {
-  // Stores the sample user in localStorage, as if she had already logged in.
+  // Starts with the sample account logged in, as if Firebase had restored her session.
   loggedIn?: boolean;
 }
 
@@ -17,7 +17,7 @@ let router: ReturnType<typeof createBrowserRouter> | null = null;
 // which reads the address that was just put in the bar. The first screen arrives on demand:
 // look for its first element with findBy, not getBy.
 export function renderApp(url: string, { loggedIn = false }: RenderAppOptions = {}) {
-  if (loggedIn) localStorage.setItem('usuario', JSON.stringify(sessionUser));
+  resetMockFirebase({ loggedIn });
   window.history.pushState({}, '', url);
   router?.dispose();
   router = createBrowserRouter(routes);
@@ -34,9 +34,10 @@ export function renderApp(url: string, { loggedIn = false }: RenderAppOptions = 
 
 export interface ApiCall {
   method: string;
-  // Without the leading "/api": "/livros-curtidos/curtir".
+  // Without the leading "/api": "/recommendation/accept".
   path: string;
   search: string;
+  authorization: string | null;
   body?: unknown;
 }
 
@@ -49,6 +50,7 @@ export function trackApiCalls() {
       method: request.method,
       path: url.pathname.replace(/^\/api/, ''),
       search: url.search,
+      authorization: request.headers.get('Authorization'),
     };
     calls.push(call);
     void request
@@ -61,7 +63,7 @@ export function trackApiCalls() {
   return calls;
 }
 
-// The requests that change something on the server, like "POST /livro/create".
+// The requests that change something on the server, like "POST /book/create".
 export const changes = (calls: ApiCall[]) =>
   calls
     .filter((call) => call.method !== 'GET')

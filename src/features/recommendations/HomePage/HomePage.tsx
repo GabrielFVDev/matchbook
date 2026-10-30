@@ -7,7 +7,7 @@ import { Spinner } from '@/components/Spinner';
 import { ToastPill, ToastDetail } from '@/components/Toast';
 import { IconAlert, IconArrowRight, IconBook, IconHeart, IconRefresh } from '@/components/Icons';
 import { SwipeCard } from './SwipeCard';
-import type { SwipeChoice, CardBook } from './SwipeCard';
+import type { SwipeChoice } from './SwipeCard';
 import {
   MatchArea,
   Intro,
@@ -26,9 +26,9 @@ import {
   Hint,
 } from './styles';
 import { useLikedCount } from '@/lib/likedCount';
-import { likedBooksApi } from '@/lib/api/likedBooks';
 import { recommendationsApi } from '@/lib/api/recommendations';
-import { getSessionUser } from '@/lib/session';
+import type { BookDto } from '@/lib/api/types';
+import { useSessionUser } from '@/lib/session';
 import { colors, genreColors } from '@/styles/tokens';
 import { toastAnimation, appear } from '@/styles/motion';
 import { paths } from '@/app/paths';
@@ -44,8 +44,8 @@ interface Notice {
 
 export default function HomePage() {
   const { add } = useLikedCount();
-  const [user] = useState(() => getSessionUser());
-  const [currentBook, setCurrentBook] = useState<CardBook | null>(null);
+  const user = useSessionUser();
+  const [currentBook, setCurrentBook] = useState<BookDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<'empty' | 'failed' | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -56,12 +56,10 @@ export default function HomePage() {
   const [decisions, setDecisions] = useState(0);
 
   const loadNextRecommendation = useCallback(async () => {
-    if (!user?.id) return;
-
     setLoading(true);
     setLoadError(null);
 
-    const response = await recommendationsApi.getAdaptive(user.id);
+    const response = await recommendationsApi.getAdaptive();
 
     if (response.success && response.data?.length > 0) {
       // The API returns a list; we show its first book.
@@ -71,7 +69,7 @@ export default function HomePage() {
       setLoadError(response.success ? 'empty' : 'failed');
     }
     setLoading(false);
-  }, [user?.id]);
+  }, []);
 
   useEffect(() => {
     loadNextRecommendation();
@@ -86,7 +84,7 @@ export default function HomePage() {
 
   // The card leaves right away; if the API fails, it comes back to the stack.
   const decide = async (choice: SwipeChoice) => {
-    if (!currentBook || !user?.id || isProcessing) return;
+    if (!currentBook || isProcessing) return;
     const book = currentBook;
     const loved = choice === 'love';
 
@@ -97,19 +95,14 @@ export default function HomePage() {
     setCurrentBook(null);
 
     if (loved) {
-      const acceptResponse = await recommendationsApi.accept(user.id, book.id);
+      // Accepting teaches the algorithm and also stores the book in "Meus livros".
+      const acceptResponse = await recommendationsApi.accept(book.id);
       if (acceptResponse.success) {
-        // Accepting teaches the algorithm; liking stores the book in "Meus livros".
-        const likeResponse = await likedBooksApi.like(user.id, book.id);
-        if (likeResponse.success) {
-          add(1);
-        } else {
-          console.warn('Book accepted, but not saved as liked:', likeResponse.error);
-        }
+        add(1);
         setNotice({
           type: 'love',
           title: 'Foi pros seus livros.',
-          text: `“${book.titulo}” está nos favoritos.`,
+          text: `“${book.title}” está nos favoritos.`,
           id: Date.now(),
         });
         await loadNextRecommendation();
@@ -123,13 +116,13 @@ export default function HomePage() {
         });
       }
     } else {
-      const response = await recommendationsApi.reject(user.id, book.id);
+      const response = await recommendationsApi.reject(book.id);
       if (response.success) {
-        const { algoritmoAlterado, sugestao } = response.data || {};
+        const { algorithmChanged, suggestion } = response.data || {};
         setNotice({
           type: 'next',
           title: 'Anotado.',
-          text: algoritmoAlterado && sugestao ? sugestao : 'Bora tentar outro.',
+          text: algorithmChanged && suggestion ? suggestion : 'Bora tentar outro.',
           id: Date.now(),
         });
         await loadNextRecommendation();
@@ -169,10 +162,10 @@ export default function HomePage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const bookColors = currentBook ? genreColors(currentBook.genero) : null;
+  const bookColors = currentBook ? genreColors(currentBook.genre) : null;
   const background = bookColors ? bookColors.background : colors.brandBackground;
   const accent = bookColors ? bookColors.cover : colors.brand;
-  const firstName = user?.nome?.trim().split(' ')[0];
+  const firstName = user?.name?.trim().split(' ')[0];
   const noCard = !currentBook || loading;
 
   return (

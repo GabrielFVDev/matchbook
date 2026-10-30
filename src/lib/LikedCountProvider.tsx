@@ -1,19 +1,19 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { likedBooksApi } from '@/lib/api/likedBooks';
-import { getSessionUser } from '@/lib/session';
+import { getSession } from '@/lib/session';
 import { LikedCountContext } from './likedCount';
 
 export function LikedCountProvider({ children }: { children: ReactNode }) {
   const [total, setTotal] = useState<number | null>(null);
-  const loadedUserId = useRef<number | null>(null);
+  const loadedUid = useRef<string | null>(null);
 
   // Fetches the counter once per user; switching accounts fetches again.
   const load = useCallback(async () => {
-    const user = getSessionUser();
-    if (!user?.id || loadedUserId.current === user.id) return;
-    loadedUserId.current = user.id;
-    const response = await likedBooksApi.count(user.id);
+    const session = getSession();
+    if (session.status !== 'loggedIn' || loadedUid.current === session.user.uid) return;
+    loadedUid.current = session.user.uid;
+    const response = await likedBooksApi.count();
     setTotal(response.success ? (response.data?.total ?? 0) : 0);
   }, []);
 

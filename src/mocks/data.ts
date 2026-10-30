@@ -1,96 +1,102 @@
-// Sample data for the fake API. All made up; the field names are the backend's.
+// Sample data for the fake API and the fake Firebase. All made up; the field names are the backend's.
 
-export const user = {
-  id: 1,
-  nome: 'Ana Ribeiro',
+// The sample account, which lives in Firebase. "dev:mock" logs in with this email and password.
+export const account = {
   email: 'ana@email.com',
-  // The backend returns the password in GET /usuario/all, and the front login compares against it.
-  senha: '123456',
-  generoFavorito: 'Ficção Científica',
-  autorPreferido: 'Isaac Asimov',
-  nivelLeitura: 'Intermediário',
-  livrosLidos: 25,
-  receberRecomendacoes: true,
-  biografia: 'Leitora apaixonada por ficção científica.',
-  dataNascimento: '1995-05-15',
-  dataCadastro: '2026-03-10',
+  password: '123456',
+  user: {
+    uid: 'uid-ana',
+    name: 'Ana Ribeiro',
+    email: 'ana@email.com',
+    photoUrl: null,
+    createdAt: 'Tue, 10 Mar 2026 12:00:00 GMT',
+  },
 };
 
-// What the front stores in localStorage after login: the user without the password.
-const { senha: _password, ...sessionUser } = user;
-export { sessionUser };
+export const preferences = {
+  firebaseUid: account.user.uid,
+  favoriteGenre: 'Ficção Científica',
+  favoriteAuthor: 'Isaac Asimov',
+  readingLevel: 'intermediate',
+  receiveRecommendations: true,
+};
 
 export const books = [
   {
     id: 1,
-    titulo: 'Fundação',
-    autor: 'Isaac Asimov',
-    genero: 'Ficção Científica',
-    numeroPaginas: 244,
-    anoPublicacao: 1951,
-    editora: 'Aleph',
-    sinopse:
+    title: 'Fundação',
+    author: 'Isaac Asimov',
+    genre: 'Ficção Científica',
+    pageCount: 244,
+    publicationYear: 1951,
+    publisher: 'Aleph',
+    synopsis:
       'O matemático Hari Seldon prevê a queda do Império Galáctico e cria a Fundação para encurtar os séculos de barbárie que virão depois.',
+    ownerUid: null,
   },
   {
     id: 2,
-    titulo: '1984',
-    autor: 'George Orwell',
-    genero: 'Distopia',
-    numeroPaginas: 328,
-    anoPublicacao: 1949,
-    editora: 'Companhia das Letras',
-    sinopse:
+    title: '1984',
+    author: 'George Orwell',
+    genre: 'Distopia',
+    pageCount: 328,
+    publicationYear: 1949,
+    publisher: 'Companhia das Letras',
+    synopsis:
       'Num Estado que vigia tudo e reescreve o passado, Winston Smith começa a guardar um diário e a duvidar do Grande Irmão.',
+    ownerUid: null,
   },
   {
     id: 3,
-    titulo: 'O Hobbit',
-    autor: 'J.R.R. Tolkien',
+    title: 'O Hobbit',
+    author: 'J.R.R. Tolkien',
     // Lowercase on purpose: the front normalizes the genre name.
-    genero: 'fantasia',
-    numeroPaginas: 336,
-    anoPublicacao: 1937,
-    editora: 'HarperCollins',
-    sinopse:
+    genre: 'fantasia',
+    pageCount: 336,
+    publicationYear: 1937,
+    publisher: 'HarperCollins',
+    synopsis:
       'Bilbo Bolseiro só queria sossego, até um mago e treze anões o arrastarem para recuperar um tesouro guardado por um dragão.',
+    ownerUid: null,
   },
   {
     id: 4,
-    titulo: 'Assassinato no Expresso do Oriente',
-    autor: 'Agatha Christie',
-    genero: 'Policial',
-    numeroPaginas: 240,
-    anoPublicacao: 1934,
-    editora: 'HarperCollins',
-    sinopse: 'Um assassinato num trem parado pela neve.',
+    title: 'Assassinato no Expresso do Oriente',
+    author: 'Agatha Christie',
+    genre: 'Policial',
+    pageCount: 240,
+    publicationYear: 1934,
+    publisher: 'HarperCollins',
+    synopsis: 'Um assassinato num trem parado pela neve.',
+    ownerUid: null,
   },
   {
     id: 5,
-    titulo: 'Dom Casmurro',
-    autor: 'Machado de Assis',
-    genero: 'Romance',
-    numeroPaginas: 256,
-    anoPublicacao: 1899,
-    editora: 'Penguin',
-    sinopse: 'Bentinho conta como conheceu Capitu.',
+    title: 'Dom Casmurro',
+    author: 'Machado de Assis',
+    genre: 'Romance',
+    pageCount: 256,
+    publicationYear: 1899,
+    publisher: 'Penguin',
+    synopsis: 'Bentinho conta como conheceu Capitu.',
+    ownerUid: null,
   },
 ];
 
-// Favorites come without "dataCurtida": the backend does not send that field.
+// The backend sends the liked books directly, from the most recent to the oldest.
 export const likedBooks = books;
 
 export const likedCount = { total: 8 };
 
 export const stats = {
-  totalRecusas: 7,
-  totalAceites: 3,
-  taxaAceitacao: 30,
-  estrategiaAtual: 'DIVERSIFICADO',
+  totalRejections: 7,
+  totalAcceptances: 3,
+  acceptanceRate: 30,
+  currentStrategy: 'DIVERSIFIED',
 };
 
 export const rejectResult = {
-  totalRecusas: 8,
-  algoritmoAlterado: true,
-  sugestao: 'Algoritmo será mais exploratório',
+  totalRejections: 8,
+  algorithmChanged: true,
+  suggestion: 'Algoritmo será mais exploratório',
 };
