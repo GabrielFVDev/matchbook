@@ -4,6 +4,8 @@ Um site que recomenda **um livro por vez**. A pessoa responde **Amei** (o livro 
 
 Este repositório é o **front**: React 19, TypeScript estrito, Vite 7, styled-components, motion (animações) e react-router. O backend (Spring Boot + MySQL) fica no repositório `matchbook-api`.
 
+A conta da pessoa (nome, email, senha e foto) fica no **Firebase Auth**. O backend não guarda nada disso: ele só conhece o `uid` do Firebase, que tira do token enviado em toda chamada, e guarda as preferências de leitura, as reações (Amei e Próximo) e os livros que a pessoa criou. O contrato está em [`docs/CONTRATO-API.md`](docs/CONTRATO-API.md).
+
 ## Como rodar
 
 Precisa do Node 24.15 ou mais novo.
@@ -13,7 +15,7 @@ npm install
 npm run dev:mock   # o app com uma API falsa, sem backend
 ```
 
-O app abre na página de primeira visita (`/`); o login fica em `/entrar`. No modo `dev:mock`, entre com **`ana@email.com` / `123456`**. A API falsa (MSW, em `src/mocks/`) responde no formato do backend de verdade, com dados de exemplo.
+O app abre na página de primeira visita (`/`); o login fica em `/entrar`. No modo `dev:mock`, entre com **`ana@email.com` / `123456`**. A API falsa (MSW, em `src/mocks/`) responde no formato do backend de verdade, com dados de exemplo, e o Firebase também é falso (`src/mocks/firebase.ts`): as contas ficam na memória e nada sai para a rede.
 
 | Comando             | O que faz                                                                         |
 | ------------------- | --------------------------------------------------------------------------------- |
@@ -25,7 +27,24 @@ O app abre na página de primeira visita (`/`); o login fica em `/entrar`. No mo
 | `npm run lint`      | ESLint                                                                            |
 | `npm run format`    | formata tudo com o Prettier (`format:check` só confere)                           |
 
-Para outro endereço de API, crie um `.env.local` com `VITE_API_URL=https://...`.
+### Com o Firebase e o backend de verdade
+
+O `npm run dev` e o `npm run build` precisam do `firebaseConfig` do app Web do Firebase (Configurações do projeto → Seus apps), num `.env.local` na raiz. O `*.local` já está no `.gitignore`:
+
+```bash
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=...
+VITE_FIREBASE_PROJECT_ID=...
+VITE_FIREBASE_APP_ID=...
+# opcional: outro endereço de API
+VITE_API_URL=https://...
+```
+
+Sem essas variáveis, o app para na abertura com um erro no console. Esses valores vão no site publicado de propósito, porque quem protege os dados é o backend conferindo o token. No console do Firebase, o login por **E-mail/senha** precisa estar ativado, e o `FIREBASE_PROJECT_ID` do backend precisa ser o mesmo `projectId`.
+
+**Cuidado:** o Vite dá prioridade às variáveis `VITE_*` que já existem no terminal sobre as do `.env.local`. Se o seu terminal exporta `VITE_FIREBASE_*` de outro projeto, é esse projeto que o app usa. Para conferir só os nomes, sem mostrar os valores: `env | cut -d= -f1 | grep '^VITE_'`.
+
+Os testes e o `dev:mock` não leem nada disso.
 
 ## Estrutura
 
@@ -37,9 +56,10 @@ src/
   components/      o design system: peças visuais que não sabem de API nem de sessão
   features/        uma pasta por assunto: welcome (primeira visita), auth, recommendations, my-books,
                    add-book, profile, not-found (404)
-  lib/             código sem tela: api/ (um arquivo por assunto), sessão, contador de curtidos
+  lib/             código sem tela: api/ (um arquivo por assunto), firebase.ts (o único que fala com o
+                   Firebase), sessão, contador de curtidos
   styles/          tokens (cores, raios, sombras, gêneros), motion (curvas e transições), GlobalStyle
-  mocks/           a API falsa (MSW), usada pelos testes e pelo dev:mock
+  mocks/           a API falsa (MSW) e o Firebase falso, usados pelos testes e pelo dev:mock
   test/            setup, renderApp e os testes de fluxo
 ```
 
@@ -50,19 +70,19 @@ Cada componente e cada tela tem a sua pasta, com o arquivo nomeado (`Button/Butt
 - `components/` só importa `styles/` e outros `components/`;
 - `lib/` não importa nada de `features/`, `layouts/` ou `app/`;
 - uma feature não importa outra, e `layouts/` não importa `features/`. O que várias telas usam mora em `lib/` (a sessão em `lib/session.ts`, o contador em `lib/likedCount.ts`);
+- só `lib/firebase.ts` importa o SDK do Firebase. Nos testes e no `dev:mock`, o `vite.config.ts` troca esse arquivo pelo `src/mocks/firebase.ts`, que tem as mesmas funções;
 - só `app/` (as rotas) importa as telas.
 
-## Nomes: inglês no código, português no que é contrato
+## Nomes: inglês no código, português no que é da tela
 
-Os nomes do código estão em inglês. Ficam em português, de propósito:
+O código e o contrato com o backend estão em inglês: rotas, campos (`title`, `favoriteGenre`, `pageCount`...) e valores (`DIVERSIFIED`, `beginner`), descritos em `src/lib/api/types.ts`. Ficam em português, de propósito:
 
-- **os campos da API** (`nome`, `generoFavorito`, `numeroPaginas`...), descritos em `src/lib/api/types.ts`. Quando o backend mudar, o contrato muda nesse arquivo e o compilador aponta o resto;
-- **as chaves dos formulários**, que viram o corpo do pedido como estão;
-- os valores que vêm do servidor ou são comparados com ele (estratégias como `DIVERSIFICADO`, nomes de gênero, níveis de leitura);
-- as chaves `usuario` e `token` do `localStorage` e o `?editar=1` do Perfil: mudar qualquer uma muda o comportamento;
-- todo texto da tela.
+- todo texto da tela. Quando a API manda um valor em inglês, o front traduz (o nível de leitura `intermediate` aparece como Intermediário);
+- o conteúdo dos livros, que vem assim do backend (gêneros como `Ficção Científica`, idiomas como `Português`);
+- o `?editar=1` do Perfil: mudar muda o comportamento.
 
 ## Outros documentos
 
-- [`docs/INTEGRACAO-API.md`](docs/INTEGRACAO-API.md) e [`docs/BACK-END-REQUISITOS.md`](docs/BACK-END-REQUISITOS.md) descrevem a estrutura anterior à reestruturação do front.
+- [`docs/CONTRATO-API.md`](docs/CONTRATO-API.md): as rotas do backend, os campos e os fluxos de conta com o Firebase.
+- [`docs/INTEGRACAO-API.md`](docs/INTEGRACAO-API.md) e [`docs/BACK-END-REQUISITOS.md`](docs/BACK-END-REQUISITOS.md) descrevem a estrutura e o backend anteriores ao Firebase.
 - O commit que só formatou o projeto está em `.git-blame-ignore-revs`. Para o `git blame` local pular esse commit: `git config blame.ignoreRevsFile .git-blame-ignore-revs`.
