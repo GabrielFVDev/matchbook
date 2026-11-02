@@ -4,7 +4,7 @@ Um site que recomenda **um livro por vez**. A pessoa responde **Amei** (o livro 
 
 Este repositório é o **front**: React 19, TypeScript estrito, Vite 7, styled-components, motion (animações) e react-router. O backend (Spring Boot + MySQL) fica no repositório `matchbook-api`.
 
-A conta da pessoa fica no **Firebase Auth**: ela entra com a conta do **Google**, e o nome, o email e a foto vêm de lá. Ninguém guarda senha. O backend não guarda nada disso: ele só conhece o `uid` do Firebase, que tira do token enviado em toda chamada, e guarda as preferências de leitura, as reações (Amei e Próximo) e os livros que a pessoa criou. O contrato está em [`docs/CONTRATO-API.md`](docs/CONTRATO-API.md).
+A conta da pessoa fica no **Firebase Auth**: ela entra com a conta do **Google**, e o nome, o email e a foto vêm de lá. Ninguém guarda senha. O backend não guarda nada disso: ele só conhece o `uid` do Firebase, que tira do token enviado em toda chamada, e guarda as preferências de leitura, as reações (Amei e Próximo) e os livros que a pessoa criou.
 
 ## Como rodar
 
@@ -93,6 +93,5 @@ O código e o contrato com o backend estão em inglês: rotas, campos (`title`, 
 
 ## Outros documentos
 
-- [`docs/CONTRATO-API.md`](docs/CONTRATO-API.md): as rotas do backend, os campos e os fluxos de conta com o Firebase.
-- [`docs/INTEGRACAO-API.md`](docs/INTEGRACAO-API.md) e [`docs/BACK-END-REQUISITOS.md`](docs/BACK-END-REQUISITOS.md) descrevem a estrutura e o backend anteriores ao Firebase.
+- [`docs/BACK-END-REQUISITOS.md`](docs/BACK-END-REQUISITOS.md) descreve o backend anterior ao Firebase.
 - O commit que só formatou o projeto está em `.git-blame-ignore-revs`. Para o `git blame` local pular esse commit: `git config blame.ignoreRevsFile .git-blame-ignore-revs`.
