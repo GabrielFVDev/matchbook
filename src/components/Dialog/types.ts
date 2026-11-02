@@ -20,6 +20,5 @@ export interface ConfirmDialogProps {
   loading?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
-  // Extra content between the description and the buttons, like an error message.
   children?: ReactNode;
 }

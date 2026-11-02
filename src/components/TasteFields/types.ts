@@ -1,4 +1,3 @@
-// The taste fields, with the API field names.
 export interface TasteValues {
   favoriteGenre: string;
   favoriteAuthor: string;

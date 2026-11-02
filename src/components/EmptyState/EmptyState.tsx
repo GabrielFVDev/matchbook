@@ -63,7 +63,6 @@ const Actions = styled.div`
   margin-top: 6px;
 `;
 
-// Block for an empty, error or success screen: icon, title, text and actions.
 export function EmptyState({
   icon,
   tone = 'brand',

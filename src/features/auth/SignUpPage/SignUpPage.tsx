@@ -41,7 +41,6 @@ import { toPreferencesRequest } from '@/lib/formatters';
 import { useSessionUser } from '@/lib/session';
 import { enterEase, exitEase, cardEntrance } from '@/styles/motion';
 
-// The new step enters from the right; leaving, the old one goes to the left.
 const stepVariants: Variants = {
   enter: (direction: number) => ({ opacity: 0, x: direction * 40 }),
   idle: { opacity: 1, x: 0, transition: { duration: 0.3, ease: enterEase } },
@@ -63,7 +62,6 @@ export default function SignUpPage() {
   const user = useSessionUser();
   const { signIn, loading: signingIn, error: signInError } = useGoogleSignIn();
 
-  // A new account that came in through the login (LoginPage) starts at the taste step.
   const cameFromLogin = (location.state as SignUpLocationState | null)?.step === 2;
   const [step, setStep] = useState(user && cameFromLogin ? 2 : 1);
   const [saving, setSaving] = useState(false);
@@ -77,7 +75,6 @@ export default function SignUpPage() {
     receiveRecommendations: false,
   });
 
-  // The new account is already logged in: after a moment, goes to Home.
   useEffect(() => {
     if (!accountCreated) return undefined;
     const timer = setTimeout(() => navigate(paths.home), 3000);
@@ -89,8 +86,6 @@ export default function SignUpPage() {
     if (saveError) setSaveError(null);
   };
 
-  // Step 1: the Google popup creates the account. An account that already existed skips the taste,
-  // so its saved preferences are not replaced by a blank form.
   const handleGoogle = async () => {
     const result = await signIn();
     if (!result.success) return;
@@ -98,7 +93,6 @@ export default function SignUpPage() {
     else navigate(paths.home);
   };
 
-  // Step 2: the taste goes to the backend, which keeps it under the uid of the token.
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -233,7 +227,6 @@ export default function SignUpPage() {
                     </FormAlert>
                   )}
 
-                  {/* The account already exists: skipping only leaves the taste for the Profile. */}
                   <ButtonRow>
                     <ButtonLink to={paths.home} $variant="secondary" $size="large">
                       Pular

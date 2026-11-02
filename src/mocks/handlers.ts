@@ -4,9 +4,6 @@ import { apiUrl as API } from '@/lib/env';
 import { books, likedBooks, likedCount, preferences, rejectResult, stats } from './data';
 import type { Body } from './types';
 
-// The recommendation cycles through the first 3 books and only moves on with Amei or Próximo, like
-// the backend, which drops the book already decided from the list. Asking again without deciding
-// (React asks twice in dev mode) returns the same book, and Home always opens on "Fundação".
 let turn = 0;
 let nextBookId = 6;
 
@@ -18,7 +15,6 @@ export const resetMockState = () => {
 const emptyOk = () => new HttpResponse(null, { status: 200 });
 const noContent = () => new HttpResponse(null, { status: 204 });
 
-// Like the backend, every route requires the Firebase token; without it, 401.
 const withToken =
   (resolver: HttpResponseResolver): HttpResponseResolver =>
   (info) =>
@@ -32,7 +28,6 @@ export const handlers = [
     withToken(() => HttpResponse.json(preferences)),
   ),
 
-  // The backend replaces the preferences with what arrived and returns the result, with the uid.
   http.put(
     `${API}/me/preferences`,
     withToken(async ({ request }) =>
@@ -45,7 +40,6 @@ export const handlers = [
 
   http.delete(`${API}/me`, withToken(noContent)),
 
-  // The backend returns the books not seen yet, sorted; the front shows the first one.
   http.get(
     `${API}/recommendation/getAdaptiveRecommendation`,
     withToken(() => {

@@ -24,7 +24,6 @@ export const emptyBookForm: BookForm = {
   coverUrl: '',
 };
 
-// Every text column of the books table is varchar(255): a longer text makes the database refuse the book.
 export const maxTextLength = 255;
 
 export const maxPublicationYear = () => new Date().getFullYear() + 1;

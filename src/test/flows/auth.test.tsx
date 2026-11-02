@@ -3,8 +3,6 @@ import { describe, expect, it } from 'vitest';
 import { mockNewGoogleAccount } from '@/mocks/firebase';
 import { renderApp, trackApiCalls } from '@/test/renderApp';
 
-// Firebase and the Google popup are not tested here: in the tests they are the stand-in of
-// src/mocks/firebase.ts. What is tested is what the front does around them.
 describe('login and sign-up', () => {
   it('sends a logged-out visitor who opens /home to the login', async () => {
     renderApp('/home');
@@ -26,7 +24,6 @@ describe('login and sign-up', () => {
   it('a new Google account on the login goes through the taste step of the sign-up', async () => {
     const calls = trackApiCalls();
     const { user } = renderApp('/entrar');
-    // After renderApp, which starts each test with the sample account.
     mockNewGoogleAccount();
 
     await user.click(await screen.findByRole('button', { name: 'Entrar com Google' }));
@@ -48,7 +45,6 @@ describe('login and sign-up', () => {
   it('a new Google account goes to the taste step, which is saved in the backend', async () => {
     const calls = trackApiCalls();
     const { user } = renderApp('/cadastro');
-    // After renderApp, which starts each test with the sample account.
     mockNewGoogleAccount();
 
     await user.click(await screen.findByRole('button', { name: 'Criar conta com Google' }));
@@ -61,7 +57,6 @@ describe('login and sign-up', () => {
 
     expect(await screen.findByText('Conta criada')).toBeInTheDocument();
     expect(screen.getByText(/Boas-vindas, Bia!/)).toBeInTheDocument();
-    // The backend only gets the taste, with the level in English.
     await waitFor(() =>
       expect(calls.find((call) => call.path === '/me/preferences')).toMatchObject({
         method: 'PUT',

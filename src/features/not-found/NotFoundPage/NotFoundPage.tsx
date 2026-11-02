@@ -23,10 +23,8 @@ import { paths } from '@/app/paths';
 export default function NotFoundPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  // "The start" is Home for whoever is logged in, and the first visit page for everyone else.
   const start = useSession().status === 'loggedIn' ? paths.home : paths.welcome;
 
-  // An address opened directly has nothing to go back to inside the app: go to the start instead.
   const goBack = () => (location.key === 'default' ? navigate(start) : navigate(-1));
 
   return (

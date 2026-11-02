@@ -51,8 +51,6 @@ const Tile = styled(motion.div)<{ $background?: string; $color?: string; $isText
   }
 `;
 
-// Highlighted number with the label below. Goes inside a StatGrid (dl).
-// "order" makes the numbers enter in sequence.
 export function StatTile({ label, value, background, color, isText, order }: StatTileProps) {
   return (
     <Tile

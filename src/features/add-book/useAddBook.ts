@@ -39,7 +39,6 @@ export const useAddBook = () => {
     const response = await booksApi.create(toCreateBookRequest(formData));
 
     if (response.success) {
-      // Whoever adds a book to the catalog also takes it to their favorites, by accepting it.
       const likeResponse = await recommendationsApi.accept(response.data.id);
       if (likeResponse.success) {
         add(1);

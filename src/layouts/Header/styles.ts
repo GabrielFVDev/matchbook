@@ -63,7 +63,6 @@ export const NavItem = styled(NavLink)`
   }
 `;
 
-// White background of the active item. Slides between items when the screen changes.
 export const ActivePill = styled(motion.span)`
   position: absolute;
   inset: 0;

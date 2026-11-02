@@ -9,9 +9,6 @@ import type { ApiCall, RenderAppOptions } from '@/test/types';
 
 let router: ReturnType<typeof createBrowserRouter> | null = null;
 
-// Opens the whole app at an address, like typing the URL in the bar. Each test gets a new router,
-// which reads the address that was just put in the bar. The first screen arrives on demand:
-// look for its first element with findBy, not getBy.
 export function renderApp(url: string, { loggedIn = false, photoUrl }: RenderAppOptions = {}) {
   resetMockFirebase({ loggedIn, photoUrl });
   window.history.pushState({}, '', url);
@@ -28,7 +25,6 @@ export function renderApp(url: string, { loggedIn = false, photoUrl }: RenderApp
   };
 }
 
-// Records the requests made to the fake API, in the order they arrive.
 export function trackApiCalls() {
   const calls: ApiCall[] = [];
   server.events.on('request:start', ({ request }) => {
@@ -50,7 +46,6 @@ export function trackApiCalls() {
   return calls;
 }
 
-// The requests that change something on the server, like "POST /book/create".
 export const changes = (calls: ApiCall[]) =>
   calls
     .filter((call) => call.method !== 'GET')

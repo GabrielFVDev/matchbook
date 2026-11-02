@@ -60,7 +60,6 @@ import { paths } from '@/app/paths';
 import { colors, genreColors, genreName } from '@/styles/tokens';
 import { appear } from '@/styles/motion';
 
-// Strategies of the adaptive algorithm, in the order they show up.
 const strategies = [
   {
     key: 'DEFAULT',
@@ -86,7 +85,6 @@ const strategies = [
   },
 ];
 
-// Without preferences saved yet, the form starts blank, with the recommendations on.
 const toProfileForm = (user: SessionUser, preferences: Preferences | null): ProfileForm => ({
   name: user.name || '',
   favoriteGenre: preferences?.favoriteGenre || '',
@@ -107,9 +105,6 @@ const initials = (name?: string | null) =>
     .map((part) => part[0].toUpperCase())
     .join('');
 
-// The photo of the Google account, or the initials when there is none or it does not load (deleted
-// photo, no internet). Google's photo servers refuse the image when the browser sends the address
-// of the page that asked for it (the Referer header), so it goes without one.
 function ProfileAvatar({ user }: ProfileAvatarProps) {
   const [failedPhoto, setFailedPhoto] = useState<string | null>(null);
   const { photoUrl } = user;
@@ -135,10 +130,8 @@ export default function ProfilePage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { total, set: setLikedCount } = useLikedCount();
   const user = useSessionUser();
-  // undefined while it loads; null when the person has not saved preferences yet.
   const [preferences, setPreferences] = useState<Preferences | null | undefined>(undefined);
   const [isEditing, setIsEditing] = useState(false);
-  // No session, no screen ("if (!user) return null"), so the empty form is never read.
   const [editForm, setEditForm] = useState<ProfileForm>(() =>
     user ? toProfileForm(user, null) : ({} as ProfileForm),
   );
@@ -171,14 +164,12 @@ export default function ProfilePage() {
   const closeNotice = useCallback(() => setNotice(null), []);
 
   const openEdit = useCallback(() => {
-    // Only called with the screen open, and the screen only opens with a session.
     setEditForm(toProfileForm(user!, preferences ?? null));
     setEditErrors({});
     setSaveError(null);
     setIsEditing(true);
   }, [user, preferences]);
 
-  // The header pencil on mobile opens the edit dialog with ?editar=1, once the taste has arrived.
   useEffect(() => {
     if (searchParams.get('editar') !== '1' || preferences === undefined) return;
     openEdit();
@@ -205,7 +196,6 @@ export default function ProfilePage() {
     setSaveError(null);
 
     try {
-      // The screen only opens with a session (ProtectedRoute).
       if (name !== user!.name) await updateName(name);
     } catch (error) {
       setSaveError(`Não deu para salvar: ${authErrorMessage(error, 'erro ao trocar o nome')}`);
@@ -232,7 +222,6 @@ export default function ProfilePage() {
     setShowResetModal(false);
 
     if (response.success) {
-      // The reset also deletes the likes: "Meus livros" is empty now.
       setLikedCount(0);
       await loadStats();
       setNotice({
@@ -254,8 +243,6 @@ export default function ProfilePage() {
     setShowDeleteModal(true);
   };
 
-  // The order matters: Firebase only deletes with a recent login, and the backend only deletes
-  // while the token still works, that is, before the Firebase account goes.
   const confirmDeleteAccount = async () => {
     setDeleting(true);
     setDeleteError(null);
@@ -263,7 +250,6 @@ export default function ProfilePage() {
     try {
       await confirmIdentity();
     } catch (error) {
-      // Closing the Google popup is giving up: the account stays.
       if (!isPopupClosed(error)) {
         setDeleteError(authErrorMessage(error, 'Não deu para confirmar sua conta. Tente de novo.'));
       }

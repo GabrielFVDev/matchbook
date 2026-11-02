@@ -51,7 +51,6 @@ const Item = styled(NavLink)`
   }
 `;
 
-// Dark background of the active tab. Slides between tabs when the screen changes.
 const ActiveTab = styled(motion.span)`
   position: absolute;
   inset: 0;
@@ -66,7 +65,6 @@ const tabs = [
   { to: paths.profile, label: 'Perfil', icon: <IconUser /> },
 ];
 
-// Mobile navigation bar. On mobile, "Sair" lives inside the Profile.
 export function MobileNav() {
   return (
     <Bar aria-label="Principal">

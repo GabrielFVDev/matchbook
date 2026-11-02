@@ -7,7 +7,6 @@ describe('Profile', () => {
     const calls = trackApiCalls();
     const { user } = renderApp('/profile', { loggedIn: true });
 
-    // The taste comes from the backend, and the level shows in Portuguese.
     expect(await screen.findByText('Intermediário')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Editar perfil' }));
     const dialog = await screen.findByRole('dialog', { name: 'Editar perfil' });
@@ -16,7 +15,6 @@ describe('Profile', () => {
 
     expect(await screen.findByText('Perfil atualizado.')).toBeInTheDocument();
     expect(screen.getByText('Avançado')).toBeInTheDocument();
-    // The PUT replaces everything: what did not change goes too.
     await waitFor(() =>
       expect(calls.find((call) => call.method === 'PUT')).toMatchObject({
         path: '/me/preferences',
@@ -37,15 +35,12 @@ describe('Profile', () => {
     });
 
     expect(await screen.findByRole('heading', { name: 'Ana Ribeiro' })).toBeInTheDocument();
-    // The avatar is decorative (the name is right beside it), so the photo has no role to find.
     const photo = container.querySelector(
       'img[src="https://lh3.googleusercontent.com/a/ana-ribeiro"]',
     );
     expect(photo).toBeInTheDocument();
-    // Google's photo servers refuse the image when the browser says which page asked for it.
     expect(photo).toHaveAttribute('referrerpolicy', 'no-referrer');
 
-    // A deleted photo, or no internet: the initials take its place.
     fireEvent.error(photo!);
     expect(await screen.findByText('AR')).toBeInTheDocument();
     expect(photo).not.toBeInTheDocument();

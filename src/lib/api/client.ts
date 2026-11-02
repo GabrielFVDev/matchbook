@@ -2,7 +2,6 @@ import axios, { isAxiosError } from 'axios';
 import { apiUrl } from '@/lib/env';
 import { getIdToken, logOut } from '@/lib/firebase';
 
-// Base API configuration
 const api = axios.create({
   baseURL: apiUrl,
   headers: {
@@ -10,7 +9,6 @@ const api = axios.create({
   },
 });
 
-// Every call goes with the Firebase token: the backend finds out from it who is calling.
 api.interceptors.request.use(async (config) => {
   const token = await getIdToken();
   if (token) {
@@ -19,16 +17,13 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
-// Interceptor for global error handling
 api.interceptors.response.use(
   (response) => response,
   async (error: unknown) => {
     const request = isAxiosError(error) ? error.config : undefined;
     const status = isAxiosError(error) ? error.response?.status : undefined;
-    // Only the method, address and status: the whole error carries the token in its headers.
     console.error('API error:', request?.method?.toUpperCase(), request?.url, status);
 
-    // Missing or expired token: logging out sends the person to the login (ProtectedRoute).
     if (status === 401) {
       await logOut();
       throw new Error('Sua sessão expirou. Entre de novo.');
@@ -49,6 +44,5 @@ api.interceptors.response.use(
 
 export default api;
 
-// The message of an error caught in a catch, or the caller's default message.
 export const errorMessage = (error: unknown, fallback: string) =>
   (error instanceof Error && error.message) || fallback;

@@ -83,7 +83,6 @@ import type {
   ShelfBook,
 } from './types';
 
-// The demo card only cycles through these books; it never calls the API.
 const demoBooks: DemoBook[] = [
   {
     title: 'O Hobbit',
@@ -108,7 +107,6 @@ const demoBooks: DemoBook[] = [
   },
 ];
 
-// Each text pair is [desktop, mobile]: the canvas shortens some copy on mobile.
 const strategies: AlgorithmStrategy[] = [
   {
     when: ['No começo', 'No começo'],
@@ -146,7 +144,6 @@ const strategies: AlgorithmStrategy[] = [
   },
 ];
 
-// Mobile shows only the first three covers.
 const shelf: ShelfBook[] = [
   { title: 'Fundação', genre: 'Ficção Científica' },
   { title: '1984', genre: 'Distopia' },

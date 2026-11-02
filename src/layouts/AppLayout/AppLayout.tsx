@@ -20,7 +20,6 @@ const Main = styled.main<{ $gap: string }>`
   }
 `;
 
-// Content of a screen inside the AppShell. Tells the shell the background and the accent color.
 export function AppLayout({
   background = colors.appBackground,
   accentColor = colors.brand,

@@ -74,8 +74,6 @@ const ActionButton = styled.button.attrs({ type: 'button' })`
   font-weight: 700;
 `;
 
-// Quick notice at the bottom, without blocking the screen. Goes away by itself after "duration".
-// To animate the exit, render it inside <AnimatePresence> with one key per notice.
 export function Toast({
   children,
   icon,
@@ -91,7 +89,6 @@ export function Toast({
     closeRef.current = onClose;
   }, [onClose]);
 
-  // "resetKey" restarts the countdown when a new notice arrives.
   useEffect(() => {
     if (!duration) return undefined;
     const timer = setTimeout(() => closeRef.current?.(), duration);

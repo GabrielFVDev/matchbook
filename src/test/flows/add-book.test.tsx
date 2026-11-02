@@ -38,7 +38,6 @@ describe('Add book', () => {
         coverUrl: 'https://exemplo.com/duna.jpg',
       }),
     );
-    // Adding to the favorites is accepting the new book.
     expect(changes(calls)).toEqual(['POST /book/create', 'POST /recommendation/accept?bookId=6']);
   });
 
@@ -56,7 +55,6 @@ describe('Add book', () => {
     expect(titleField).toHaveAccessibleDescription('Informe o título');
     expect(authorField).toHaveAccessibleDescription('Informe o autor');
     expect(genreField).toHaveAccessibleDescription('Escolha um gênero');
-    // The synopsis is optional, as in the backend: no required tag and no error.
     expect(synopsisField).toHaveAccessibleName('Do que o livro trata');
     expect(synopsisField).toBeValid();
     expect(changes(calls)).toEqual([]);
@@ -75,7 +73,6 @@ describe('Add book', () => {
     );
   });
 
-  // Both columns are varchar(255): a longer text made MySQL refuse the book with a 500.
   it('stops the synopsis and the cover link at 255 characters', async () => {
     const calls = trackApiCalls();
     const { user } = renderApp('/adicionar-livro', { loggedIn: true });

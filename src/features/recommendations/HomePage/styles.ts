@@ -81,7 +81,6 @@ export const Recommendation = styled.section`
   }
 `;
 
-// Minimum height so the cards behind do not shrink between one card and the next.
 export const Stack = styled.div`
   position: relative;
   width: 100%;
@@ -172,7 +171,6 @@ export const Synopsis = styled.p`
   }
 `;
 
-// Stamp that shows in the middle of the cover while the card is dragged.
 export const Stamp = styled(motion.span)<{ $color?: string; $side: 'left' | 'right' }>`
   position: absolute;
   top: 140px;
@@ -199,7 +197,6 @@ export const Stamp = styled(motion.span)<{ $color?: string; $side: 'left' | 'rig
   }
 `;
 
-// Height close to the finished card's, so the screen does not jump while loading.
 export const LoadingCard = styled(motion.div)`
   position: relative;
   z-index: 1;
@@ -301,7 +298,6 @@ export const Hint = styled(motion.p)`
   }
 `;
 
-// Heart of the Amei button: it beats once per Amei.
 export const HeartBeat = styled(motion.span)`
   display: flex;
 `;

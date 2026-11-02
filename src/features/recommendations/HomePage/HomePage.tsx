@@ -43,7 +43,6 @@ export default function HomePage() {
   const [loadError, setLoadError] = useState<'empty' | 'failed' | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [notice, setNotice] = useState<Notice | null>(null);
-  // Side the card leaves through: 1 is right (Amei), -1 is left (Próximo).
   const [direction, setDirection] = useState(1);
   const [beats, setBeats] = useState(0);
   const [decisions, setDecisions] = useState(0);
@@ -55,7 +54,6 @@ export default function HomePage() {
     const response = await recommendationsApi.getAdaptive();
 
     if (response.success && response.data?.length > 0) {
-      // The API returns a list; we show its first book.
       setCurrentBook(response.data[0]);
     } else {
       setCurrentBook(null);
@@ -68,14 +66,12 @@ export default function HomePage() {
     loadNextRecommendation();
   }, [loadNextRecommendation]);
 
-  // The notice goes away by itself; a new notice restarts the countdown.
   useEffect(() => {
     if (!notice) return undefined;
     const timer = setTimeout(() => setNotice(null), NOTICE_DURATION);
     return () => clearTimeout(timer);
   }, [notice]);
 
-  // The card leaves right away; if the API fails, it comes back to the stack.
   const decide = async (choice: SwipeChoice) => {
     if (!currentBook || isProcessing) return;
     const book = currentBook;
@@ -88,7 +84,6 @@ export default function HomePage() {
     setCurrentBook(null);
 
     if (loved) {
-      // Accepting teaches the algorithm and also stores the book in "Meus livros".
       const acceptResponse = await recommendationsApi.accept(book.id);
       if (acceptResponse.success) {
         add(1);
@@ -133,7 +128,6 @@ export default function HomePage() {
     setIsProcessing(false);
   };
 
-  // Arrow keys: right is Amei, left is Próximo.
   const decideRef = useRef(decide);
   useEffect(() => {
     decideRef.current = decide;
@@ -231,7 +225,6 @@ export default function HomePage() {
                     <SwipeCard
                       key={currentBook.id}
                       book={currentBook}
-                      // With the card on screen there is a book, and with a book there are colors.
                       bookColors={bookColors!}
                       disabled={isProcessing}
                       onDecide={decide}

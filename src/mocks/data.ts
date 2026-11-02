@@ -1,6 +1,3 @@
-// Sample data for the fake API and the fake Firebase. All made up; the field names are the backend's.
-
-// The sample account, which lives in Firebase. In "dev:mock", "Entrar com Google" logs in as her.
 export const account = {
   user: {
     uid: 'uid-ana',
@@ -11,7 +8,6 @@ export const account = {
   },
 };
 
-// A Google account that has never been to the Matchbook, for the sign-up test.
 export const newAccount = {
   uid: 'uid-bia',
   name: 'Bia Souza',
@@ -89,7 +85,6 @@ export const books = [
   },
 ];
 
-// The backend sends the liked books directly, from the most recent to the oldest.
 export const likedBooks = books;
 
 export const likedCount = { total: 8 };

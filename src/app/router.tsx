@@ -5,15 +5,12 @@ import { AppShell } from '@/layouts/AppShell';
 import { paths } from './paths';
 import type { ScreenModule } from './types';
 
-// Each screen comes in a separate file, downloaded when its route opens. The router waits for the
-// file before switching screens, so the AppShell transitions do not get a "loading" state.
 const page = (load: () => Promise<ScreenModule>) => async () => ({
   Component: (await load()).default,
 });
 
 export const routes: RouteObject[] = [
   {
-    // Blank while the first screen's file arrives. Without it, the router warns in the console.
     HydrateFallback: () => null,
     children: [
       {
@@ -29,7 +26,6 @@ export const routes: RouteObject[] = [
         ],
       },
       {
-        // Screens of a logged-in user: they share the same header and mobile bar.
         element: (
           <ProtectedRoute>
             <AppShell />
@@ -45,7 +41,6 @@ export const routes: RouteObject[] = [
           { path: paths.profile, lazy: page(() => import('@/features/profile/ProfilePage')) },
         ],
       },
-      // Unknown address: the 404, on its own frame, for logged-in users too.
       { path: '*', lazy: page(() => import('@/features/not-found/NotFoundPage')) },
     ],
   },

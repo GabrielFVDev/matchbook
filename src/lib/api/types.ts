@@ -1,6 +1,3 @@
-// The data as the backend sends and receives it (docs/CONTRATO-API.md). The account itself
-// (name, email, photo) is not here: it lives in Firebase, see SessionUser in src/lib/session.ts.
-
 export interface BookDto {
   id: number;
   title: string;
@@ -14,11 +11,9 @@ export interface BookDto {
   coverUrl?: string | null;
   photoUrl?: string | null;
   createdAt?: string | null;
-  // null on the shared books (the seed); the uid of whoever created it on the others.
   ownerUid?: string | null;
 }
 
-// What the Add book form sends.
 export interface CreateBookRequest {
   title: string;
   author: string;
@@ -41,7 +36,6 @@ export interface Preferences {
   receiveRecommendations: boolean;
 }
 
-// What goes in PUT /me/preferences. It replaces everything, and the uid comes from the token.
 export type PreferencesRequest = Omit<Preferences, 'firebaseUid'>;
 
 export type Strategy = 'DEFAULT' | 'REFINED' | 'DIVERSIFIED' | 'EXPLORATORY';
@@ -49,7 +43,6 @@ export type Strategy = 'DEFAULT' | 'REFINED' | 'DIVERSIFIED' | 'EXPLORATORY';
 export interface RecommendationStats {
   totalRejections: number;
   totalAcceptances: number;
-  // From 0 to 100.
   acceptanceRate: number;
   currentStrategy: Strategy;
 }
@@ -57,7 +50,6 @@ export interface RecommendationStats {
 export interface RejectResult {
   totalRejections: number;
   algorithmChanged: boolean;
-  // Already in Portuguese, ready for the screen.
   suggestion: string;
 }
 
@@ -65,6 +57,5 @@ export interface LikedCount {
   total: number;
 }
 
-// What each function in src/lib/api returns: it never throws, it always answers in this shape.
 export type ApiResult<T, F = null> =
   { success: true; data: T; message: string | null } | { success: false; data: F; error: string };

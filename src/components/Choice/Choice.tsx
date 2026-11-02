@@ -46,7 +46,6 @@ const OptionButton = styled.button.attrs({ type: 'button' })<{ $active?: boolean
   }
 `;
 
-// White background of the chosen option. Slides to the new option.
 const Indicator = styled(motion.span)`
   position: absolute !important;
   inset: 0;
@@ -55,7 +54,6 @@ const Indicator = styled(motion.span)`
   box-shadow: ${shadow.active};
 `;
 
-// Single choice among a few options (reading level).
 export function Segmented({ id, label, options, value, onChange }: SegmentedProps) {
   return (
     <Group role="group" aria-labelledby={id}>
@@ -123,8 +121,6 @@ const StepperRow = styled.div`
   gap: 12px;
 `;
 
-// Counter with minus and plus buttons (books already read).
-// The new number comes in from below when it goes up and from above when it goes down.
 const rollNumber: Variants = {
   enter: (direction: number) => ({ y: direction * 18, opacity: 0 }),
   idle: { y: 0, opacity: 1, transition: { duration: 0.18 } },
@@ -205,7 +201,6 @@ const SwitchTrack = styled.button.attrs({ type: 'button', role: 'switch' })<{ $c
   }
 `;
 
-// On/off switch (receive recommendations).
 export function Switch({ id, label, checked, onChange }: SwitchProps) {
   return (
     <SwitchRow>

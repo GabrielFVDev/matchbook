@@ -8,5 +8,4 @@ export interface GenreColors {
 
 export type GenreName = keyof typeof genres;
 
-// The enter and exit props that animated components receive spread, like {...cardEntrance}.
 export type MotionAnimation = Pick<MotionProps, 'initial' | 'animate' | 'exit'>;

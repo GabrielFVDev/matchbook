@@ -7,11 +7,9 @@ import { BookCard, BookInfo, BookAuthor, MetaList, Synopsis, Stamp } from './sty
 import { exitEase } from '@/styles/motion';
 import type { SwipeCardProps } from './types';
 
-// Drag distance (px) or speed (px/s) that counts as a decision.
 const DISTANCE_THRESHOLD = 120;
 const VELOCITY_THRESHOLD = 700;
 
-// Enters rising from the stack; flies off to the side of the decision (1 = right, -1 = left).
 const cardVariants: Variants = {
   enter: { opacity: 0, scale: 0.92, y: 24 },
   idle: {
@@ -27,7 +25,6 @@ const cardVariants: Variants = {
   }),
 };
 
-// Card of the recommended book. It can be dragged: right is Amei, left is Próximo.
 export function SwipeCard({ book, bookColors, disabled, onDecide }: SwipeCardProps) {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-260, 260], [-14, 14]);

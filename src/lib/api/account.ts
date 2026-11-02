@@ -1,10 +1,7 @@
 import api, { errorMessage } from './client';
 import type { ApiResult, Preferences, PreferencesRequest } from './types';
 
-// What the backend keeps about the logged-in person: reading preferences only. The rest of the
-// account (name, email, password, photo) is in Firebase.
 export const accountApi = {
-  // null when the person has not saved preferences yet (the backend answers 404)
   async getPreferences(): Promise<ApiResult<Preferences | null>> {
     try {
       const response = await api.get<Preferences>('/me/preferences', {
@@ -24,7 +21,6 @@ export const accountApi = {
     }
   },
 
-  // Create or replace the preferences
   async savePreferences(preferences: PreferencesRequest): Promise<ApiResult<Preferences>> {
     try {
       const response = await api.put<Preferences>('/me/preferences', preferences);
@@ -42,8 +38,6 @@ export const accountApi = {
     }
   },
 
-  // Delete the preferences, the reactions and the books the person created. Call it before
-  // deleting the Firebase account: afterwards the token no longer works.
   async deleteData(): Promise<ApiResult<unknown>> {
     try {
       const response = await api.delete('/me');

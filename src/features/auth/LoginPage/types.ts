@@ -1,6 +1,5 @@
 import type { GenreName } from '@/styles/types';
 
-// Each measure comes in a pair: [desktop, mobile].
 export type Pair = readonly [number, number];
 
 export interface StackCoverSpec {

@@ -8,7 +8,6 @@ export function LikedCountProvider({ children }: LikedCountProviderProps) {
   const [total, setTotal] = useState<number | null>(null);
   const loadedUid = useRef<string | null>(null);
 
-  // Fetches the counter once per user; switching accounts fetches again.
   const load = useCallback(async () => {
     const session = getSession();
     if (session.status !== 'loggedIn' || loadedUid.current === session.user.uid) return;

@@ -88,7 +88,6 @@ const panelAnimation = {
   exit: { opacity: 0, y: 16, scale: 0.98, transition: { duration: 0.15, ease: exitEase } },
 } satisfies MotionAnimation;
 
-// Window over the screen. Closes with Esc, a click outside or the close button.
 export function Dialog({ open, title, onClose, width = 560, children }: DialogProps) {
   const titleId = useId();
 
@@ -159,7 +158,6 @@ const Buttons = styled.div`
   }
 `;
 
-// Confirmation of an action with no way back, like deleting the account.
 export function ConfirmDialog({
   open,
   title,

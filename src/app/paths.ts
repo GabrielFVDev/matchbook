@@ -1,4 +1,3 @@
-// The app addresses in one place.
 export const paths = {
   welcome: '/',
   login: '/entrar',

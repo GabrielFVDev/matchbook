@@ -4,8 +4,6 @@ import { colors, mobile, genreColors, genreName, radius } from '@/styles/tokens'
 import { Tag } from '@/components/Chip';
 import type { BookCoverProps, CoverSize } from './types';
 
-// Measures of each use of the cover: height, inner padding and title size,
-// first on desktop and then on mobile.
 const sizes = {
   match: { height: [340, 260], padding: [24, 20], titleSize: [64, 48] },
   demo: { height: [290, 230], padding: [22, 18], titleSize: [56, 44] },
@@ -79,9 +77,6 @@ const CoverImage = styled.img`
   height: 100%;
   object-fit: cover;
 `;
-
-// Book cover: uses the linked image when it loads; with no link or on error,
-// builds a cover with the genre color and the title.
 
 export function BookCover({
   title,

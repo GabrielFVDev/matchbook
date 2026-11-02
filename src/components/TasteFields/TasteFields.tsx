@@ -34,8 +34,6 @@ const Chips = styled.div`
   }
 `;
 
-// Reading taste fields, used in step 2 of sign-up and in the profile edit.
-// "values" has the API field names; "onChange(field, value)" updates one of them.
 export function TasteFields({ values, onChange, idPrefix }: TasteFieldsProps) {
   const currentGenre = genreName(values.favoriteGenre);
 

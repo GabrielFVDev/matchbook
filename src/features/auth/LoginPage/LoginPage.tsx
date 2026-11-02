@@ -22,8 +22,6 @@ import { enterEase, cardEntrance, spring, softSpring } from '@/styles/motion';
 import type { Variants } from 'motion/react';
 import { paths } from '@/app/paths';
 
-// Cover stack on the side: position, size and tilt on desktop and on mobile.
-// "spread" is how far each cover moves away when the mouse goes over the stack.
 const stackCovers: StackCoverSpec[] = [
   {
     title: 'O Hobbit',
@@ -63,7 +61,6 @@ const stackCovers: StackCoverSpec[] = [
   },
 ];
 
-// The covers fall one at a time and fan out on hover.
 const coverVariants: Variants = {
   hidden: { opacity: 0, y: -48, rotate: 0 },
   visible: (cover: StackCoverSpec) => ({
@@ -86,8 +83,6 @@ export default function LoginPage() {
   const { signIn, loading, error } = useGoogleSignIn();
   const [stackReady, setStackReady] = useState(false);
 
-  // An account created here goes on to the taste step of the sign-up, like one created there. One
-  // that already existed opens Home, so its saved taste is not shown as a blank form.
   const handleGoogle = async () => {
     const result = await signIn();
     if (!result.success) return;

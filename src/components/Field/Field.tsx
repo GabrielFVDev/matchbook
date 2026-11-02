@@ -112,8 +112,6 @@ const Group = styled.div<{ $span?: boolean }>`
     `}
 `;
 
-// Field with a label, an optional or required tag and a message below.
-// Wires aria-describedby and aria-invalid on the child control by itself.
 export function Field({
   id,
   label,
@@ -165,7 +163,6 @@ export function Field({
   );
 }
 
-// Error of the whole form, shown near the submit button.
 export const FormAlert = styled.p`
   display: flex;
   align-items: flex-start;

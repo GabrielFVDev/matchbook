@@ -29,7 +29,6 @@ const VisibilityToggle = styled.button.attrs({ type: 'button' })`
   color: ${colors.inkSoft};
 `;
 
-// Password field with the show and hide button.
 export function PasswordInput(props: Omit<ComponentProps<typeof Input>, 'type'>) {
   const [visible, setVisible] = useState(false);
 

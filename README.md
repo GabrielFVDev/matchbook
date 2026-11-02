@@ -73,6 +73,8 @@ Cada componente e cada tela tem a sua pasta, com o arquivo nomeado (`Button/Butt
 
 **Os tipos ficam sempre num `types.ts`**, nunca no arquivo do componente, da tela ou da função: as props de cada componente, os formatos de dados e os tipos de estado. O `types.ts` fica na pasta do componente ou da tela; os tipos dos hooks e das regras de uma feature ficam em `features/<feature>/types.ts`, e os de `lib/`, `styles/`, `app/`, `mocks/` e `test/` num `types.ts` na própria pasta (os da API em `lib/api/types.ts`). Ficam de fora só os tipos escritos dentro do `styled.x<...>` dos arquivos de estilo e as declarações globais do `src/vite-env.d.ts`.
 
+**O código não leva comentário**, nem nos testes e nos arquivos de configuração. Os nomes das funções, dos tipos e dos testes dizem o que cada coisa faz. A exceção é a linha `/// <reference types="..." />` do `src/vite-env.d.ts` e do `vite.config.ts`: parece comentário, mas sem ela o TypeScript não acha os tipos do Vite e do Vitest.
+
 **Quem pode importar quem:**
 
 - `components/` só importa `styles/` e outros `components/`;

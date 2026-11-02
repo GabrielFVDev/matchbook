@@ -52,7 +52,6 @@ const Main = styled.main<{ $align: string }>`
   }
 `;
 
-// Login and sign-up frame: brand background, logo at the top and two columns.
 export function AuthLayout({ topLink, align = 'center', children }: AuthLayoutProps) {
   return (
     <Page>

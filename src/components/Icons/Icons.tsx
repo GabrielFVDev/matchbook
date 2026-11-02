@@ -1,8 +1,5 @@
 import type { IconProps, SvgProps } from './types';
 
-// Stroke icons drawn for the new design. Always decorative:
-// whoever uses them puts the text or the aria-label on the button.
-
 const props = (size: number, rest: SvgProps): SvgProps => ({
   width: size,
   height: size,
@@ -140,7 +137,6 @@ export const IconX = ({ size = 20, ...rest }: IconProps) => (
   </svg>
 );
 
-// The Google mark, in its own colors: the brand asks for them on the "sign in with Google" button.
 export const IconGoogle = ({ size = 20, ...rest }: IconProps) => (
   <svg {...props(size, rest)} viewBox="0 0 48 48">
     <path

@@ -38,7 +38,6 @@ import { colors, genreColors } from '@/styles/tokens';
 import { exitEase, spring, softSpring } from '@/styles/motion';
 import { paths } from '@/app/paths';
 
-// Books enter in sequence, leave shrinking, and the rest of the grid reorders.
 const itemVariants: Variants = {
   enter: { opacity: 0, y: 16, scale: 0.96 },
   idle: (order: number) => ({
@@ -63,7 +62,6 @@ export default function MyBooksPage() {
     setLoading(true);
     setError(null);
 
-    // The backend already sends them from the most recent to the oldest.
     const response = await likedBooksApi.list();
 
     if (response.success) {
@@ -101,7 +99,6 @@ export default function MyBooksPage() {
     const { book, position } = notice;
     setNotice(null);
 
-    // Liking again is accepting the book again.
     const response = await recommendationsApi.accept(book.id);
 
     if (response.success) {

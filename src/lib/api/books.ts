@@ -1,9 +1,7 @@
 import api, { errorMessage } from './client';
 import type { ApiResult, BookDto, CreateBookRequest } from './types';
 
-// Book services
 export const booksApi = {
-  // Create a new book. The backend returns it with id, ownerUid and createdAt.
   async create(bookData: CreateBookRequest): Promise<ApiResult<BookDto>> {
     try {
       const response = await api.post<BookDto>('/book/create', bookData);

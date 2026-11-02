@@ -1,10 +1,7 @@
 import api, { errorMessage } from './client';
 import type { ApiResult, BookDto, LikedCount } from './types';
 
-// Liked book services (the favorites of "Meus livros"). Liking a book is accepting it:
-// recommendationsApi.accept.
 export const likedBooksApi = {
-  // Get the books the user liked, from the most recent to the oldest
   async list(): Promise<ApiResult<BookDto[]>> {
     try {
       const response = await api.get<BookDto[]>('/book/liked');
@@ -22,7 +19,6 @@ export const likedBooksApi = {
     }
   },
 
-  // Unlike a book. It may show up in the recommendations again.
   async unlike(bookId: number): Promise<ApiResult<unknown>> {
     try {
       const response = await api.delete(`/book/liked?bookId=${bookId}`);
@@ -40,7 +36,6 @@ export const likedBooksApi = {
     }
   },
 
-  // Count liked books
   async count(): Promise<ApiResult<LikedCount, LikedCount>> {
     try {
       const response = await api.get<LikedCount>('/book/liked/count');

@@ -4,7 +4,6 @@ export interface InputStyleProps {
   $invalid?: boolean;
 }
 
-// What Field puts on the child control (Input, Select, TextArea, PasswordInput).
 export interface InjectedControlProps {
   id?: string;
   $invalid?: boolean;

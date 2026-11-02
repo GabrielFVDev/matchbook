@@ -32,7 +32,6 @@ const links = [
   { to: paths.profile, label: 'Perfil' },
 ];
 
-// Button in the right corner on mobile, which changes with the screen.
 const mobileActions: Record<string, HeaderAction> = {
   [paths.myBooks]: { to: paths.addBook, label: 'Adicionar livro', icon: <IconPlus /> },
   [paths.profile]: {
@@ -52,7 +51,6 @@ export default function Header({ accentColor = colors.brand }: HeaderProps) {
     load();
   }, [load]);
 
-  // Only pulses when the number changes after loading, not the first time.
   const pulse = previousTotal.current !== null && previousTotal.current !== total;
   useEffect(() => {
     previousTotal.current = total;

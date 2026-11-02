@@ -15,7 +15,6 @@ describe('Home: the recommendation card', () => {
 
     expect(await screen.findByText('Foi pros seus livros.')).toBeInTheDocument();
     expect(await within(header).findByText('9')).toBeInTheDocument();
-    // Accepting teaches the algorithm and also stores the book in "Meus livros".
     expect(changes(calls)).toEqual(['POST /recommendation/accept?bookId=1']);
   });
 
