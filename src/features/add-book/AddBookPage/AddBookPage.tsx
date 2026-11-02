@@ -1,5 +1,3 @@
-import { useState } from 'react';
-import type { ChangeEvent, FormEvent } from 'react';
 import { AnimatePresence } from 'motion/react';
 import { AppLayout } from '@/layouts/AppLayout';
 import { BookCover } from '@/components/BookCover';
@@ -29,140 +27,27 @@ import {
   MobilePreviewText,
   SuccessWrapper,
 } from './styles';
-import { useLikedCount } from '@/lib/likedCount';
-import { booksApi } from '@/lib/api/books';
-import { recommendationsApi } from '@/lib/api/recommendations';
+import { languages, maxPublicationYear, maxTextLength } from '@/features/add-book/bookForm';
+import { useAddBook } from '@/features/add-book/useAddBook';
 import { paths } from '@/app/paths';
 import { colors, genreList } from '@/styles/tokens';
 import { exitEase, appear } from '@/styles/motion';
 
 const quickExit = { opacity: 0, y: -8, transition: { duration: 0.15, ease: exitEase } };
 
-const languages = [
-  'Português',
-  'Inglês',
-  'Espanhol',
-  'Francês',
-  'Alemão',
-  'Italiano',
-  'Japonês',
-  'Outros',
-];
-
-const emptyForm = {
-  title: '',
-  author: '',
-  publisher: '',
-  genre: '',
-  publicationYear: '',
-  pageCount: '',
-  language: 'Português',
-  synopsis: '',
-  coverUrl: '',
-};
-
-type BookForm = typeof emptyForm;
-
-// Every text column of the books table is varchar(255): a longer text makes the database refuse the book.
-const maxTextLength = 255;
-
-const isValidUrl = (text: string) => {
-  try {
-    new URL(text);
-    return true;
-  } catch {
-    return false;
-  }
-};
-
 export default function AddBookPage() {
-  const { add } = useLikedCount();
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState<BookForm>(emptyForm);
-  const [errors, setErrors] = useState<Record<string, string | null>>({});
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ title: string; inFavorites: boolean } | null>(null);
+  const {
+    formData,
+    errors,
+    submitError,
+    loading,
+    result,
+    handleInputChange,
+    handleSubmit,
+    addAnother,
+  } = useAddBook();
 
-  const maxYear = new Date().getFullYear() + 1;
-
-  const handleInputChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
-    if (submitError) setSubmitError(null);
-  };
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.title.trim()) newErrors.title = 'Informe o título';
-    if (!formData.author.trim()) newErrors.author = 'Informe o autor';
-    if (!formData.genre) newErrors.genre = 'Escolha um gênero';
-
-    if (
-      formData.publicationYear &&
-      (Number(formData.publicationYear) < 1000 || Number(formData.publicationYear) > maxYear)
-    ) {
-      newErrors.publicationYear = `Use um ano entre 1000 e ${maxYear}`;
-    }
-
-    if (
-      formData.pageCount &&
-      (Number(formData.pageCount) < 1 || Number(formData.pageCount) > 10000)
-    ) {
-      newErrors.pageCount = 'Use um número entre 1 e 10.000';
-    }
-
-    if (formData.coverUrl && !isValidUrl(formData.coverUrl)) {
-      newErrors.coverUrl = 'Esse link não parece válido, ele começa com https://';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      setSubmitError('Confira os campos marcados e tente de novo.');
-      return;
-    }
-
-    setLoading(true);
-
-    const bookData = {
-      ...formData,
-      publicationYear: formData.publicationYear ? parseInt(formData.publicationYear) : null,
-      pageCount: formData.pageCount ? parseInt(formData.pageCount) : null,
-      coverUrl: formData.coverUrl || null,
-    };
-
-    const response = await booksApi.create(bookData);
-
-    if (response.success) {
-      // Whoever adds a book to the catalog also takes it to their favorites, by accepting it.
-      const likeResponse = await recommendationsApi.accept(response.data.id);
-      if (likeResponse.success) {
-        add(1);
-      } else {
-        console.warn('Error adding to favorites:', likeResponse.error);
-      }
-      setResult({ title: formData.title, inFavorites: likeResponse.success });
-      setFormData(emptyForm);
-    } else {
-      setSubmitError(response.error || 'Não deu para adicionar o livro. Tente de novo.');
-    }
-
-    setLoading(false);
-  };
-
-  const addAnother = () => {
-    setResult(null);
-    window.scrollTo({ top: 0 });
-  };
+  const maxYear = maxPublicationYear();
 
   const synopsisCount = `${formData.synopsis.length} de ${maxTextLength}`;
 
