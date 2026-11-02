@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import Header from '@/layouts/Header';
 import { MobileNav } from '@/layouts/MobileNav';
 import { ShellContext } from './shellContext';
-import type { ShellAppearance } from './shellContext';
+import type { ShellAppearance } from './types';
 import { colors } from '@/styles/tokens';
 import { screenTransition } from '@/styles/motion';
 
@@ -23,8 +23,6 @@ const Content = styled(motion.div)`
   flex-direction: column;
 `;
 
-// Fixed frame of the logged-in screens. Header and mobile bar stay
-// mounted; only the route content changes, with an enter and exit animation.
 export function AppShell() {
   const location = useLocation();
   const outlet = useOutlet();

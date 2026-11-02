@@ -1,13 +1,12 @@
 import { useEffect, useId } from 'react';
-import type { ReactNode } from 'react';
 import styled from 'styled-components';
 import { AnimatePresence, motion } from 'motion/react';
-import type { MotionProps } from 'motion/react';
 import { colors, mobile, radius } from '@/styles/tokens';
 import { exitEase } from '@/styles/motion';
 import { Button } from '@/components/Button';
-import type { ButtonVariant } from '@/components/Button';
 import { IconX } from '@/components/Icons';
+import type { MotionAnimation } from '@/styles/types';
+import type { ConfirmDialogProps, DialogProps } from './types';
 
 const Backdrop = styled(motion.div)`
   position: fixed;
@@ -72,8 +71,6 @@ const CloseButton = styled.button.attrs({ type: 'button' })`
   color: ${colors.ink};
 `;
 
-type MotionAnimation = Pick<MotionProps, 'initial' | 'animate' | 'exit'>;
-
 const backdropAnimation = {
   initial: { opacity: 0 },
   animate: { opacity: 1, transition: { duration: 0.2 } },
@@ -90,15 +87,6 @@ const panelAnimation = {
   },
   exit: { opacity: 0, y: 16, scale: 0.98, transition: { duration: 0.15, ease: exitEase } },
 } satisfies MotionAnimation;
-
-// Window over the screen. Closes with Esc, a click outside or the close button.
-interface DialogProps {
-  open: boolean;
-  title: ReactNode;
-  onClose: () => void;
-  width?: number;
-  children: ReactNode;
-}
 
 export function Dialog({ open, title, onClose, width = 560, children }: DialogProps) {
   const titleId = useId();
@@ -170,20 +158,6 @@ const Buttons = styled.div`
   }
 `;
 
-interface ConfirmDialogProps {
-  open: boolean;
-  title: ReactNode;
-  description: ReactNode;
-  icon?: ReactNode;
-  confirmLabel: ReactNode;
-  loadingLabel?: ReactNode;
-  variant?: ButtonVariant;
-  loading?: boolean;
-  onConfirm: () => void;
-  onCancel: () => void;
-}
-
-// Confirmation of an action with no way back, like deleting the account.
 export function ConfirmDialog({
   open,
   title,
@@ -195,11 +169,13 @@ export function ConfirmDialog({
   loading,
   onConfirm,
   onCancel,
+  children,
 }: ConfirmDialogProps) {
   return (
     <Dialog open={open} title={title} onClose={onCancel} width={400}>
       {icon && <AlertIcon $danger={variant === 'dangerStrong'}>{icon}</AlertIcon>}
       <Description>{description}</Description>
+      {children}
       <Buttons>
         <Button $variant="secondary" onClick={onCancel} autoFocus>
           Cancelar

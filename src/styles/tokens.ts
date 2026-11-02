@@ -1,5 +1,4 @@
-// Tokens of the "Pilha com hierarquia" design system.
-// The values come from the "Design system" board of the redesign canvas.
+import type { GenreColors, GenreName } from './types';
 
 export const colors = {
   ink: '#1A1726',
@@ -17,13 +16,6 @@ export const colors = {
   disabled: '#BDB9CC',
 };
 
-export interface GenreColors {
-  cover: string;
-  background: string;
-}
-
-// Each genre has the color of the generated cover and the screen background color.
-// White text on "cover" and "cover" on "background" pass AA contrast.
 export const genres = {
   Romance: { cover: '#A13958', background: '#FFE4EA' },
   'Ficção Científica': { cover: '#4B3FD6', background: '#E6E3FF' },
@@ -47,9 +39,6 @@ export const genres = {
   Outros: { cover: '#4A4658', background: '#ECEAF1' },
 } satisfies Record<string, GenreColors>;
 
-// The official name of a genre: one of the keys of the map above.
-export type GenreName = keyof typeof genres;
-
 export const genreList = Object.keys(genres) as GenreName[];
 
 const stripAccents = (text: string) =>
@@ -59,8 +48,6 @@ const genresByKey: Record<string, GenreName> = Object.fromEntries(
   genreList.map((name) => [stripAccents(name), name]),
 );
 
-// Takes the genre as it comes from the API ("ficção científica", "FICCAO CIENTIFICA"...)
-// and returns the official name from the list, or null if it is none of them.
 export const genreName = (genre?: string | null): GenreName | null => {
   if (!genre) return null;
   return genresByKey[stripAccents(genre)] || null;

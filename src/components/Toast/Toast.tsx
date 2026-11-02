@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
-import type { ReactNode } from 'react';
 import styled, { css } from 'styled-components';
 import { motion } from 'motion/react';
 import { colors, mobile, radius, shadow } from '@/styles/tokens';
 import { toastAnimation } from '@/styles/motion';
+import type { ToastProps, ToastTone } from './types';
 
 const Area = styled.div`
   position: fixed;
@@ -19,8 +19,6 @@ const Area = styled.div`
     bottom: 96px;
   }
 `;
-
-type ToastTone = 'dark' | 'light';
 
 export const ToastPill = styled(motion.div)<{ $tone: ToastTone }>`
   pointer-events: auto;
@@ -76,18 +74,6 @@ const ActionButton = styled.button.attrs({ type: 'button' })`
   font-weight: 700;
 `;
 
-// Quick notice at the bottom, without blocking the screen. Goes away by itself after "duration".
-// To animate the exit, render it inside <AnimatePresence> with one key per notice.
-interface ToastProps {
-  children: ReactNode;
-  icon?: ReactNode;
-  action?: { label: string; onClick: () => void };
-  tone?: ToastTone;
-  duration?: number;
-  onClose?: () => void;
-  resetKey?: number | string;
-}
-
 export function Toast({
   children,
   icon,
@@ -103,7 +89,6 @@ export function Toast({
     closeRef.current = onClose;
   }, [onClose]);
 
-  // "resetKey" restarts the countdown when a new notice arrives.
   useEffect(() => {
     if (!duration) return undefined;
     const timer = setTimeout(() => closeRef.current?.(), duration);

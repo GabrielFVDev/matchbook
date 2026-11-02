@@ -1,17 +1,13 @@
 import api, { errorMessage } from './client';
 import type { ApiResult, BookDto, RecommendationStats, RejectResult } from './types';
 
-// Recommendation services
 export const recommendationsApi = {
-  // Get the adaptive recommendation
-  async getAdaptive(userId: number): Promise<ApiResult<BookDto[]>> {
+  async getAdaptive(): Promise<ApiResult<BookDto[]>> {
     try {
-      const response = await api.get<BookDto[]>(
-        `/recomendacao/getRecomendacaoAdaptativa/${userId}`,
-      );
+      const response = await api.get<BookDto[]>('/recommendation/getAdaptiveRecommendation');
       return {
         success: true,
-        data: response.data,
+        data: response.status === 204 ? [] : response.data,
         message: 'Recomendações obtidas com sucesso!',
       };
     } catch (error) {
@@ -23,12 +19,9 @@ export const recommendationsApi = {
     }
   },
 
-  // Record that a book was accepted
-  async accept(userId: number, bookId: number): Promise<ApiResult<unknown>> {
+  async accept(bookId: number): Promise<ApiResult<unknown>> {
     try {
-      const response = await api.post(
-        `/recomendacao/aceitar?idUsuario=${userId}&idLivro=${bookId}`,
-      );
+      const response = await api.post(`/recommendation/accept?bookId=${bookId}`);
       return {
         success: true,
         data: response.data,
@@ -43,12 +36,9 @@ export const recommendationsApi = {
     }
   },
 
-  // Record that a book was rejected
-  async reject(userId: number, bookId: number): Promise<ApiResult<RejectResult>> {
+  async reject(bookId: number): Promise<ApiResult<RejectResult>> {
     try {
-      const response = await api.post<RejectResult>(
-        `/recomendacao/recusar?idUsuario=${userId}&idLivro=${bookId}`,
-      );
+      const response = await api.post<RejectResult>(`/recommendation/reject?bookId=${bookId}`);
       return {
         success: true,
         data: response.data,
@@ -63,10 +53,9 @@ export const recommendationsApi = {
     }
   },
 
-  // Get the user's statistics
-  async getStats(userId: number): Promise<ApiResult<RecommendationStats>> {
+  async getStats(): Promise<ApiResult<RecommendationStats>> {
     try {
-      const response = await api.get<RecommendationStats>(`/recomendacao/estatisticas/${userId}`);
+      const response = await api.get<RecommendationStats>('/recommendation/statistics');
       return {
         success: true,
         data: response.data,
@@ -81,10 +70,9 @@ export const recommendationsApi = {
     }
   },
 
-  // Reset the algorithm
-  async resetAlgorithm(userId: number): Promise<ApiResult<unknown>> {
+  async resetAlgorithm(): Promise<ApiResult<unknown>> {
     try {
-      const response = await api.post(`/recomendacao/resetarAlgoritmo/${userId}`);
+      const response = await api.post('/recommendation/resetAlgorithm');
       return {
         success: true,
         data: response.data,

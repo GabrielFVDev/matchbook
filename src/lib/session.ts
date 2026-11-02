@@ -1,22 +1,26 @@
-import type { UserDto } from '@/lib/api/types';
+import { useSyncExternalStore } from 'react';
+import type { Session, SessionUser } from '@/lib/types';
 
-// The session is the logged-in user, saved in localStorage under "usuario" without the password.
-// The only place that reads and writes that key; renaming it would log out everyone logged in.
-const SESSION_KEY = 'usuario';
+let session: Session = { status: 'loading' };
+const listeners = new Set<() => void>();
 
-export type SessionUser = Omit<UserDto, 'senha'>;
+export const getSession = () => session;
 
-export const getSessionUser = (): SessionUser | null => {
-  const data = localStorage.getItem(SESSION_KEY);
-  return data ? (JSON.parse(data) as SessionUser) : null;
+export const setSession = (user: SessionUser | null) => {
+  session = user ? { status: 'loggedIn', user } : { status: 'loggedOut' };
+  listeners.forEach((listener) => listener());
 };
 
-export const hasSession = () => localStorage.getItem(SESSION_KEY) !== null;
-
-export const saveSessionUser = (user: SessionUser) => {
-  localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+const subscribe = (listener: () => void) => {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
 };
 
-export const clearSessionUser = () => {
-  localStorage.removeItem(SESSION_KEY);
+export const useSession = () => useSyncExternalStore(subscribe, getSession);
+
+export const useSessionUser = () => {
+  const current = useSession();
+  return current.status === 'loggedIn' ? current.user : null;
 };

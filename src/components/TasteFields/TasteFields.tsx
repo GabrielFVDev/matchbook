@@ -1,8 +1,10 @@
 import styled from 'styled-components';
 import { mobile, colors, genreList, genreName } from '@/styles/tokens';
 import { Chip } from '@/components/Chip';
-import { ChoiceLabel, Segmented, Stepper, Switch } from '@/components/Choice';
-import { Field, Input, TextArea } from '@/components/Field';
+import { ChoiceLabel, Segmented, Switch } from '@/components/Choice';
+import { Field, Input } from '@/components/Field';
+import { readingLevelLabel, readingLevels } from './readingLevels';
+import type { TasteFieldsProps } from './types';
 
 const List = styled.div`
   display: flex;
@@ -32,39 +34,8 @@ const Chips = styled.div`
   }
 `;
 
-const Row = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 24px;
-
-  > :first-child {
-    flex: 1 1 280px;
-  }
-`;
-
-const readingLevels = ['Iniciante', 'Intermediário', 'Avançado'];
-
-// The taste fields, with the API field names.
-export interface TasteValues {
-  generoFavorito: string;
-  autorPreferido: string;
-  nivelLeitura: string;
-  livrosLidos: number | string;
-  biografia: string;
-  receberRecomendacoes: boolean;
-}
-
-interface TasteFieldsProps {
-  values: TasteValues;
-  onChange: (field: keyof TasteValues, value: TasteValues[keyof TasteValues]) => void;
-  idPrefix: string;
-}
-
-// Reading taste fields, used in step 2 of sign-up and in the profile edit.
-// "values" has the API field names; "onChange(field, value)" updates one of them.
 export function TasteFields({ values, onChange, idPrefix }: TasteFieldsProps) {
-  const currentGenre = genreName(values.generoFavorito);
+  const currentGenre = genreName(values.favoriteGenre);
 
   return (
     <List>
@@ -76,7 +47,7 @@ export function TasteFields({ values, onChange, idPrefix }: TasteFieldsProps) {
               key={genre}
               $active={genre === currentGenre}
               $background={colors.appBackground}
-              onClick={() => onChange('generoFavorito', genre === currentGenre ? '' : genre)}
+              onClick={() => onChange('favoriteGenre', genre === currentGenre ? '' : genre)}
             >
               {genre}
             </Chip>
@@ -88,41 +59,29 @@ export function TasteFields({ values, onChange, idPrefix }: TasteFieldsProps) {
         <Input
           type="text"
           placeholder="Ex.: Machado de Assis"
-          value={values.autorPreferido}
-          onChange={(e) => onChange('autorPreferido', e.target.value)}
+          value={values.favoriteAuthor}
+          onChange={(e) => onChange('favoriteAuthor', e.target.value)}
         />
       </Field>
 
-      <Row>
-        <Segmented
-          id={`${idPrefix}Level`}
-          label="Nível de leitura"
-          options={readingLevels}
-          value={values.nivelLeitura}
-          onChange={(level) => onChange('nivelLeitura', level)}
-        />
-        <Stepper
-          id={`${idPrefix}BooksRead`}
-          label="Livros já lidos"
-          value={Number(values.livrosLidos) || 0}
-          onChange={(value) => onChange('livrosLidos', value)}
-        />
-      </Row>
-
-      <Field id={`${idPrefix}Bio`} label="Biografia">
-        <TextArea
-          rows={3}
-          placeholder="Conte um pouco sobre seus gostos literários"
-          value={values.biografia}
-          onChange={(e) => onChange('biografia', e.target.value)}
-        />
-      </Field>
+      <Segmented
+        id={`${idPrefix}Level`}
+        label="Nível de leitura"
+        options={readingLevels.map((level) => level.label)}
+        value={readingLevelLabel(values.readingLevel)}
+        onChange={(label) =>
+          onChange(
+            'readingLevel',
+            readingLevels.find((level) => level.label === label)?.value ?? '',
+          )
+        }
+      />
 
       <Switch
         id={`${idPrefix}Recommendations`}
         label="Quero receber recomendações personalizadas"
-        checked={Boolean(values.receberRecomendacoes)}
-        onChange={(checked) => onChange('receberRecomendacoes', checked)}
+        checked={values.receiveRecommendations}
+        onChange={(checked) => onChange('receiveRecommendations', checked)}
       />
     </List>
   );

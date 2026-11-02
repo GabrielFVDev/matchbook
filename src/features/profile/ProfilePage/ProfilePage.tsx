@@ -8,7 +8,7 @@ import { Tag } from '@/components/Chip';
 import { StatTile } from '@/components/StatTile';
 import { Dialog, ConfirmDialog } from '@/components/Dialog';
 import { Field, FormAlert, Input } from '@/components/Field';
-import { TasteFields } from '@/components/TasteFields';
+import { TasteFields, readingLevelLabel } from '@/components/TasteFields';
 import { Toast } from '@/components/Toast';
 import { Spinner } from '@/components/Spinner';
 import {
@@ -34,7 +34,6 @@ import {
   AlgorithmStats,
   InfoList,
   InfoItem,
-  Biography,
   StatusRow,
   StrategyLabel,
   StrategyList,
@@ -47,79 +46,52 @@ import {
   EditForm,
   EditButtons,
 } from './styles';
+import type { ProfileAvatarProps, ProfileForm, ProfileNotice } from './types';
 import { useLikedCount } from '@/lib/likedCount';
+import { accountApi } from '@/lib/api/account';
 import { recommendationsApi } from '@/lib/api/recommendations';
-import { usersApi } from '@/lib/api/users';
-import { isValidEmail } from '@/lib/formatters';
-import { clearSessionUser, getSessionUser, saveSessionUser } from '@/lib/session';
-import type { SessionUser } from '@/lib/session';
-import type { RecommendationStats } from '@/lib/api/types';
+import { authErrorMessage, isPopupClosed } from '@/lib/authErrors';
+import { confirmIdentity, deleteAccount, logOut, updateName } from '@/lib/firebase';
+import { toPreferencesRequest } from '@/lib/formatters';
+import { useSessionUser } from '@/lib/session';
+import type { SessionUser } from '@/lib/types';
+import type { Preferences, RecommendationStats } from '@/lib/api/types';
 import { paths } from '@/app/paths';
 import { colors, genreColors, genreName } from '@/styles/tokens';
 import { appear } from '@/styles/motion';
 
-// Strategies of the adaptive algorithm, in the order they show up.
 const strategies = [
   {
-    key: 'PADRAO',
+    key: 'DEFAULT',
     name: 'Padrão',
     explanation: 'Estou seguindo o gosto que você contou no seu perfil.',
   },
   {
-    key: 'DIVERSIFICADO',
+    key: 'DIVERSIFIED',
     name: 'Diversificado',
     explanation:
       'Você pulou mais do que amou nos últimos livros, então estou misturando gêneros novos com os seus favoritos.',
   },
   {
-    key: 'EXPLORATORIO',
+    key: 'EXPLORATORY',
     name: 'Exploratório',
     explanation:
       'Foram muitos pulos seguidos, então estou testando livros bem diferentes para achar o que funciona.',
   },
   {
-    key: 'REFINADO',
+    key: 'REFINED',
     name: 'Refinado',
     explanation: 'Você amou vários livros, então estou focando no que já sei que você gosta.',
   },
 ];
 
-const strategyKey = (value?: string | null) =>
-  (value || 'PADRAO').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase();
-
-// The edit form, with the API field names (it goes whole in PUT /usuario/update).
-interface ProfileForm {
-  id: number;
-  nome: string;
-  email: string;
-  dataNascimento: string;
-  generoFavorito: string;
-  livrosLidos: number;
-  autorPreferido: string;
-  nivelLeitura: string;
-  receberRecomendacoes: boolean;
-  biografia: string;
-}
-
-const profileFormFromUser = (user: SessionUser): ProfileForm => ({
-  id: user.id,
-  nome: user.nome || '',
-  email: user.email || '',
-  dataNascimento: user.dataNascimento || '',
-  generoFavorito: user.generoFavorito || '',
-  livrosLidos: user.livrosLidos || 0,
-  autorPreferido: user.autorPreferido || '',
-  nivelLeitura: user.nivelLeitura || '',
-  receberRecomendacoes: user.receberRecomendacoes ?? true,
-  biografia: user.biografia || '',
+const toProfileForm = (user: SessionUser, preferences: Preferences | null): ProfileForm => ({
+  name: user.name || '',
+  favoriteGenre: preferences?.favoriteGenre || '',
+  favoriteAuthor: preferences?.favoriteAuthor || '',
+  readingLevel: preferences?.readingLevel || '',
+  receiveRecommendations: preferences?.receiveRecommendations ?? true,
 });
-
-// "1995-05-15" becomes "15/05/1995" without Date, so the timezone cannot shift the day.
-const formatBirthDate = (date?: string | null) => {
-  if (!date) return null;
-  const parts = String(date).slice(0, 10).split('-');
-  return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : date;
-};
 
 const formatMemberSince = (date?: string | null) =>
   date ? new Date(date).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : null;
@@ -133,51 +105,76 @@ const initials = (name?: string | null) =>
     .map((part) => part[0].toUpperCase())
     .join('');
 
+function ProfileAvatar({ user }: ProfileAvatarProps) {
+  const [failedPhoto, setFailedPhoto] = useState<string | null>(null);
+  const { photoUrl } = user;
+
+  return (
+    <Avatar aria-hidden="true">
+      {photoUrl && photoUrl !== failedPhoto ? (
+        <img
+          src={photoUrl}
+          alt=""
+          referrerPolicy="no-referrer"
+          onError={() => setFailedPhoto(photoUrl)}
+        />
+      ) : (
+        initials(user.name)
+      )}
+    </Avatar>
+  );
+}
+
 export default function ProfilePage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { total } = useLikedCount();
-  const [user, setUser] = useState(() => getSessionUser());
+  const { total, set: setLikedCount } = useLikedCount();
+  const user = useSessionUser();
+  const [preferences, setPreferences] = useState<Preferences | null | undefined>(undefined);
   const [isEditing, setIsEditing] = useState(false);
-  // No session, no screen ("if (!user) return null"), so the empty form is never read.
   const [editForm, setEditForm] = useState<ProfileForm>(() =>
-    user ? profileFormFromUser(user) : ({} as ProfileForm),
+    user ? toProfileForm(user, null) : ({} as ProfileForm),
   );
   const [editErrors, setEditErrors] = useState<Record<string, string | null>>({});
   const [saveError, setSaveError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [notice, setNotice] = useState<{ text: string; id: number } | null>(null);
+  const [notice, setNotice] = useState<ProfileNotice | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
   const [stats, setStats] = useState<RecommendationStats | null>(null);
   const [resetting, setResetting] = useState(false);
 
   const loadStats = useCallback(async () => {
-    if (!user?.id) return;
-    const response = await recommendationsApi.getStats(user.id);
+    const response = await recommendationsApi.getStats();
     setStats(response.success ? response.data : null);
-  }, [user?.id]);
+  }, []);
 
   useEffect(() => {
     loadStats();
   }, [loadStats]);
 
+  useEffect(() => {
+    accountApi.getPreferences().then((response) => {
+      setPreferences(response.success ? response.data : null);
+    });
+  }, []);
+
   const closeNotice = useCallback(() => setNotice(null), []);
 
   const openEdit = useCallback(() => {
-    // Only called with the screen open, and the screen only opens with a session.
-    setEditForm(profileFormFromUser(user!));
+    setEditForm(toProfileForm(user!, preferences ?? null));
     setEditErrors({});
     setSaveError(null);
     setIsEditing(true);
-  }, [user]);
+  }, [user, preferences]);
 
-  // The header pencil on mobile opens the edit dialog with ?editar=1.
   useEffect(() => {
-    if (searchParams.get('editar') !== '1') return;
+    if (searchParams.get('editar') !== '1' || preferences === undefined) return;
     openEdit();
     setSearchParams({}, { replace: true });
-  }, [searchParams, setSearchParams, openEdit]);
+  }, [searchParams, setSearchParams, openEdit, preferences]);
 
   const closeEdit = useCallback(() => setIsEditing(false), []);
 
@@ -188,20 +185,28 @@ export default function ProfilePage() {
 
   const handleSave = async (e: FormEvent) => {
     e.preventDefault();
+    const name = editForm.name.trim();
 
-    const newErrors: Record<string, string> = {};
-    if (!editForm.nome.trim()) newErrors.nome = 'Informe seu nome';
-    if (!editForm.email.trim()) newErrors.email = 'Informe seu email';
-    else if (!isValidEmail(editForm.email)) newErrors.email = 'Esse email parece incompleto';
-    setEditErrors(newErrors);
-    if (Object.keys(newErrors).length > 0) return;
+    if (!name) {
+      setEditErrors({ name: 'Informe seu nome' });
+      return;
+    }
 
     setLoading(true);
-    const response = await usersApi.update(editForm);
+    setSaveError(null);
+
+    try {
+      if (name !== user!.name) await updateName(name);
+    } catch (error) {
+      setSaveError(`Não deu para salvar: ${authErrorMessage(error, 'erro ao trocar o nome')}`);
+      setLoading(false);
+      return;
+    }
+
+    const response = await accountApi.savePreferences(toPreferencesRequest(editForm));
 
     if (response.success) {
-      setUser(response.data);
-      saveSessionUser(response.data);
+      setPreferences(response.data);
       setIsEditing(false);
       setNotice({ text: 'Perfil atualizado.', id: Date.now() });
     } else {
@@ -212,12 +217,12 @@ export default function ProfilePage() {
 
   const confirmReset = async () => {
     setResetting(true);
-    // The screen only opens with a session (ProtectedRoute).
-    const response = await recommendationsApi.resetAlgorithm(user!.id);
+    const response = await recommendationsApi.resetAlgorithm();
     setResetting(false);
     setShowResetModal(false);
 
     if (response.success) {
+      setLikedCount(0);
       await loadStats();
       setNotice({
         text: 'Histórico apagado. O Matchbook recomeça pelo seu perfil.',
@@ -228,40 +233,67 @@ export default function ProfilePage() {
     }
   };
 
-  const handleLogout = () => {
-    clearSessionUser();
+  const handleLogout = async () => {
+    await logOut();
     navigate(paths.login);
   };
 
-  const confirmDeleteAccount = () => {
-    // Deleting does not call the API yet: it clears the session and goes back to the login.
-    clearSessionUser();
-    localStorage.removeItem('token');
-    window.location.href = paths.login;
+  const openDelete = () => {
+    setDeleteError(null);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteAccount = async () => {
+    setDeleting(true);
+    setDeleteError(null);
+
+    try {
+      await confirmIdentity();
+    } catch (error) {
+      if (!isPopupClosed(error)) {
+        setDeleteError(authErrorMessage(error, 'Não deu para confirmar sua conta. Tente de novo.'));
+      }
+      setDeleting(false);
+      return;
+    }
+
+    const response = await accountApi.deleteData();
+    if (!response.success) {
+      setDeleteError('Não deu para apagar seus dados. Tente de novo.');
+      setDeleting(false);
+      return;
+    }
+
+    try {
+      await deleteAccount();
+      navigate(paths.login);
+    } catch (error) {
+      setDeleteError(
+        authErrorMessage(error, 'Seus dados foram apagados, mas a conta não. Tente de novo.'),
+      );
+      setDeleting(false);
+    }
   };
 
   if (!user) return null;
 
-  const favoriteGenre = genreName(user.generoFavorito) || user.generoFavorito;
-  const favoriteGenreColors = genreColors(user.generoFavorito);
+  const favoriteGenre = genreName(preferences?.favoriteGenre) || preferences?.favoriteGenre;
+  const favoriteGenreColors = genreColors(preferences?.favoriteGenre);
   const currentStrategy =
-    strategies.find((item) => item.key === strategyKey(stats?.estrategiaAtual)) || strategies[0];
-  const memberSince = formatMemberSince(user.dataCadastro);
+    strategies.find((item) => item.key === stats?.currentStrategy) || strategies[0];
+  const memberSince = formatMemberSince(user.createdAt);
 
   return (
     <AppLayout gap="20px">
       <ProfileHeader aria-label="Seus dados" {...appear(0)}>
-        <Avatar aria-hidden="true">
-          {user.fotoUrl ? <img src={user.fotoUrl} alt="" /> : initials(user.nome)}
-        </Avatar>
+        <ProfileAvatar user={user} />
         <ProfileInfo>
-          <h1>{user.nome}</h1>
+          <h1>{user.name}</h1>
           <p>
             {[user.email, memberSince && `Membro desde ${memberSince}`].filter(Boolean).join(' · ')}
           </p>
         </ProfileInfo>
         <HeaderStats>
-          <StatTile label="Livros lidos" value={user.livrosLidos || 0} />
           <StatTile label="Livros curtidos" value={total ?? 0} />
         </HeaderStats>
       </ProfileHeader>
@@ -270,7 +302,7 @@ export default function ProfilePage() {
         <Card aria-labelledby="tasteSection" {...appear(1)}>
           <CardHeading>
             <CardTitle id="tasteSection">Seu gosto</CardTitle>
-            <Button $variant="secondary" onClick={openEdit}>
+            <Button $variant="secondary" onClick={openEdit} disabled={preferences === undefined}>
               <IconPencil size={16} />
               Editar perfil
             </Button>
@@ -293,27 +325,17 @@ export default function ProfilePage() {
             </InfoItem>
             <InfoItem>
               <dt>Autor preferido</dt>
-              <dd>{user.autorPreferido || 'Não informado'}</dd>
+              <dd>{preferences?.favoriteAuthor || 'Não informado'}</dd>
             </InfoItem>
             <InfoItem>
               <dt>Nível de leitura</dt>
-              <dd>{user.nivelLeitura || 'Não informado'}</dd>
+              <dd>{readingLevelLabel(preferences?.readingLevel) || 'Não informado'}</dd>
             </InfoItem>
-            <InfoItem>
-              <dt>Data de nascimento</dt>
-              <dd>{formatBirthDate(user.dataNascimento) || 'Não informada'}</dd>
-            </InfoItem>
-            {user.biografia && (
-              <InfoItem $span>
-                <dt>Biografia</dt>
-                <Biography>{user.biografia}</Biography>
-              </InfoItem>
-            )}
-            <StatusRow $enabled={user.receberRecomendacoes}>
+            <StatusRow $enabled={preferences?.receiveRecommendations}>
               <dt>Recomendações personalizadas</dt>
               <dd>
-                {user.receberRecomendacoes && <IconCheck size={16} />}
-                {user.receberRecomendacoes ? 'Ativadas' : 'Desativadas'}
+                {preferences?.receiveRecommendations && <IconCheck size={16} />}
+                {preferences?.receiveRecommendations ? 'Ativadas' : 'Desativadas'}
               </dd>
             </StatusRow>
           </InfoList>
@@ -351,11 +373,11 @@ export default function ProfilePage() {
                 </StrategyList>
               </StrategyBlock>
               <AlgorithmStats>
-                <StatTile label="Amei" value={stats.totalAceites ?? 0} />
-                <StatTile label="Próximo" value={stats.totalRecusas ?? 0} />
+                <StatTile label="Amei" value={stats.totalAcceptances ?? 0} />
+                <StatTile label="Próximo" value={stats.totalRejections ?? 0} />
                 <StatTile
                   label="Aceitação"
-                  value={`${Math.round(stats.taxaAceitacao ?? 0)}%`}
+                  value={`${Math.round(stats.acceptanceRate ?? 0)}%`}
                   color={colors.brand}
                 />
               </AlgorithmStats>
@@ -364,7 +386,7 @@ export default function ProfilePage() {
                   <IconRefresh size={16} />
                   Recomeçar do zero
                 </Button>
-                <span>Apaga o histórico de Amei e Próximo.</span>
+                <span>Apaga o histórico de Amei e Próximo e esvazia Meus livros.</span>
               </ResetRow>
             </>
           )}
@@ -383,7 +405,7 @@ export default function ProfilePage() {
               Sair
             </Button>
           </MobileOnly>
-          <Button $variant="danger" onClick={() => setShowDeleteModal(true)}>
+          <Button $variant="danger" onClick={openDelete}>
             <IconTrash size={16} />
             Excluir conta
           </Button>
@@ -392,27 +414,12 @@ export default function ProfilePage() {
 
       <Dialog open={isEditing} title="Editar perfil" onClose={closeEdit} width={600}>
         <EditForm onSubmit={handleSave} noValidate>
-          <Field id="editName" label="Nome" error={editErrors.nome}>
+          <Field id="editName" label="Nome" error={editErrors.name}>
             <Input
               type="text"
               autoComplete="name"
-              value={editForm.nome}
-              onChange={(e) => handleFormChange('nome', e.target.value)}
-            />
-          </Field>
-          <Field id="editEmail" label="Email" error={editErrors.email}>
-            <Input
-              type="email"
-              autoComplete="email"
-              value={editForm.email}
-              onChange={(e) => handleFormChange('email', e.target.value)}
-            />
-          </Field>
-          <Field id="editBirthDate" label="Data de nascimento" tag="opcional">
-            <Input
-              type="date"
-              value={editForm.dataNascimento}
-              onChange={(e) => handleFormChange('dataNascimento', e.target.value)}
+              value={editForm.name}
+              onChange={(e) => handleFormChange('name', e.target.value)}
             />
           </Field>
           <TasteFields values={editForm} onChange={handleFormChange} idPrefix="edit" />
@@ -439,7 +446,7 @@ export default function ProfilePage() {
       <ConfirmDialog
         open={showResetModal}
         title="Recomeçar do zero?"
-        description="O Matchbook esquece seus Amei e Próximo e volta a recomendar pelo seu perfil. Seus livros curtidos continuam."
+        description="O Matchbook esquece seus Amei e Próximo, Meus livros fica vazio e as recomendações voltam a seguir o seu perfil."
         icon={<IconRefresh size={24} />}
         confirmLabel="Sim, recomeçar"
         loadingLabel="Recomeçando"
@@ -452,12 +459,20 @@ export default function ProfilePage() {
       <ConfirmDialog
         open={showDeleteModal}
         title="Excluir sua conta?"
-        description="Seus livros curtidos, preferências e histórico somem para sempre."
+        description="Seus livros curtidos, preferências e histórico somem para sempre. Para confirmar, o Google pede a sua conta de novo."
         icon={<IconTrash size={24} />}
         confirmLabel="Sim, excluir"
+        loading={deleting}
         onConfirm={confirmDeleteAccount}
         onCancel={() => setShowDeleteModal(false)}
-      />
+      >
+        {deleteError && (
+          <FormAlert role="alert">
+            <IconAlert size={18} />
+            {deleteError}
+          </FormAlert>
+        )}
+      </ConfirmDialog>
 
       <AnimatePresence>
         {notice && (

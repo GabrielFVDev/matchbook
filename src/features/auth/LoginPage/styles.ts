@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import { motion } from 'motion/react';
 import { colors, mobile } from '@/styles/tokens';
+import type { Pair } from './types';
 
 export const CoverStack = styled(motion.div)`
   position: relative;
@@ -14,9 +15,6 @@ export const CoverStack = styled(motion.div)`
     flex: 0 0 auto;
   }
 `;
-
-// Each measure comes in a pair: [desktop, mobile].
-type Pair = readonly [number, number];
 
 export const StackCover = styled(motion.div)<{
   $color: string;

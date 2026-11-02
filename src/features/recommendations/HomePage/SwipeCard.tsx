@@ -5,14 +5,11 @@ import { Tag } from '@/components/Chip';
 import { IconArrowRight, IconHeart } from '@/components/Icons';
 import { BookCard, BookInfo, BookAuthor, MetaList, Synopsis, Stamp } from './styles';
 import { exitEase } from '@/styles/motion';
-import type { GenreColors } from '@/styles/tokens';
-import type { BookDto } from '@/lib/api/types';
+import type { SwipeCardProps } from './types';
 
-// Drag distance (px) or speed (px/s) that counts as a decision.
 const DISTANCE_THRESHOLD = 120;
 const VELOCITY_THRESHOLD = 700;
 
-// Enters rising from the stack; flies off to the side of the decision (1 = right, -1 = left).
 const cardVariants: Variants = {
   enter: { opacity: 0, scale: 0.92, y: 24 },
   idle: {
@@ -28,20 +25,6 @@ const cardVariants: Variants = {
   }),
 };
 
-export type SwipeChoice = 'love' | 'next';
-
-// The card's book. It also reads "capaUrl", which the backend never sends (see LikedBookItem in
-// src/lib/api/types.ts); the read stays until the backend phase.
-export type CardBook = BookDto & { capaUrl?: string | null };
-
-interface SwipeCardProps {
-  book: CardBook;
-  bookColors: GenreColors;
-  disabled?: boolean;
-  onDecide: (choice: SwipeChoice) => void;
-}
-
-// Card of the recommended book. It can be dragged: right is Amei, left is Próximo.
 export function SwipeCard({ book, bookColors, disabled, onDecide }: SwipeCardProps) {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-260, 260], [-14, 14]);
@@ -49,9 +32,9 @@ export function SwipeCard({ book, bookColors, disabled, onDecide }: SwipeCardPro
   const nextOpacity = useTransform(x, [-130, -30], [1, 0]);
 
   const meta = [
-    book.numeroPaginas && `${book.numeroPaginas} páginas`,
-    book.anoPublicacao,
-    book.editora,
+    book.pageCount && `${book.pageCount} páginas`,
+    book.publicationYear,
+    book.publisher,
   ].filter((item): item is string | number => Boolean(item));
 
   const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
@@ -87,14 +70,9 @@ export function SwipeCard({ book, bookColors, disabled, onDecide }: SwipeCardPro
         Próximo
         <IconArrowRight size={16} />
       </Stamp>
-      <BookCover
-        size="match"
-        title={book.titulo}
-        genre={book.genero}
-        coverUrl={book.capaUrl || book.capa}
-      />
+      <BookCover size="match" title={book.title} genre={book.genre} coverUrl={book.coverUrl} />
       <BookInfo>
-        <BookAuthor>{book.autor}</BookAuthor>
+        <BookAuthor>{book.author}</BookAuthor>
         {meta.length > 0 && (
           <MetaList>
             {meta.map((item) => (
@@ -104,7 +82,7 @@ export function SwipeCard({ book, bookColors, disabled, onDecide }: SwipeCardPro
             ))}
           </MetaList>
         )}
-        {book.sinopse && <Synopsis>{book.sinopse}</Synopsis>}
+        {book.synopsis && <Synopsis>{book.synopsis}</Synopsis>}
       </BookInfo>
     </BookCard>
   );

@@ -1,6 +1,3 @@
-import { useState } from 'react';
-import type { ChangeEvent, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { AnimatePresence } from 'motion/react';
 import { AppLayout } from '@/layouts/AppLayout';
 import { BookCover } from '@/components/BookCover';
@@ -30,155 +27,29 @@ import {
   MobilePreviewText,
   SuccessWrapper,
 } from './styles';
-import { useLikedCount } from '@/lib/likedCount';
-import { booksApi } from '@/lib/api/books';
-import { likedBooksApi } from '@/lib/api/likedBooks';
-import { getSessionUser } from '@/lib/session';
+import { languages, maxPublicationYear, maxTextLength } from '@/features/add-book/bookForm';
+import { useAddBook } from '@/features/add-book/useAddBook';
 import { paths } from '@/app/paths';
 import { colors, genreList } from '@/styles/tokens';
 import { exitEase, appear } from '@/styles/motion';
 
 const quickExit = { opacity: 0, y: -8, transition: { duration: 0.15, ease: exitEase } };
 
-const languages = [
-  'Português',
-  'Inglês',
-  'Espanhol',
-  'Francês',
-  'Alemão',
-  'Italiano',
-  'Japonês',
-  'Outros',
-];
-
-const emptyForm = {
-  titulo: '',
-  autor: '',
-  editora: '',
-  genero: '',
-  anoPublicacao: '',
-  numeroPaginas: '',
-  idioma: 'Português',
-  isbn: '',
-  sinopse: '',
-  capaUrl: '',
-  disponivel: true,
-};
-
-type BookForm = typeof emptyForm;
-
-const isValidUrl = (text: string) => {
-  try {
-    new URL(text);
-    return true;
-  } catch {
-    return false;
-  }
-};
-
 export default function AddBookPage() {
-  const { add } = useLikedCount();
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState<BookForm>(emptyForm);
-  const [errors, setErrors] = useState<Record<string, string | null>>({});
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ title: string; inFavorites: boolean } | null>(null);
+  const {
+    formData,
+    errors,
+    submitError,
+    loading,
+    result,
+    handleInputChange,
+    handleSubmit,
+    addAnother,
+  } = useAddBook();
 
-  const maxYear = new Date().getFullYear() + 1;
+  const maxYear = maxPublicationYear();
 
-  const handleInputChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
-    if (submitError) setSubmitError(null);
-  };
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.titulo.trim()) newErrors.titulo = 'Informe o título';
-    if (!formData.autor.trim()) newErrors.autor = 'Informe o autor';
-    if (!formData.genero) newErrors.genero = 'Escolha um gênero';
-
-    if (!formData.sinopse.trim()) {
-      newErrors.sinopse = 'Escreva a sinopse';
-    } else if (formData.sinopse.length < 50) {
-      newErrors.sinopse = 'Escreva pelo menos 50 caracteres';
-    }
-
-    if (
-      formData.anoPublicacao &&
-      (Number(formData.anoPublicacao) < 1000 || Number(formData.anoPublicacao) > maxYear)
-    ) {
-      newErrors.anoPublicacao = `Use um ano entre 1000 e ${maxYear}`;
-    }
-
-    if (
-      formData.numeroPaginas &&
-      (Number(formData.numeroPaginas) < 1 || Number(formData.numeroPaginas) > 10000)
-    ) {
-      newErrors.numeroPaginas = 'Use um número entre 1 e 10.000';
-    }
-
-    if (formData.capaUrl && !isValidUrl(formData.capaUrl)) {
-      newErrors.capaUrl = 'Esse link não parece válido, ele começa com https://';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      setSubmitError('Confira os campos marcados e tente de novo.');
-      return;
-    }
-
-    const user = getSessionUser();
-    if (!user) {
-      navigate(paths.login);
-      return;
-    }
-
-    setLoading(true);
-
-    const bookData = {
-      ...formData,
-      anoPublicacao: formData.anoPublicacao ? parseInt(formData.anoPublicacao) : null,
-      numeroPaginas: formData.numeroPaginas ? parseInt(formData.numeroPaginas) : null,
-      capaUrl: formData.capaUrl || null,
-    };
-
-    const response = await booksApi.create(bookData);
-
-    if (response.success) {
-      // Whoever adds a book to the catalog also takes it to their favorites.
-      const likeResponse = await likedBooksApi.like(user.id, response.data.id);
-      if (likeResponse.success) {
-        add(1);
-      } else {
-        console.warn('Error adding to favorites:', likeResponse.error);
-      }
-      setResult({ title: formData.titulo, inFavorites: likeResponse.success });
-      setFormData(emptyForm);
-    } else {
-      setSubmitError(response.error || 'Não deu para adicionar o livro. Tente de novo.');
-    }
-
-    setLoading(false);
-  };
-
-  const addAnother = () => {
-    setResult(null);
-    window.scrollTo({ top: 0 });
-  };
-
-  const synopsisCount = `${formData.sinopse.length} de 1000`;
+  const synopsisCount = `${formData.synopsis.length} de ${maxTextLength}`;
 
   return (
     <AppLayout>
@@ -212,19 +83,19 @@ export default function AddBookPage() {
             <MobilePreview role="group" aria-label="Prévia da capa">
               <BookCover
                 size="mini"
-                title={formData.titulo}
-                genre={formData.genero}
-                coverUrl={formData.capaUrl}
+                title={formData.title}
+                genre={formData.genre}
+                coverUrl={formData.coverUrl}
                 placeholderTitle="Título do livro"
               />
-              <MobilePreviewText $empty={!formData.autor}>
+              <MobilePreviewText $empty={!formData.author}>
                 <p>Prévia</p>
-                {formData.genero && (
+                {formData.genre && (
                   <Tag $background={colors.appBackground} $small>
-                    {formData.genero}
+                    {formData.genre}
                   </Tag>
                 )}
-                <p>{formData.autor || 'Autor'}</p>
+                <p>{formData.author || 'Autor'}</p>
               </MobilePreviewText>
             </MobilePreview>
 
@@ -232,28 +103,28 @@ export default function AddBookPage() {
               <FormSection aria-labelledby="aboutSection" {...appear(0)}>
                 <SectionTitle id="aboutSection">Sobre o livro</SectionTitle>
                 <FieldsGrid>
-                  <Field id="titulo" label="Título" tag="obrigatório" error={errors.titulo} span>
+                  <Field id="title" label="Título" tag="obrigatório" error={errors.title} span>
                     <Input
-                      name="titulo"
+                      name="title"
                       type="text"
-                      maxLength={255}
+                      maxLength={maxTextLength}
                       placeholder="Como está na capa"
-                      value={formData.titulo}
+                      value={formData.title}
                       onChange={handleInputChange}
                     />
                   </Field>
-                  <Field id="autor" label="Autor" tag="obrigatório" error={errors.autor}>
+                  <Field id="author" label="Autor" tag="obrigatório" error={errors.author}>
                     <Input
-                      name="autor"
+                      name="author"
                       type="text"
-                      maxLength={255}
+                      maxLength={maxTextLength}
                       placeholder="Nome de quem escreveu"
-                      value={formData.autor}
+                      value={formData.author}
                       onChange={handleInputChange}
                     />
                   </Field>
-                  <Field id="genero" label="Gênero" tag="obrigatório" error={errors.genero}>
-                    <Select name="genero" value={formData.genero} onChange={handleInputChange}>
+                  <Field id="genre" label="Gênero" tag="obrigatório" error={errors.genre}>
+                    <Select name="genre" value={formData.genre} onChange={handleInputChange}>
                       <option value="">Escolha um gênero</option>
                       {genreList.map((genre) => (
                         <option key={genre} value={genre}>
@@ -262,18 +133,18 @@ export default function AddBookPage() {
                       ))}
                     </Select>
                   </Field>
-                  <Field id="editora" label="Editora">
+                  <Field id="publisher" label="Editora">
                     <Input
-                      name="editora"
+                      name="publisher"
                       type="text"
-                      maxLength={255}
+                      maxLength={maxTextLength}
                       placeholder="Ex.: Companhia das Letras"
-                      value={formData.editora}
+                      value={formData.publisher}
                       onChange={handleInputChange}
                     />
                   </Field>
-                  <Field id="idioma" label="Idioma">
-                    <Select name="idioma" value={formData.idioma} onChange={handleInputChange}>
+                  <Field id="language" label="Idioma">
+                    <Select name="language" value={formData.language} onChange={handleInputChange}>
                       {languages.map((language) => (
                         <option key={language} value={language}>
                           {language}
@@ -282,46 +153,36 @@ export default function AddBookPage() {
                     </Select>
                   </Field>
                   <Field
-                    id="anoPublicacao"
+                    id="publicationYear"
                     label="Ano de publicação"
-                    error={errors.anoPublicacao}
+                    error={errors.publicationYear}
                     data-half
                   >
                     <Input
-                      name="anoPublicacao"
+                      name="publicationYear"
                       type="number"
                       inputMode="numeric"
                       min="1000"
                       max={maxYear}
                       placeholder="Ex.: 1951"
-                      value={formData.anoPublicacao}
+                      value={formData.publicationYear}
                       onChange={handleInputChange}
                     />
                   </Field>
                   <Field
-                    id="numeroPaginas"
+                    id="pageCount"
                     label="Número de páginas"
-                    error={errors.numeroPaginas}
+                    error={errors.pageCount}
                     data-half
                   >
                     <Input
-                      name="numeroPaginas"
+                      name="pageCount"
                       type="number"
                       inputMode="numeric"
                       min="1"
                       max="10000"
                       placeholder="Ex.: 320"
-                      value={formData.numeroPaginas}
-                      onChange={handleInputChange}
-                    />
-                  </Field>
-                  <Field id="isbn" label="ISBN" span>
-                    <Input
-                      name="isbn"
-                      type="text"
-                      maxLength={20}
-                      placeholder="Os números do código de barras"
-                      value={formData.isbn}
+                      value={formData.pageCount}
                       onChange={handleInputChange}
                     />
                   </Field>
@@ -333,19 +194,13 @@ export default function AddBookPage() {
                   <SectionTitle id="synopsisSection">Sinopse</SectionTitle>
                   <CounterRow aria-live="polite">{synopsisCount}</CounterRow>
                 </SectionHeading>
-                <Field
-                  id="sinopse"
-                  label="Do que o livro trata"
-                  tag="obrigatório"
-                  error={errors.sinopse}
-                  help="Mínimo de 50 caracteres"
-                >
+                <Field id="synopsis" label="Do que o livro trata">
                   <TextArea
-                    name="sinopse"
+                    name="synopsis"
                     rows={5}
-                    maxLength={1000}
+                    maxLength={maxTextLength}
                     placeholder="Em poucas linhas"
-                    value={formData.sinopse}
+                    value={formData.synopsis}
                     onChange={handleInputChange}
                   />
                 </Field>
@@ -354,16 +209,17 @@ export default function AddBookPage() {
               <FormSection aria-labelledby="coverSection" {...appear(2)}>
                 <SectionTitle id="coverSection">Capa</SectionTitle>
                 <Field
-                  id="capaUrl"
+                  id="coverUrl"
                   label="Link da imagem"
-                  error={errors.capaUrl}
+                  error={errors.coverUrl}
                   help="Sem link, o Matchbook monta uma capa com a cor do gênero."
                 >
                   <Input
-                    name="capaUrl"
+                    name="coverUrl"
                     type="url"
+                    maxLength={maxTextLength}
                     placeholder="https://"
-                    value={formData.capaUrl}
+                    value={formData.coverUrl}
                     onChange={handleInputChange}
                   />
                 </Field>
@@ -396,13 +252,13 @@ export default function AddBookPage() {
               <PreviewCard>
                 <BookCover
                   size="preview"
-                  title={formData.titulo}
-                  genre={formData.genero}
-                  coverUrl={formData.capaUrl}
+                  title={formData.title}
+                  genre={formData.genre}
+                  coverUrl={formData.coverUrl}
                   placeholderTitle="Título do livro"
                 />
-                <PreviewInfo $empty={!formData.autor}>
-                  <p>{formData.autor || 'Autor'}</p>
+                <PreviewInfo $empty={!formData.author}>
+                  <p>{formData.author || 'Autor'}</p>
                   <p>Assim ele aparece nas recomendações.</p>
                 </PreviewInfo>
               </PreviewCard>

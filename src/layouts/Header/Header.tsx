@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import type { ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence } from 'motion/react';
 import {
@@ -20,10 +19,11 @@ import {
 import { Logo } from '@/components/Logo';
 import { IconHeart, IconPencil, IconPlus } from '@/components/Icons';
 import { useLikedCount } from '@/lib/likedCount';
-import { clearSessionUser } from '@/lib/session';
+import { logOut } from '@/lib/firebase';
 import { paths } from '@/app/paths';
 import { colors } from '@/styles/tokens';
 import { spring } from '@/styles/motion';
+import type { HeaderAction, HeaderProps } from './types';
 
 const links = [
   { to: paths.home, label: 'Início' },
@@ -32,8 +32,7 @@ const links = [
   { to: paths.profile, label: 'Perfil' },
 ];
 
-// Button in the right corner on mobile, which changes with the screen.
-const mobileActions: Record<string, { to: string; label: string; icon: ReactNode }> = {
+const mobileActions: Record<string, HeaderAction> = {
   [paths.myBooks]: { to: paths.addBook, label: 'Adicionar livro', icon: <IconPlus /> },
   [paths.profile]: {
     to: `${paths.profile}?editar=1`,
@@ -42,7 +41,7 @@ const mobileActions: Record<string, { to: string; label: string; icon: ReactNode
   },
 };
 
-export default function Header({ accentColor = colors.brand }: { accentColor?: string }) {
+export default function Header({ accentColor = colors.brand }: HeaderProps) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { total, load } = useLikedCount();
@@ -52,14 +51,13 @@ export default function Header({ accentColor = colors.brand }: { accentColor?: s
     load();
   }, [load]);
 
-  // Only pulses when the number changes after loading, not the first time.
   const pulse = previousTotal.current !== null && previousTotal.current !== total;
   useEffect(() => {
     previousTotal.current = total;
   }, [total]);
 
-  const handleLogout = () => {
-    clearSessionUser();
+  const handleLogout = async () => {
+    await logOut();
     navigate(paths.login);
   };
 

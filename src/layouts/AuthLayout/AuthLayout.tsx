@@ -1,9 +1,9 @@
-import type { ReactNode } from 'react';
 import styled from 'styled-components';
 import { motion } from 'motion/react';
 import { colors, mobile, shadow } from '@/styles/tokens';
 import { Logo } from '@/components/Logo';
 import { paths } from '@/app/paths';
+import type { AuthLayoutProps } from './types';
 
 const Page = styled.div`
   min-height: 100vh;
@@ -51,13 +51,6 @@ const Main = styled.main<{ $align: string }>`
     gap: 20px;
   }
 `;
-
-// Login and sign-up frame: brand background, logo at the top and two columns.
-interface AuthLayoutProps {
-  topLink?: ReactNode;
-  align?: string;
-  children: ReactNode;
-}
 
 export function AuthLayout({ topLink, align = 'center', children }: AuthLayoutProps) {
   return (

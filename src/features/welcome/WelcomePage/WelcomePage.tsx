@@ -73,11 +73,17 @@ import {
 } from './styles';
 import { paths } from '@/app/paths';
 import { colors, genreColors } from '@/styles/tokens';
-import type { GenreName } from '@/styles/tokens';
 import { toastAnimation } from '@/styles/motion';
+import type {
+  AlgorithmStrategy,
+  DemoBook,
+  DemoChoice,
+  DemoState,
+  PairProps,
+  ShelfBook,
+} from './types';
 
-// The demo card only cycles through these books; it never calls the API.
-const demoBooks: { title: string; author: string; genre: GenreName; synopsis: string }[] = [
+const demoBooks: DemoBook[] = [
   {
     title: 'O Hobbit',
     author: 'J.R.R. Tolkien',
@@ -101,16 +107,7 @@ const demoBooks: { title: string; author: string; genre: GenreName; synopsis: st
   },
 ];
 
-type DemoChoice = 'love' | 'next';
-
-// Each text pair is [desktop, mobile]: the canvas shortens some copy on mobile.
-const strategies: {
-  when: [string, string];
-  name: string;
-  text: [string, string];
-  background: string;
-  color: string;
-}[] = [
+const strategies: AlgorithmStrategy[] = [
   {
     when: ['No começo', 'No começo'],
     name: 'Padrão',
@@ -147,8 +144,7 @@ const strategies: {
   },
 ];
 
-// Mobile shows only the first three covers.
-const shelf: { title: string; genre: GenreName }[] = [
+const shelf: ShelfBook[] = [
   { title: 'Fundação', genre: 'Ficção Científica' },
   { title: '1984', genre: 'Distopia' },
   { title: 'O Hobbit', genre: 'Fantasia' },
@@ -157,7 +153,7 @@ const shelf: { title: string; genre: GenreName }[] = [
   { title: 'O Nome da Rosa', genre: 'Mistério' },
 ];
 
-const Pair = ({ texts: [desktop, mobile] }: { texts: [string, string] }) =>
+const Pair = ({ texts: [desktop, mobile] }: PairProps) =>
   desktop === mobile ? (
     desktop
   ) : (
@@ -168,7 +164,7 @@ const Pair = ({ texts: [desktop, mobile] }: { texts: [string, string] }) =>
   );
 
 export default function WelcomePage() {
-  const [demo, setDemo] = useState<{ index: number; answers: number; last: DemoChoice | null }>({
+  const [demo, setDemo] = useState<DemoState>({
     index: 0,
     answers: 0,
     last: null,

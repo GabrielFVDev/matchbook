@@ -1,5 +1,6 @@
 import { screen, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { mockNewGoogleAccount } from '@/mocks/firebase';
 import { renderApp, trackApiCalls } from '@/test/renderApp';
 
 describe('login and sign-up', () => {
@@ -10,60 +11,72 @@ describe('login and sign-up', () => {
     expect(window.location.pathname).toBe('/entrar');
   });
 
-  it('warns when the password is wrong', async () => {
+  it('"Entrar com Google" with an account that already exists opens Home', async () => {
+    const calls = trackApiCalls();
     const { user } = renderApp('/entrar');
 
-    await user.type(await screen.findByLabelText('Email'), 'ana@email.com');
-    await user.type(screen.getByLabelText('Senha'), 'errada');
-    await user.click(screen.getByRole('button', { name: 'Entrar' }));
-
-    expect(await screen.findByRole('alert')).toHaveTextContent('Email ou senha incorretos');
-    expect(localStorage.getItem('usuario')).toBeNull();
-  });
-
-  it('the right password opens Home and stores the session without the password', async () => {
-    const { user } = renderApp('/entrar');
-
-    await user.type(await screen.findByLabelText('Email'), 'ana@email.com');
-    await user.type(screen.getByLabelText('Senha'), '123456');
-    await user.click(screen.getByRole('button', { name: 'Entrar' }));
+    await user.click(await screen.findByRole('button', { name: 'Entrar com Google' }));
 
     expect(await screen.findByRole('heading', { name: 'Achei um pra você.' })).toBeInTheDocument();
-    const session = JSON.parse(localStorage.getItem('usuario') ?? 'null');
-    expect(session).toMatchObject({ id: 1, nome: 'Ana Ribeiro', email: 'ana@email.com' });
-    expect(session).not.toHaveProperty('senha');
+    expect(calls.filter((call) => call.method === 'PUT')).toEqual([]);
   });
 
-  it('creates the account in two steps and sends clean data', async () => {
+  it('a new Google account on the login goes through the taste step of the sign-up', async () => {
+    const calls = trackApiCalls();
+    const { user } = renderApp('/entrar');
+    mockNewGoogleAccount();
+
+    await user.click(await screen.findByRole('button', { name: 'Entrar com Google' }));
+
+    expect(await screen.findByRole('heading', { name: 'Seu gosto' })).toBeInTheDocument();
+    expect(screen.getByText('Etapa 2 de 2')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Fantasia' }));
+    await user.click(screen.getByRole('button', { name: 'Salvar e começar' }));
+
+    expect(await screen.findByText('Conta criada')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(calls.find((call) => call.path === '/me/preferences')).toMatchObject({
+        method: 'PUT',
+        body: { favoriteGenre: 'Fantasia' },
+      }),
+    );
+  });
+
+  it('a new Google account goes to the taste step, which is saved in the backend', async () => {
+    const calls = trackApiCalls();
+    const { user } = renderApp('/cadastro');
+    mockNewGoogleAccount();
+
+    await user.click(await screen.findByRole('button', { name: 'Criar conta com Google' }));
+
+    expect(await screen.findByRole('heading', { name: 'Seu gosto' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Fantasia' }));
+    await user.type(screen.getByLabelText('Autor preferido'), '  Tolkien ');
+    await user.click(screen.getByRole('button', { name: 'Avançado' }));
+    await user.click(screen.getByRole('button', { name: 'Salvar e começar' }));
+
+    expect(await screen.findByText('Conta criada')).toBeInTheDocument();
+    expect(screen.getByText(/Boas-vindas, Bia!/)).toBeInTheDocument();
+    await waitFor(() =>
+      expect(calls.find((call) => call.path === '/me/preferences')).toMatchObject({
+        method: 'PUT',
+        body: {
+          favoriteGenre: 'Fantasia',
+          favoriteAuthor: 'Tolkien',
+          readingLevel: 'advanced',
+          receiveRecommendations: false,
+        },
+      }),
+    );
+  });
+
+  it('a Google account that already exists skips the taste and opens Home', async () => {
     const calls = trackApiCalls();
     const { user } = renderApp('/cadastro');
 
-    await user.type(await screen.findByLabelText('Nome completo'), '  Bia Souza  ');
-    await user.type(screen.getByLabelText('Email'), 'Bia@Email.com');
-    await user.type(screen.getByLabelText('Senha'), '123456');
-    await user.type(screen.getByLabelText('Confirmar senha'), '123456');
-    await user.click(screen.getByRole('button', { name: 'Continuar' }));
+    await user.click(await screen.findByRole('button', { name: 'Criar conta com Google' }));
 
-    expect(await screen.findByRole('heading', { name: 'Seu gosto' })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Aumentar' }));
-    await user.click(screen.getByRole('button', { name: 'Aumentar' }));
-    await user.click(screen.getByRole('button', { name: 'Criar conta' }));
-
-    expect(await screen.findByText('Conta criada')).toBeInTheDocument();
-    // Trimmed name, lowercase email, livrosLidos as a number and no "confirmarSenha".
-    await waitFor(() =>
-      expect(calls.find((call) => call.path === '/usuario/create')?.body).toEqual({
-        nome: 'Bia Souza',
-        email: 'bia@email.com',
-        senha: '123456',
-        dataNascimento: '',
-        generoFavorito: '',
-        livrosLidos: 2,
-        autorPreferido: '',
-        nivelLeitura: '',
-        receberRecomendacoes: false,
-        biografia: '',
-      }),
-    );
+    expect(await screen.findByRole('heading', { name: 'Achei um pra você.' })).toBeInTheDocument();
+    expect(calls.filter((call) => call.method === 'PUT')).toEqual([]);
   });
 });

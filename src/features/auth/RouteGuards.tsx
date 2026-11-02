@@ -1,18 +1,25 @@
-import type { ReactNode } from 'react';
+import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { paths } from '@/app/paths';
-import { useAuth } from './useAuth';
+import { useSession } from '@/lib/session';
+import type { RedirectOnArrivalProps, RouteGuardProps } from './types';
 
-// Protects routes that require authentication
-export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
-  const { isLoggedIn } = useAuth();
+export const ProtectedRoute = ({ children }: RouteGuardProps) => {
+  const { status } = useSession();
 
-  return isLoggedIn() ? children : <Navigate to={paths.login} replace />;
+  if (status === 'loading') return null;
+  return status === 'loggedIn' ? children : <Navigate to={paths.login} replace />;
 };
 
-// Redirects users who are already logged in
-export const PublicRoute = ({ children }: { children: ReactNode }) => {
-  const { isLoggedIn } = useAuth();
+export const PublicRoute = ({ children }: RouteGuardProps) => {
+  const { status } = useSession();
 
-  return !isLoggedIn() ? children : <Navigate to={paths.home} replace />;
+  if (status === 'loading') return null;
+  return <RedirectOnArrival loggedIn={status === 'loggedIn'}>{children}</RedirectOnArrival>;
+};
+
+const RedirectOnArrival = ({ loggedIn, children }: RedirectOnArrivalProps) => {
+  const [loggedInOnArrival] = useState(loggedIn);
+
+  return loggedInOnArrival ? <Navigate to={paths.home} replace /> : children;
 };

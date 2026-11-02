@@ -1,4 +1,5 @@
 import styled, { keyframes } from 'styled-components';
+import type { SpinnerProps } from './types';
 
 const spin = keyframes`
   to {
@@ -10,11 +11,6 @@ const Svg = styled.svg`
   flex: 0 0 auto;
   animation: ${spin} 0.9s linear infinite;
 `;
-
-interface SpinnerProps {
-  size?: number;
-  color?: string;
-}
 
 export const Spinner = ({ size = 18, color = 'currentColor' }: SpinnerProps) => (
   <Svg

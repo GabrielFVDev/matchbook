@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import type { ChangeEvent, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   AuthLayout,
@@ -11,37 +10,18 @@ import {
   AuthForm,
   AuthFooter,
 } from '@/layouts/AuthLayout';
-import { Field, FormAlert, Input } from '@/components/Field';
-import { PasswordInput } from '@/components/PasswordInput';
+import { FormAlert } from '@/components/Field';
 import { Button } from '@/components/Button';
 import { Spinner } from '@/components/Spinner';
-import { IconAlert } from '@/components/Icons';
+import { IconAlert, IconGoogle } from '@/components/Icons';
 import { BrandRow, CoverStack, StackCover, QuoteText } from './styles';
-import { useAuth } from '@/features/auth/useAuth';
+import type { StackCoverSpec } from './types';
+import { useGoogleSignIn } from '@/features/auth/useAuth';
 import { genres } from '@/styles/tokens';
-import type { GenreName } from '@/styles/tokens';
 import { enterEase, cardEntrance, spring, softSpring } from '@/styles/motion';
 import type { Variants } from 'motion/react';
 import { paths } from '@/app/paths';
 
-// Each measure comes in a pair: [desktop, mobile].
-type Pair = [number, number];
-
-interface StackCoverSpec {
-  title: string;
-  genre: GenreName;
-  x: Pair;
-  y: Pair;
-  w: Pair;
-  h: Pair;
-  tilt: number;
-  spread: number;
-  fontSize: Pair;
-  mobileTitle: boolean;
-}
-
-// Cover stack on the side: position, size and tilt on desktop and on mobile.
-// "spread" is how far each cover moves away when the mouse goes over the stack.
 const stackCovers: StackCoverSpec[] = [
   {
     title: 'O Hobbit',
@@ -81,7 +61,6 @@ const stackCovers: StackCoverSpec[] = [
   },
 ];
 
-// The covers fall one at a time and fan out on hover.
 const coverVariants: Variants = {
   hidden: { opacity: 0, y: -48, rotate: 0 },
   visible: (cover: StackCoverSpec) => ({
@@ -101,36 +80,14 @@ const coverVariants: Variants = {
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login, loading } = useAuth();
-
-  const [formData, setFormData] = useState({ email: '', senha: '' });
-  const [errors, setErrors] = useState<Record<string, string | null>>({});
-  const [loginError, setLoginError] = useState<string | null>(null);
+  const { signIn, loading, error } = useGoogleSignIn();
   const [stackReady, setStackReady] = useState(false);
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
-    if (loginError) setLoginError(null);
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-
-    const newErrors: Record<string, string> = {};
-    if (!formData.email) newErrors.email = 'Informe seu email';
-    if (!formData.senha) newErrors.senha = 'Informe sua senha';
-    setErrors(newErrors);
-    if (Object.keys(newErrors).length > 0) return;
-
-    const result = await login(formData.email, formData.senha);
-
-    if (result.success) {
-      navigate(paths.home);
-    } else {
-      setLoginError(result.error || 'Confira seu email e sua senha e tente de novo.');
-    }
+  const handleGoogle = async () => {
+    const result = await signIn();
+    if (!result.success) return;
+    if (result.isNewUser) navigate(paths.signUp, { replace: true, state: { step: 2 } });
+    else navigate(paths.home);
   };
 
   return (
@@ -187,37 +144,23 @@ export default function LoginPage() {
           <AuthText>Boas-vindas de volta ao Matchbook.</AuthText>
         </AuthHeading>
 
-        <AuthForm onSubmit={handleSubmit} noValidate>
-          <Field id="email" label="Email" error={errors.email}>
-            <Input
-              name="email"
-              type="email"
-              autoComplete="email"
-              placeholder="seu@email.com"
-              value={formData.email}
-              onChange={handleInputChange}
-            />
-          </Field>
-          <Field id="senha" label="Senha" error={errors.senha}>
-            <PasswordInput
-              name="senha"
-              autoComplete="current-password"
-              placeholder="Sua senha"
-              value={formData.senha}
-              onChange={handleInputChange}
-            />
-          </Field>
-
-          {loginError && (
+        <AuthForm as="div">
+          {error && (
             <FormAlert role="alert">
               <IconAlert size={18} />
-              {loginError}
+              {error}
             </FormAlert>
           )}
 
-          <Button type="submit" $size="large" $fullWidth disabled={loading}>
-            {loading && <Spinner />}
-            {loading ? 'Entrando' : 'Entrar'}
+          <Button
+            $variant="secondary"
+            $size="large"
+            $fullWidth
+            disabled={loading}
+            onClick={handleGoogle}
+          >
+            {loading ? <Spinner /> : <IconGoogle size={20} />}
+            {loading ? 'Entrando' : 'Entrar com Google'}
           </Button>
         </AuthForm>
 

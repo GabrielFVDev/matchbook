@@ -1,12 +1,7 @@
 import styled from 'styled-components';
 import { colors, radius } from '@/styles/tokens';
+import type { ChipProps } from './types';
 
-interface ChipProps {
-  $active?: boolean;
-  $background?: string;
-}
-
-// Clickable tag (filters and genre choice). The state goes in aria-pressed.
 export const Chip = styled.button.attrs<ChipProps>(({ $active }) => ({
   type: 'button',
   'aria-pressed': Boolean($active),
@@ -40,7 +35,6 @@ export const ChipCount = styled.span<{ $active?: boolean }>`
   color: ${({ $active }) => ($active ? colors.inkOnDark : colors.inkSoft)};
 `;
 
-// Read-only tag (genre, pages, year).
 export const Tag = styled.span<{ $small?: boolean; $background?: string; $color?: string }>`
   display: inline-flex;
   align-items: center;

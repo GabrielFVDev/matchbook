@@ -1,8 +1,8 @@
-import type { ReactNode } from 'react';
 import styled from 'styled-components';
 import { motion } from 'motion/react';
 import { colors, mobile } from '@/styles/tokens';
 import { appear } from '@/styles/motion';
+import type { StatTileProps } from './types';
 
 export const StatGrid = styled.dl<{ $min?: number; $mobileColumns?: number }>`
   display: grid;
@@ -50,17 +50,6 @@ const Tile = styled(motion.div)<{ $background?: string; $color?: string; $isText
     }
   }
 `;
-
-// Highlighted number with the label below. Goes inside a StatGrid (dl).
-// "order" makes the numbers enter in sequence.
-interface StatTileProps {
-  label: ReactNode;
-  value: ReactNode;
-  background?: string;
-  color?: string;
-  isText?: boolean;
-  order?: number;
-}
 
 export function StatTile({ label, value, background, color, isText, order }: StatTileProps) {
   return (

@@ -101,7 +101,8 @@ export const HeaderStats = styled.dl`
   ${mobile} {
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
     gap: 10px;
     text-align: left;
   }
@@ -208,12 +209,6 @@ export const InfoItem = styled.div<{ $span?: boolean }>`
       font-size: 16px;
     }
   }
-`;
-
-export const Biography = styled.dd`
-  font-size: 16px !important;
-  font-weight: 400 !important;
-  line-height: 1.5;
 `;
 
 export const StatusRow = styled.div<{ $enabled?: boolean | null }>`

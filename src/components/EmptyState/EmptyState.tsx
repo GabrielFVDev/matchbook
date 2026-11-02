@@ -1,16 +1,14 @@
-import type { AriaRole, ReactNode } from 'react';
 import styled from 'styled-components';
 import { motion } from 'motion/react';
 import { colors, mobile } from '@/styles/tokens';
 import { enterEase } from '@/styles/motion';
+import type { EmptyStateProps, Tone } from './types';
 
 const tones = {
   brand: { background: colors.brandBackground, color: colors.brand },
   error: { background: colors.errorBackground, color: colors.error },
   success: { background: colors.successBackground, color: colors.success },
-};
-
-type Tone = keyof typeof tones;
+} satisfies Record<Tone, unknown>;
 
 const Box = styled(motion.div)<{ $background?: string }>`
   display: flex;
@@ -64,17 +62,6 @@ const Actions = styled.div`
   gap: 8px;
   margin-top: 6px;
 `;
-
-// Block for an empty, error or success screen: icon, title, text and actions.
-interface EmptyStateProps {
-  icon?: ReactNode;
-  tone?: Tone;
-  title: ReactNode;
-  description?: ReactNode;
-  background?: string;
-  children?: ReactNode;
-  role?: AriaRole;
-}
 
 export function EmptyState({
   icon,

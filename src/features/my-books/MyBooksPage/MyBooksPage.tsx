@@ -29,15 +29,15 @@ import {
   BookDetail,
   LoadingContainer,
 } from './styles';
+import type { ListNotice } from './types';
 import { useLikedCount } from '@/lib/likedCount';
 import { likedBooksApi } from '@/lib/api/likedBooks';
-import type { LikedBookItem } from '@/lib/api/types';
-import { getSessionUser } from '@/lib/session';
-import { colors, genreColors, genreName } from '@/styles/tokens';
+import { recommendationsApi } from '@/lib/api/recommendations';
+import type { BookDto } from '@/lib/api/types';
+import { colors, genreColors } from '@/styles/tokens';
 import { exitEase, spring, softSpring } from '@/styles/motion';
 import { paths } from '@/app/paths';
 
-// Books enter in sequence, leave shrinking, and the rest of the grid reorders.
 const itemVariants: Variants = {
   enter: { opacity: 0, y: 16, scale: 0.96 },
   idle: (order: number) => ({
@@ -49,45 +49,9 @@ const itemVariants: Variants = {
   exit: { opacity: 0, scale: 0.9, transition: { duration: 0.2, ease: exitEase } },
 };
 
-interface FavoriteBook {
-  id: number;
-  title?: string;
-  author?: string;
-  genre: string;
-  pageCount?: number | null;
-  coverUrl?: string | null;
-  likedAt?: string;
-}
-
-// The API may return the book directly or inside "livro"; here it becomes a single shape.
-// It never sends "livro", "livroId", "capaUrl", "imagem" or "dataCurtida" (see LikedBookItem
-// in src/lib/api/types.ts); the reads stay until the backend phase.
-const normalizeBook = (item: LikedBookItem): FavoriteBook => {
-  const book = item.livro || item;
-  return {
-    id: (item.livroId ?? book.id ?? item.id) as number,
-    title: book.titulo,
-    author: book.autor,
-    genre: genreName(book.genero) || book.genero || 'Outros',
-    pageCount: book.numeroPaginas,
-    coverUrl: book.capaUrl || book.capa || book.imagem || book.imagemUrl,
-    likedAt: item.dataCurtida || book.dataCurtida,
-  };
-};
-
-const formatDate = (date?: string) => (date ? new Date(date).toLocaleDateString('pt-BR') : '');
-
-// When the book was liked, for sorting; without a date, NaN, as new Date(undefined) gave.
-const timestampOf = (date?: string) => (date ? new Date(date).getTime() : NaN);
-
-type ListNotice =
-  | { type: 'removed'; book: FavoriteBook; position: number; id: number }
-  | { type: 'error'; message: string; id: number };
-
 export default function MyBooksPage() {
   const { add } = useLikedCount();
-  const [user] = useState(() => getSessionUser());
-  const [books, setBooks] = useState<FavoriteBook[]>([]);
+  const [books, setBooks] = useState<BookDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [genreFilter, setGenreFilter] = useState('Todos');
@@ -95,22 +59,18 @@ export default function MyBooksPage() {
   const [notice, setNotice] = useState<ListNotice | null>(null);
 
   const loadLikedBooks = useCallback(async () => {
-    if (!user?.id) return;
     setLoading(true);
     setError(null);
 
-    const response = await likedBooksApi.list(user.id);
+    const response = await likedBooksApi.list();
 
     if (response.success) {
-      const sortedBooks = (response.data || [])
-        .map(normalizeBook)
-        .sort((a, b) => timestampOf(b.likedAt) - timestampOf(a.likedAt));
-      setBooks(sortedBooks);
+      setBooks(response.data);
     } else {
       setError(response.error || 'Erro ao carregar seus livros.');
     }
     setLoading(false);
-  }, [user?.id]);
+  }, []);
 
   useEffect(() => {
     loadLikedBooks();
@@ -118,12 +78,11 @@ export default function MyBooksPage() {
 
   const closeNotice = useCallback(() => setNotice(null), []);
 
-  // The screen only opens with a session (ProtectedRoute), hence the "user!" in the actions.
-  const handleRemoveBook = async (book: FavoriteBook) => {
+  const handleRemoveBook = async (book: BookDto) => {
     const position = books.findIndex((item) => item.id === book.id);
     setRemovingId(book.id);
 
-    const response = await likedBooksApi.unlike(user!.id, book.id);
+    const response = await likedBooksApi.unlike(book.id);
 
     if (response.success) {
       setBooks((current) => current.filter((item) => item.id !== book.id));
@@ -140,7 +99,7 @@ export default function MyBooksPage() {
     const { book, position } = notice;
     setNotice(null);
 
-    const response = await likedBooksApi.like(user!.id, book.id);
+    const response = await recommendationsApi.accept(book.id);
 
     if (response.success) {
       setBooks((current) => {
@@ -302,14 +261,7 @@ export default function MyBooksPage() {
                     </BookCover>
                     <BookInfo>
                       <BookAuthor>{book.author}</BookAuthor>
-                      <BookDetail>
-                        {[
-                          book.pageCount && `${book.pageCount} páginas`,
-                          book.likedAt && `Curtido em ${formatDate(book.likedAt)}`,
-                        ]
-                          .filter(Boolean)
-                          .join(' · ')}
-                      </BookDetail>
+                      <BookDetail>{book.pageCount ? `${book.pageCount} páginas` : ''}</BookDetail>
                     </BookInfo>
                   </BookCardInner>
                 </BookCard>

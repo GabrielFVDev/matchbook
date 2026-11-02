@@ -9,7 +9,6 @@ export const Page = styled.div`
   background: ${colors.appBackground};
 `;
 
-// The top of the page takes the background color of the demo card's book.
 export const Hero = styled.div<{ $background: string }>`
   background: ${({ $background }) => $background};
   transition: background-color 0.5s ease;
@@ -398,7 +397,6 @@ export const SectionText = styled.p`
   }
 `;
 
-// The canvas uses shorter copy on mobile in a few spots: each version shows only at its size.
 export const OnDesktop = styled.span`
   ${mobile} {
     display: none;
@@ -493,7 +491,6 @@ export const StepText = styled.p`
   }
 `;
 
-// Decoration at the bottom of each step card; mobile leaves it out.
 export const StepExtra = styled.div<{ $gap?: number }>`
   display: flex;
   flex-wrap: wrap;
@@ -680,7 +677,6 @@ export const ShelfCover = styled.span<{ $color: string; $desktopOnly?: boolean }
   }
 `;
 
-// On mobile the heading goes above the covers and the list below them.
 export const ShelfText = styled.div`
   flex: 1 1 340px;
   max-width: 460px;

@@ -1,7 +1,6 @@
 import styled from 'styled-components';
 import { colors, genreColors, mobile, radius } from '@/styles/tokens';
 
-// The 404 wears the Mistério genre: the book that disappeared from the shelf.
 const mystery = genreColors('Mistério');
 
 export const Page = styled.div`
@@ -44,7 +43,6 @@ export const Main = styled.main`
   }
 `;
 
-// Two loose cards behind the "404" cover, like the stack on the Home screen.
 export const Stack = styled.div`
   position: relative;
   flex: 0 0 320px;
@@ -199,7 +197,6 @@ export const Text = styled.p`
   }
 `;
 
-// On mobile the buttons sit at the bottom of the screen, full width.
 export const Actions = styled.div`
   display: flex;
   flex-wrap: wrap;
