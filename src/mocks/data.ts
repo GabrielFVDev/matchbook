@@ -57,8 +57,7 @@ export const books = [
     id: 3,
     title: 'O Hobbit',
     author: 'J.R.R. Tolkien',
-    // Lowercase on purpose: the front normalizes the genre name.
-    genre: 'fantasia',
+    genre: 'Fantasia',
     pageCount: 336,
     publicationYear: 1937,
     publisher: 'HarperCollins',

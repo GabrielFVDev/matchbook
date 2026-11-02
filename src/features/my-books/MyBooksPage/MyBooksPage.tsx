@@ -33,7 +33,7 @@ import { useLikedCount } from '@/lib/likedCount';
 import { likedBooksApi } from '@/lib/api/likedBooks';
 import { recommendationsApi } from '@/lib/api/recommendations';
 import type { BookDto } from '@/lib/api/types';
-import { colors, genreColors, genreName } from '@/styles/tokens';
+import { colors, genreColors } from '@/styles/tokens';
 import { exitEase, spring, softSpring } from '@/styles/motion';
 import { paths } from '@/app/paths';
 
@@ -49,32 +49,13 @@ const itemVariants: Variants = {
   exit: { opacity: 0, scale: 0.9, transition: { duration: 0.2, ease: exitEase } },
 };
 
-interface FavoriteBook {
-  id: number;
-  title: string;
-  author: string;
-  genre: string;
-  pageCount?: number | null;
-  coverUrl?: string | null;
-}
-
-// The genre with the screen name, so the filter and the colors group "fantasia" with "Fantasia".
-const toFavoriteBook = (book: BookDto): FavoriteBook => ({
-  id: book.id,
-  title: book.title,
-  author: book.author,
-  genre: genreName(book.genre) || book.genre || 'Outros',
-  pageCount: book.pageCount,
-  coverUrl: book.coverUrl,
-});
-
 type ListNotice =
-  | { type: 'removed'; book: FavoriteBook; position: number; id: number }
+  | { type: 'removed'; book: BookDto; position: number; id: number }
   | { type: 'error'; message: string; id: number };
 
 export default function MyBooksPage() {
   const { add } = useLikedCount();
-  const [books, setBooks] = useState<FavoriteBook[]>([]);
+  const [books, setBooks] = useState<BookDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [genreFilter, setGenreFilter] = useState('Todos');
@@ -89,7 +70,7 @@ export default function MyBooksPage() {
     const response = await likedBooksApi.list();
 
     if (response.success) {
-      setBooks(response.data.map(toFavoriteBook));
+      setBooks(response.data);
     } else {
       setError(response.error || 'Erro ao carregar seus livros.');
     }
@@ -102,7 +83,7 @@ export default function MyBooksPage() {
 
   const closeNotice = useCallback(() => setNotice(null), []);
 
-  const handleRemoveBook = async (book: FavoriteBook) => {
+  const handleRemoveBook = async (book: BookDto) => {
     const position = books.findIndex((item) => item.id === book.id);
     setRemovingId(book.id);
 
