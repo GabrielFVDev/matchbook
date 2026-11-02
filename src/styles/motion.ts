@@ -1,4 +1,5 @@
-import type { BezierDefinition, MotionProps, Transition } from 'motion/react';
+import type { BezierDefinition, Transition } from 'motion/react';
+import type { MotionAnimation } from './types';
 
 // App curves and transitions. Short, purposeful motion: enter softly, leave fast.
 
@@ -7,9 +8,6 @@ export const exitEase = [0.4, 0, 1, 1] satisfies BezierDefinition;
 
 export const spring = { type: 'spring', stiffness: 380, damping: 32 } satisfies Transition;
 export const softSpring = { type: 'spring', stiffness: 260, damping: 26 } satisfies Transition;
-
-// The enter and exit props that animated components receive spread, like {...cardEntrance}.
-type MotionAnimation = Pick<MotionProps, 'initial' | 'animate' | 'exit'>;
 
 // Screen change: the new content rises a little as it enters and the old one goes away fast.
 export const screenTransition = {

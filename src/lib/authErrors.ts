@@ -1,3 +1,5 @@
+import type { ErrorWithCode } from '@/lib/types';
+
 // The screen text for a Firebase error, which carries a "code" like "auth/popup-blocked".
 const messages: Record<string, string> = {
   'auth/popup-blocked':
@@ -8,7 +10,7 @@ const messages: Record<string, string> = {
 };
 
 const codeOf = (error: unknown) => {
-  const code = (error as { code?: unknown } | null)?.code;
+  const code = (error as ErrorWithCode | null)?.code;
   return typeof code === 'string' ? code : null;
 };
 

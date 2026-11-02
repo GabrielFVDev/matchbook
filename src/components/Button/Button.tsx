@@ -1,6 +1,7 @@
 import styled, { css } from 'styled-components';
 import { Link } from 'react-router-dom';
 import { colors, radius } from '@/styles/tokens';
+import type { ButtonSize, ButtonStyleProps, ButtonVariant } from './types';
 
 const variants = {
   primary: css`
@@ -33,7 +34,7 @@ const variants = {
     color: ${colors.white};
     font-weight: 700;
   `,
-};
+} satisfies Record<ButtonVariant, unknown>;
 
 const sizes = {
   large: css`
@@ -46,16 +47,7 @@ const sizes = {
     padding: 0 20px;
     font-size: 15px;
   `,
-};
-
-export type ButtonVariant = keyof typeof variants;
-export type ButtonSize = keyof typeof sizes;
-
-interface ButtonStyleProps {
-  $variant?: ButtonVariant;
-  $size?: ButtonSize;
-  $fullWidth?: boolean;
-}
+} satisfies Record<ButtonSize, unknown>;
 
 const buttonStyle = css<ButtonStyleProps>`
   display: inline-flex;

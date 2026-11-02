@@ -1,3 +1,5 @@
+import type { GenreColors, GenreName } from './types';
+
 // Tokens of the "Pilha com hierarquia" design system.
 // The values come from the "Design system" board of the redesign canvas.
 
@@ -16,11 +18,6 @@ export const colors = {
   empty: '#E4E1EE',
   disabled: '#BDB9CC',
 };
-
-export interface GenreColors {
-  cover: string;
-  background: string;
-}
 
 // Each genre has the color of the generated cover and the screen background color.
 // White text on "cover" and "cover" on "background" pass AA contrast.
@@ -46,9 +43,6 @@ export const genres = {
   Suspense: { cover: '#007779', background: '#D3F5F4' },
   Outros: { cover: '#4A4658', background: '#ECEAF1' },
 } satisfies Record<string, GenreColors>;
-
-// The official name of a genre: one of the keys of the map above.
-export type GenreName = keyof typeof genres;
 
 export const genreList = Object.keys(genres) as GenreName[];
 

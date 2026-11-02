@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import type { ReactNode } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { Variants } from 'motion/react';
 import styled from 'styled-components';
 import { colors, radius, shadow } from '@/styles/tokens';
 import { spring } from '@/styles/motion';
 import { IconMinus, IconPlus } from '@/components/Icons';
+import type { SegmentedProps, StepperProps, SwitchProps } from './types';
 
 export const ChoiceLabel = styled.p`
   font-size: 14px;
@@ -56,14 +56,6 @@ const Indicator = styled(motion.span)`
 `;
 
 // Single choice among a few options (reading level).
-interface SegmentedProps {
-  id: string;
-  label: ReactNode;
-  options: readonly string[];
-  value: string;
-  onChange: (option: string) => void;
-}
-
 export function Segmented({ id, label, options, value, onChange }: SegmentedProps) {
   return (
     <Group role="group" aria-labelledby={id}>
@@ -138,14 +130,6 @@ const rollNumber: Variants = {
   idle: { y: 0, opacity: 1, transition: { duration: 0.18 } },
   exit: (direction: number) => ({ y: direction * -18, opacity: 0, transition: { duration: 0.18 } }),
 };
-
-interface StepperProps {
-  id: string;
-  label: ReactNode;
-  value: number;
-  onChange: (value: number) => void;
-  min?: number;
-}
 
 export function Stepper({ id, label, value, onChange, min = 0 }: StepperProps) {
   const [direction, setDirection] = useState(1);
@@ -222,13 +206,6 @@ const SwitchTrack = styled.button.attrs({ type: 'button', role: 'switch' })<{ $c
 `;
 
 // On/off switch (receive recommendations).
-interface SwitchProps {
-  id: string;
-  label: ReactNode;
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-}
-
 export function Switch({ id, label, checked, onChange }: SwitchProps) {
   return (
     <SwitchRow>

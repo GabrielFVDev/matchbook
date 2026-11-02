@@ -1,7 +1,8 @@
 import type * as RealFirebase from '@/lib/firebase';
 import { getSession, setSession } from '@/lib/session';
-import type { SessionUser } from '@/lib/session';
+import type { SessionUser } from '@/lib/types';
 import { account, newAccount } from './data';
+import type { ResetMockFirebaseOptions } from './types';
 
 // Stand-in for src/lib/firebase.ts in the tests and in "npm run dev:mock" (see vite.config.ts):
 // the same exports, with no network. The "Google popup" answers at once with the sample account.
@@ -53,13 +54,7 @@ export const getIdToken: typeof RealFirebase.getIdToken = async () => {
 
 // For the tests: each one starts with the sample account, logged in or not, with or without the
 // Google photo.
-export const resetMockFirebase = ({
-  loggedIn,
-  photoUrl = null,
-}: {
-  loggedIn: boolean;
-  photoUrl?: string | null;
-}) => {
+export const resetMockFirebase = ({ loggedIn, photoUrl = null }: ResetMockFirebaseOptions) => {
   nextGoogleAccount = { user: account.user, isNewUser: false };
   save(loggedIn ? { ...account.user, photoUrl } : null);
 };

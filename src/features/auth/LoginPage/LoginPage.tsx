@@ -15,28 +15,12 @@ import { Button } from '@/components/Button';
 import { Spinner } from '@/components/Spinner';
 import { IconAlert, IconGoogle } from '@/components/Icons';
 import { BrandRow, CoverStack, StackCover, QuoteText } from './styles';
+import type { StackCoverSpec } from './types';
 import { useGoogleSignIn } from '@/features/auth/useAuth';
 import { genres } from '@/styles/tokens';
-import type { GenreName } from '@/styles/tokens';
 import { enterEase, cardEntrance, spring, softSpring } from '@/styles/motion';
 import type { Variants } from 'motion/react';
 import { paths } from '@/app/paths';
-
-// Each measure comes in a pair: [desktop, mobile].
-type Pair = [number, number];
-
-interface StackCoverSpec {
-  title: string;
-  genre: GenreName;
-  x: Pair;
-  y: Pair;
-  w: Pair;
-  h: Pair;
-  tilt: number;
-  spread: number;
-  fontSize: Pair;
-  mobileTitle: boolean;
-}
 
 // Cover stack on the side: position, size and tilt on desktop and on mobile.
 // "spread" is how far each cover moves away when the mouse goes over the stack.

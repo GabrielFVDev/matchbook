@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import type { ReactNode } from 'react';
 import styled, { css } from 'styled-components';
 import { colors, mobile, genreColors, genreName, radius } from '@/styles/tokens';
 import { Tag } from '@/components/Chip';
+import type { BookCoverProps, CoverSize } from './types';
 
 // Measures of each use of the cover: height, inner padding and title size,
 // first on desktop and then on mobile.
@@ -12,9 +12,7 @@ const sizes = {
   grid: { height: [250, 200], padding: [16, 12], titleSize: [27, 19] },
   preview: { height: [320, 320], padding: [20, 20], titleSize: [40, 40] },
   mini: { height: [148, 148], padding: [10, 10], titleSize: [16, 16] },
-};
-
-type CoverSize = keyof typeof sizes;
+} satisfies Record<CoverSize, unknown>;
 
 const Frame = styled.div<{ $cover: string; $size: CoverSize }>`
   position: relative;
@@ -84,14 +82,6 @@ const CoverImage = styled.img`
 
 // Book cover: uses the linked image when it loads; with no link or on error,
 // builds a cover with the genre color and the title.
-interface BookCoverProps {
-  title?: string | null;
-  genre?: string | null;
-  coverUrl?: string | null;
-  size?: CoverSize;
-  placeholderTitle?: string;
-  children?: ReactNode;
-}
 
 export function BookCover({
   title,

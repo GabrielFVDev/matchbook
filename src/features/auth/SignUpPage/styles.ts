@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import { motion } from 'motion/react';
 import { colors, mobile, radius } from '@/styles/tokens';
 import { AuthSide } from '@/layouts/AuthLayout';
+import type { StepState } from './types';
 
 export const SignUpSide = styled(AuthSide)`
   padding-top: 24px;
@@ -46,8 +47,6 @@ export const StepItem = styled.li`
   align-items: center;
   gap: 16px;
 `;
-
-export type StepState = 'current' | 'done' | 'next';
 
 export const StepNumber = styled.span<{ $state: StepState }>`
   flex: 0 0 auto;

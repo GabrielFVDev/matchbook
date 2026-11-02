@@ -1,8 +1,8 @@
 import { useLayoutEffect } from 'react';
-import type { ReactNode } from 'react';
 import styled from 'styled-components';
 import { useSetShell } from '@/layouts/AppShell/shellContext';
 import { colors, mobile } from '@/styles/tokens';
+import type { AppLayoutProps } from './types';
 
 const Main = styled.main<{ $gap: string }>`
   flex: 1;
@@ -19,13 +19,6 @@ const Main = styled.main<{ $gap: string }>`
     gap: 16px;
   }
 `;
-
-interface AppLayoutProps {
-  background?: string;
-  accentColor?: string;
-  gap?: string;
-  children: ReactNode;
-}
 
 // Content of a screen inside the AppShell. Tells the shell the background and the accent color.
 export function AppLayout({

@@ -12,7 +12,7 @@ import {
 } from 'firebase/auth';
 import type { User } from 'firebase/auth';
 import { setSession } from '@/lib/session';
-import type { SessionUser } from '@/lib/session';
+import type { SessionUser } from '@/lib/types';
 
 // The only file that talks to Firebase. In the tests and in "npm run dev:mock", vite.config.ts
 // swaps it for src/mocks/firebase.ts, which has the same exports and no network.

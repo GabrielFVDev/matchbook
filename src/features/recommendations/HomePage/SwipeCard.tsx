@@ -5,8 +5,7 @@ import { Tag } from '@/components/Chip';
 import { IconArrowRight, IconHeart } from '@/components/Icons';
 import { BookCard, BookInfo, BookAuthor, MetaList, Synopsis, Stamp } from './styles';
 import { exitEase } from '@/styles/motion';
-import type { GenreColors } from '@/styles/tokens';
-import type { BookDto } from '@/lib/api/types';
+import type { SwipeCardProps } from './types';
 
 // Drag distance (px) or speed (px/s) that counts as a decision.
 const DISTANCE_THRESHOLD = 120;
@@ -27,15 +26,6 @@ const cardVariants: Variants = {
     transition: { duration: 0.32, ease: exitEase },
   }),
 };
-
-export type SwipeChoice = 'love' | 'next';
-
-interface SwipeCardProps {
-  book: BookDto;
-  bookColors: GenreColors;
-  disabled?: boolean;
-  onDecide: (choice: SwipeChoice) => void;
-}
 
 // Card of the recommended book. It can be dragged: right is Amei, left is Próximo.
 export function SwipeCard({ book, bookColors, disabled, onDecide }: SwipeCardProps) {

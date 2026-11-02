@@ -29,6 +29,7 @@ import {
   BookDetail,
   LoadingContainer,
 } from './styles';
+import type { ListNotice } from './types';
 import { useLikedCount } from '@/lib/likedCount';
 import { likedBooksApi } from '@/lib/api/likedBooks';
 import { recommendationsApi } from '@/lib/api/recommendations';
@@ -48,10 +49,6 @@ const itemVariants: Variants = {
   }),
   exit: { opacity: 0, scale: 0.9, transition: { duration: 0.2, ease: exitEase } },
 };
-
-type ListNotice =
-  | { type: 'removed'; book: BookDto; position: number; id: number }
-  | { type: 'error'; message: string; id: number };
 
 export default function MyBooksPage() {
   const { add } = useLikedCount();

@@ -1,10 +1,6 @@
 import styled from 'styled-components';
 import { colors, radius } from '@/styles/tokens';
-
-interface ChipProps {
-  $active?: boolean;
-  $background?: string;
-}
+import type { ChipProps } from './types';
 
 // Clickable tag (filters and genre choice). The state goes in aria-pressed.
 export const Chip = styled.button.attrs<ChipProps>(({ $active }) => ({

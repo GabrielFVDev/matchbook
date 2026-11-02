@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import type { ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence } from 'motion/react';
 import {
@@ -24,6 +23,7 @@ import { logOut } from '@/lib/firebase';
 import { paths } from '@/app/paths';
 import { colors } from '@/styles/tokens';
 import { spring } from '@/styles/motion';
+import type { HeaderAction, HeaderProps } from './types';
 
 const links = [
   { to: paths.home, label: 'Início' },
@@ -33,7 +33,7 @@ const links = [
 ];
 
 // Button in the right corner on mobile, which changes with the screen.
-const mobileActions: Record<string, { to: string; label: string; icon: ReactNode }> = {
+const mobileActions: Record<string, HeaderAction> = {
   [paths.myBooks]: { to: paths.addBook, label: 'Adicionar livro', icon: <IconPlus /> },
   [paths.profile]: {
     to: `${paths.profile}?editar=1`,
@@ -42,7 +42,7 @@ const mobileActions: Record<string, { to: string; label: string; icon: ReactNode
   },
 };
 
-export default function Header({ accentColor = colors.brand }: { accentColor?: string }) {
+export default function Header({ accentColor = colors.brand }: HeaderProps) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { total, load } = useLikedCount();

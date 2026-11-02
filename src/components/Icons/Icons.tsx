@@ -1,11 +1,7 @@
-import type { SVGProps } from 'react';
+import type { IconProps, SvgProps } from './types';
 
 // Stroke icons drawn for the new design. Always decorative:
 // whoever uses them puts the text or the aria-label on the button.
-
-type SvgProps = SVGProps<SVGSVGElement>;
-
-export type IconProps = SvgProps & { size?: number };
 
 const props = (size: number, rest: SvgProps): SvgProps => ({
   width: size,

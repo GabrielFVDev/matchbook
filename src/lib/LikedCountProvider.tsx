@@ -1,10 +1,10 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
 import { likedBooksApi } from '@/lib/api/likedBooks';
 import { getSession } from '@/lib/session';
+import type { LikedCountProviderProps } from '@/lib/types';
 import { LikedCountContext } from './likedCount';
 
-export function LikedCountProvider({ children }: { children: ReactNode }) {
+export function LikedCountProvider({ children }: LikedCountProviderProps) {
   const [total, setTotal] = useState<number | null>(null);
   const loadedUid = useRef<string | null>(null);
 

@@ -2,8 +2,7 @@ import { http, HttpResponse } from 'msw';
 import type { HttpResponseResolver } from 'msw';
 import { apiUrl as API } from '@/lib/env';
 import { books, likedBooks, likedCount, preferences, rejectResult, stats } from './data';
-
-type Body = Record<string, unknown>;
+import type { Body } from './types';
 
 // The recommendation cycles through the first 3 books and only moves on with Amei or Próximo, like
 // the backend, which drops the book already decided from the list. Asking again without deciding

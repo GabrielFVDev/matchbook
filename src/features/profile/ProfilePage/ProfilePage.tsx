@@ -46,6 +46,7 @@ import {
   EditForm,
   EditButtons,
 } from './styles';
+import type { ProfileAvatarProps, ProfileForm, ProfileNotice } from './types';
 import { useLikedCount } from '@/lib/likedCount';
 import { accountApi } from '@/lib/api/account';
 import { recommendationsApi } from '@/lib/api/recommendations';
@@ -53,7 +54,7 @@ import { authErrorMessage, isPopupClosed } from '@/lib/authErrors';
 import { confirmIdentity, deleteAccount, logOut, updateName } from '@/lib/firebase';
 import { toPreferencesRequest } from '@/lib/formatters';
 import { useSessionUser } from '@/lib/session';
-import type { SessionUser } from '@/lib/session';
+import type { SessionUser } from '@/lib/types';
 import type { Preferences, RecommendationStats } from '@/lib/api/types';
 import { paths } from '@/app/paths';
 import { colors, genreColors, genreName } from '@/styles/tokens';
@@ -85,15 +86,6 @@ const strategies = [
   },
 ];
 
-// The edit form: the name goes to Firebase, the taste to PUT /me/preferences.
-interface ProfileForm {
-  name: string;
-  favoriteGenre: string;
-  favoriteAuthor: string;
-  readingLevel: string;
-  receiveRecommendations: boolean;
-}
-
 // Without preferences saved yet, the form starts blank, with the recommendations on.
 const toProfileForm = (user: SessionUser, preferences: Preferences | null): ProfileForm => ({
   name: user.name || '',
@@ -118,7 +110,7 @@ const initials = (name?: string | null) =>
 // The photo of the Google account, or the initials when there is none or it does not load (deleted
 // photo, no internet). Google's photo servers refuse the image when the browser sends the address
 // of the page that asked for it (the Referer header), so it goes without one.
-function ProfileAvatar({ user }: { user: SessionUser }) {
+function ProfileAvatar({ user }: ProfileAvatarProps) {
   const [failedPhoto, setFailedPhoto] = useState<string | null>(null);
   const { photoUrl } = user;
 
@@ -153,7 +145,7 @@ export default function ProfilePage() {
   const [editErrors, setEditErrors] = useState<Record<string, string | null>>({});
   const [saveError, setSaveError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [notice, setNotice] = useState<{ text: string; id: number } | null>(null);
+  const [notice, setNotice] = useState<ProfileNotice | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);

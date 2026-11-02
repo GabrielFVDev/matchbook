@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import { colors, mobile } from '@/styles/tokens';
 import { IconHeart } from '@/components/Icons';
+import type { LogoProps } from './types';
 
 const LogoLink = styled(Link)`
   display: inline-flex;
@@ -39,7 +40,7 @@ const Wordmark = styled.span`
   }
 `;
 
-export function Logo({ to = '/' }: { to?: string }) {
+export function Logo({ to = '/' }: LogoProps) {
   return (
     <LogoLink to={to} aria-label="Matchbook, página inicial">
       <Mark>

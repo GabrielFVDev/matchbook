@@ -5,13 +5,7 @@ import { AppProviders } from '@/app/AppProviders';
 import { routes } from '@/app/router';
 import { resetMockFirebase } from '@/mocks/firebase';
 import { server } from '@/mocks/server';
-
-interface RenderAppOptions {
-  // Starts with the sample account logged in, as if Firebase had restored her session.
-  loggedIn?: boolean;
-  // The photo of her Google account. Without it, the account has none.
-  photoUrl?: string;
-}
+import type { ApiCall, RenderAppOptions } from '@/test/types';
 
 let router: ReturnType<typeof createBrowserRouter> | null = null;
 
@@ -32,15 +26,6 @@ export function renderApp(url: string, { loggedIn = false, photoUrl }: RenderApp
       </AppProviders>,
     ),
   };
-}
-
-export interface ApiCall {
-  method: string;
-  // Without the leading "/api": "/recommendation/accept".
-  path: string;
-  search: string;
-  authorization: string | null;
-  body?: unknown;
 }
 
 // Records the requests made to the fake API, in the order they arrive.

@@ -4,6 +4,7 @@ import { Chip } from '@/components/Chip';
 import { ChoiceLabel, Segmented, Switch } from '@/components/Choice';
 import { Field, Input } from '@/components/Field';
 import { readingLevelLabel, readingLevels } from './readingLevels';
+import type { TasteFieldsProps } from './types';
 
 const List = styled.div`
   display: flex;
@@ -32,20 +33,6 @@ const Chips = styled.div`
     font-size: 14px;
   }
 `;
-
-// The taste fields, with the API field names.
-export interface TasteValues {
-  favoriteGenre: string;
-  favoriteAuthor: string;
-  readingLevel: string;
-  receiveRecommendations: boolean;
-}
-
-interface TasteFieldsProps {
-  values: TasteValues;
-  onChange: (field: keyof TasteValues, value: TasteValues[keyof TasteValues]) => void;
-  idPrefix: string;
-}
 
 // Reading taste fields, used in step 2 of sign-up and in the profile edit.
 // "values" has the API field names; "onChange(field, value)" updates one of them.

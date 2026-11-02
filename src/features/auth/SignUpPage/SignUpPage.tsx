@@ -33,7 +33,7 @@ import {
   ButtonRow,
   StepContent,
 } from './styles';
-import type { StepState } from './styles';
+import type { SignUpLocationState, StepState } from './types';
 import { useGoogleSignIn } from '@/features/auth/useAuth';
 import { paths } from '@/app/paths';
 import { accountApi } from '@/lib/api/account';
@@ -64,7 +64,7 @@ export default function SignUpPage() {
   const { signIn, loading: signingIn, error: signInError } = useGoogleSignIn();
 
   // A new account that came in through the login (LoginPage) starts at the taste step.
-  const cameFromLogin = (location.state as { step?: number } | null)?.step === 2;
+  const cameFromLogin = (location.state as SignUpLocationState | null)?.step === 2;
   const [step, setStep] = useState(user && cameFromLogin ? 2 : 1);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);

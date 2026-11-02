@@ -7,7 +7,7 @@ import { Spinner } from '@/components/Spinner';
 import { ToastPill, ToastDetail } from '@/components/Toast';
 import { IconAlert, IconArrowRight, IconBook, IconHeart, IconRefresh } from '@/components/Icons';
 import { SwipeCard } from './SwipeCard';
-import type { SwipeChoice } from './SwipeCard';
+import type { Notice, SwipeChoice } from './types';
 import {
   MatchArea,
   Intro,
@@ -34,13 +34,6 @@ import { toastAnimation, appear } from '@/styles/motion';
 import { paths } from '@/app/paths';
 
 const NOTICE_DURATION = 3500;
-
-interface Notice {
-  type: SwipeChoice | 'error';
-  title: string;
-  text: string;
-  id: number;
-}
 
 export default function HomePage() {
   const { add } = useLikedCount();

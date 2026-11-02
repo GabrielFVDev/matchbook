@@ -1,8 +1,9 @@
 import { Children, cloneElement, isValidElement } from 'react';
-import type { ComponentProps, HTMLAttributes, ReactNode } from 'react';
+import type { ComponentProps } from 'react';
 import styled, { css } from 'styled-components';
 import { colors, radius } from '@/styles/tokens';
 import { IconAlert, IconCheck, IconChevronDown } from '@/components/Icons';
+import type { FieldProps, InjectedControlProps, InputStyleProps } from './types';
 
 export const Label = styled.label`
   display: flex;
@@ -17,10 +18,6 @@ export const LabelTag = styled.span`
   font-weight: 600;
   color: ${colors.inkSoft};
 `;
-
-interface InputStyleProps {
-  $invalid?: boolean;
-}
 
 const inputStyle = css<InputStyleProps>`
   width: 100%;
@@ -114,25 +111,6 @@ const Group = styled.div<{ $span?: boolean }>`
       grid-column: 1 / -1;
     `}
 `;
-
-// What Field puts on the child control (Input, Select, TextArea, PasswordInput).
-interface InjectedControlProps {
-  id?: string;
-  $invalid?: boolean;
-  'aria-invalid'?: boolean;
-  'aria-describedby'?: string;
-}
-
-interface FieldProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
-  id: string;
-  label: ReactNode;
-  tag?: ReactNode;
-  help?: ReactNode;
-  error?: ReactNode;
-  success?: ReactNode;
-  span?: boolean;
-  children: ReactNode;
-}
 
 // Field with a label, an optional or required tag and a message below.
 // Wires aria-describedby and aria-invalid on the child control by itself.

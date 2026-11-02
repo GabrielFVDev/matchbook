@@ -69,7 +69,9 @@ src/
   test/            setup, renderApp e os testes de fluxo
 ```
 
-Cada componente e cada tela tem a sua pasta, com o arquivo nomeado (`Button/Button.tsx`) e um `index.ts` de uma linha. A importação usa o atalho `@/` (`@/components/Button`).
+Cada componente e cada tela tem a sua pasta, com o arquivo nomeado (`Button/Button.tsx`), um `index.ts` que diz o que sai da pasta e, quando há tipos, um `types.ts`. A importação usa o atalho `@/` (`@/components/Button`).
+
+**Os tipos ficam sempre num `types.ts`**, nunca no arquivo do componente, da tela ou da função: as props de cada componente, os formatos de dados e os tipos de estado. O `types.ts` fica na pasta do componente ou da tela; os tipos dos hooks e das regras de uma feature ficam em `features/<feature>/types.ts`, e os de `lib/`, `styles/`, `app/`, `mocks/` e `test/` num `types.ts` na própria pasta (os da API em `lib/api/types.ts`). Ficam de fora só os tipos escritos dentro do `styled.x<...>` dos arquivos de estilo e as declarações globais do `src/vite-env.d.ts`.
 
 **Quem pode importar quem:**
 

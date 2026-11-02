@@ -1,13 +1,13 @@
 import { Outlet } from 'react-router-dom';
-import type { ComponentType } from 'react';
 import type { RouteObject } from 'react-router-dom';
 import { ProtectedRoute, PublicRoute } from '@/features/auth/RouteGuards';
 import { AppShell } from '@/layouts/AppShell';
 import { paths } from './paths';
+import type { ScreenModule } from './types';
 
 // Each screen comes in a separate file, downloaded when its route opens. The router waits for the
 // file before switching screens, so the AppShell transitions do not get a "loading" state.
-const page = (load: () => Promise<{ default: ComponentType }>) => async () => ({
+const page = (load: () => Promise<ScreenModule>) => async () => ({
   Component: (await load()).default,
 });
 
